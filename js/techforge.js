@@ -1,31 +1,34 @@
 const categorySettings = {
-  cpu: { title: 'Процессор', files: ['BD/CPU/AMD.json', 'BD/CPU/INTEL.json'] },
-  gpu: { title: 'Видеокарта', files: ['BD/GPU/AMD.json', 'BD/GPU/INTEL.json', 'BD/GPU/NVIDIA.json', 'BD/GPU/OTHER.json'] },
-  motherboard: { title: 'Материнская плата', files: ['BD/MOTHERBOARDS/motherboards.json'] },
+  gpu: { title: 'Видеокарты', files: ['BD/GPU/AMD.json', 'BD/GPU/INTEL.json', 'BD/GPU/NVIDIA.json', 'BD/GPU/OTHER.json'] },
+  cpu: { title: 'Процессоры', files: ['BD/CPU/AMD.json', 'BD/CPU/INTEL.json'] },
   ram: { title: 'Оперативная память', files: ['BD/RAM/ddr4.json', 'BD/RAM/ddr5.json'] },
   ssd: { title: 'SSD', files: ['BD/COMPONENTS/ssd.json'] },
-  power_supply: { title: 'Блок питания', files: ['BD/POWER_SUPPLIES/power_supplies.json'] },
-  case: { title: 'Корпус', files: ['BD/COMPONENTS/case.json'] },
+  motherboard: { title: 'Материнские платы', files: ['BD/MOTHERBOARDS/motherboards.json'] },
+  power_supply: { title: 'Блоки питания', files: ['BD/POWER_SUPPLIES/power_supplies.json'] },
+  case: { title: 'Корпуса', files: ['BD/COMPONENTS/case.json'] },
   cooler: { title: 'Охлаждение', files: ['BD/COMPONENTS/cooler.json'] }
 }
 
-const componentOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
+const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
 
 const interfaceElements = {
-  comparisonCategorySelect: document.getElementById('comparison-category-select'),
+  mainTabsContainer: document.getElementById('main-tabs'),
+  mainPanels: document.querySelectorAll('[data-main-panel]'),
+  comparisonCategoryTabs: document.getElementById('comparison-category-tabs'),
   comparisonFirstSelect: document.getElementById('comparison-first-select'),
   comparisonSecondSelect: document.getElementById('comparison-second-select'),
   comparisonResult: document.getElementById('comparison-result'),
-  configuratorForm: document.getElementById('configurator-form'),
+  configuratorGrid: document.getElementById('configurator-grid'),
   configurationList: document.getElementById('configuration-list'),
   configurationTotal: document.getElementById('configuration-total'),
   configurationWarning: document.getElementById('configuration-warning')
 }
 
 const applicationState = {
+  activeMainTab: 'comparison',
+  activeComparisonCategory: 'gpu',
   componentsByCategory: {},
-  selectedComparisonCategory: 'gpu',
-  selectedConfiguration: {}
+  selectedConfigurationByCategory: {}
 }
 
 function normalizeText(value) {
@@ -46,15 +49,23 @@ function parseNumber(value) {
   return Number.isFinite(parsedValue) ? parsedValue : null
 }
 
-async function fetchJsonFile(path) {
-  const response = await fetch(path)
+function createIdentifier(categoryKey, componentName) {
+  return `${categoryKey}-${componentName}`.toLowerCase()
+}
+
+function formatPrice(priceValue) {
+  return `${Math.round(priceValue)} $`
+}
+
+async function fetchJsonFile(filePath) {
+  const response = await fetch(filePath)
   if (!response.ok) {
-    throw new Error(path)
+    throw new Error(filePath)
   }
   return response.json()
 }
 
-function getCollectionFromPayload(payload) {
+function collectRecords(payload) {
   if (Array.isArray(payload)) {
     return payload
   }
@@ -67,271 +78,309 @@ function getCollectionFromPayload(payload) {
   return []
 }
 
-function extractPrice(rawRecord) {
-  const candidateValues = [rawRecord.price, rawRecord.price_last_usd, rawRecord.price_max_usd, rawRecord.price_min_usd]
-  for (const candidateValue of candidateValues) {
-    const parsedValue = parseNumber(candidateValue)
-    if (parsedValue !== null && parsedValue > 0) {
-      return parsedValue
+function extractPriceFromRecord(baseRecord) {
+  const priceCandidates = [baseRecord.price, baseRecord.price_last_usd, baseRecord.price_max_usd, baseRecord.price_min_usd]
+  for (const priceCandidate of priceCandidates) {
+    const parsedPrice = parseNumber(priceCandidate)
+    if (parsedPrice !== null && parsedPrice > 0) {
+      return parsedPrice
     }
   }
   return null
 }
 
-function formatCurrency(value) {
-  return `${Math.round(value)} $`
-}
-
-function createComponentRecord(categoryKey, rawRecord) {
-  const baseRecord = rawRecord && rawRecord.data ? rawRecord.data : rawRecord
+function convertRecord(categoryKey, sourceRecord) {
+  const baseRecord = sourceRecord && sourceRecord.data ? sourceRecord.data : sourceRecord
   const componentName = normalizeText(baseRecord?.name)
   if (!componentName) {
     return null
   }
 
   if (categoryKey === 'cpu') {
-    const coreCount = parseNumber(baseRecord.core_count)
-    const boostClock = parseNumber(baseRecord.boost_clock_ghz)
-    const socketName = normalizeText(baseRecord.socket || '')
-    const thermalDesignPower = parseNumber(baseRecord.tdp_watts)
-    const propertyRows = {
-      Производитель: normalizeText(baseRecord.manufacturer),
-      Ядра: coreCount ? String(coreCount) : '',
-      ЧастотаBoost: boostClock ? `${boostClock} ГГц` : '',
-      Сокет: socketName,
-      TDP: thermalDesignPower ? `${thermalDesignPower} Вт` : ''
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Производитель: normalizeText(baseRecord.manufacturer),
+        Ядра: parseNumber(baseRecord.core_count) ? String(baseRecord.core_count) : '',
+        ЧастотаBoost: parseNumber(baseRecord.boost_clock_ghz) ? `${baseRecord.boost_clock_ghz} ГГц` : '',
+        Сокет: normalizeText(baseRecord.socket),
+        TDP: parseNumber(baseRecord.tdp_watts) ? `${baseRecord.tdp_watts} Вт` : ''
+      }
     }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
   }
 
   if (categoryKey === 'gpu') {
-    const memoryAmount = parseNumber(baseRecord.memory)
-    const powerDraw = parseNumber(baseRecord.tdp_watts || baseRecord.power)
-    const propertyRows = {
-      Производитель: normalizeText(baseRecord.manufacturer || baseRecord.vendor || ''),
-      Чип: normalizeText(baseRecord.chipset || baseRecord.gpu_chip || ''),
-      Память: memoryAmount ? `${memoryAmount} ГБ` : '',
-      Энергопотребление: powerDraw ? `${powerDraw} Вт` : ''
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Производитель: normalizeText(baseRecord.manufacturer || baseRecord.vendor),
+        Чип: normalizeText(baseRecord.chipset || baseRecord.gpu_chip),
+        Память: parseNumber(baseRecord.memory) ? `${baseRecord.memory} ГБ` : '',
+        Энергопотребление: parseNumber(baseRecord.power || baseRecord.tdp_watts) ? `${baseRecord.power || baseRecord.tdp_watts} Вт` : ''
+      }
     }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
-  }
-
-  if (categoryKey === 'motherboard') {
-    const propertyRows = {
-      Сокет: normalizeText(baseRecord.socket),
-      Чипсет: normalizeText(baseRecord.chipset),
-      Формфактор: normalizeText(baseRecord.form_factor || '')
-    }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
   }
 
   if (categoryKey === 'ram') {
-    const moduleList = Array.isArray(baseRecord.modules) ? baseRecord.modules : []
-    const speedList = Array.isArray(baseRecord.speed) ? baseRecord.speed : []
-    const totalMemory = moduleList.length === 2 ? moduleList[0] * moduleList[1] : null
-    const propertyRows = {
-      Объем: totalMemory ? `${totalMemory} ГБ` : '',
-      Компоновка: moduleList.length ? `${moduleList.join('x')} ГБ` : '',
-      Частота: speedList.length > 1 ? `${speedList[speedList.length - 1]} МГц` : '',
-      Тип: speedList.length ? `DDR${speedList[0]}` : ''
+    const memoryModules = Array.isArray(baseRecord.modules) ? baseRecord.modules : []
+    const memorySpeed = Array.isArray(baseRecord.speed) ? baseRecord.speed : []
+    const totalCapacity = memoryModules.length === 2 ? memoryModules[0] * memoryModules[1] : null
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Объем: totalCapacity ? `${totalCapacity} ГБ` : '',
+        Модули: memoryModules.length ? `${memoryModules.join('x')} ГБ` : '',
+        Частота: memorySpeed.length > 1 ? `${memorySpeed[memorySpeed.length - 1]} МГц` : '',
+        Тип: memorySpeed.length ? `DDR${memorySpeed[0]}` : ''
+      }
     }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
   }
 
   if (categoryKey === 'ssd') {
-    const propertyRows = {
-      Интерфейс: normalizeText(baseRecord.interface || ''),
-      Формфактор: normalizeText(baseRecord.form_factor || ''),
-      Характеристики: normalizeText(baseRecord.specs || '')
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Интерфейс: normalizeText(baseRecord.interface),
+        Формфактор: normalizeText(baseRecord.form_factor),
+        Характеристики: normalizeText(baseRecord.specs)
+      }
     }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
+  }
+
+  if (categoryKey === 'motherboard') {
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Сокет: normalizeText(baseRecord.socket),
+        Чипсет: normalizeText(baseRecord.chipset),
+        Формфактор: normalizeText(baseRecord.form_factor)
+      }
+    }
   }
 
   if (categoryKey === 'power_supply') {
-    const wattage = parseNumber(baseRecord.wattage)
-    const propertyRows = {
-      Мощность: wattage ? `${wattage} Вт` : '',
-      Сертификат: normalizeText(baseRecord.efficiency_rating),
-      Модульность: normalizeText(baseRecord.modular || '')
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Мощность: parseNumber(baseRecord.wattage) ? `${baseRecord.wattage} Вт` : '',
+        Сертификат: normalizeText(baseRecord.efficiency_rating),
+        Модульность: normalizeText(baseRecord.modular)
+      }
     }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
   }
 
   if (categoryKey === 'case') {
-    const propertyRows = {
-      Тип: normalizeText(baseRecord.type || ''),
-      Формфактор: normalizeText(baseRecord.form_factor || ''),
-      Цвет: normalizeText(baseRecord.color || '')
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Тип: normalizeText(baseRecord.type),
+        Формфактор: normalizeText(baseRecord.form_factor),
+        Цвет: normalizeText(baseRecord.color)
+      }
     }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
   }
 
   if (categoryKey === 'cooler') {
-    const propertyRows = {
-      Размер: normalizeText(baseRecord.size || ''),
-      Совместимость: normalizeText(baseRecord.socket || ''),
-      Характеристики: normalizeText(baseRecord.specs || '')
+    return {
+      id: createIdentifier(categoryKey, componentName),
+      name: componentName,
+      categoryKey,
+      price: extractPriceFromRecord(baseRecord),
+      specs: {
+        Размер: normalizeText(baseRecord.size),
+        Совместимость: normalizeText(baseRecord.socket),
+        Характеристики: normalizeText(baseRecord.specs)
+      }
     }
-    return { id: `${categoryKey}-${componentName}`, name: componentName, categoryKey, price: extractPrice(baseRecord), propertyRows }
   }
 
   return null
 }
 
-function mergeByName(componentRecords) {
-  const uniqueRecordsMap = new Map()
-  for (const record of componentRecords) {
-    const recordKey = record.name.toLowerCase()
-    if (!uniqueRecordsMap.has(recordKey)) {
-      uniqueRecordsMap.set(recordKey, record)
+function buildUniqueList(records) {
+  const recordsByName = new Map()
+  for (const record of records) {
+    const nameKey = record.name.toLowerCase()
+    if (!recordsByName.has(nameKey)) {
+      recordsByName.set(nameKey, record)
     }
   }
-  return Array.from(uniqueRecordsMap.values())
+  return Array.from(recordsByName.values())
 }
 
-async function loadCategoryComponents(categoryKey) {
+async function loadCategory(categoryKey) {
   const categoryFiles = categorySettings[categoryKey].files
-  const mergedRecords = []
+  const allRecords = []
 
   for (const categoryFile of categoryFiles) {
     const payload = await fetchJsonFile(categoryFile)
-    const records = getCollectionFromPayload(payload)
-    for (const rawRecord of records) {
-      const convertedRecord = createComponentRecord(categoryKey, rawRecord)
+    const sourceRecords = collectRecords(payload)
+    for (const sourceRecord of sourceRecords) {
+      const convertedRecord = convertRecord(categoryKey, sourceRecord)
       if (convertedRecord) {
-        mergedRecords.push(convertedRecord)
+        allRecords.push(convertedRecord)
       }
     }
   }
 
-  const uniqueRecords = mergeByName(mergedRecords)
-  uniqueRecords.sort((firstRecord, secondRecord) => firstRecord.name.localeCompare(secondRecord.name, 'ru'))
-  return uniqueRecords.slice(0, 400)
+  const uniqueRecords = buildUniqueList(allRecords)
+  uniqueRecords.sort((leftRecord, rightRecord) => leftRecord.name.localeCompare(rightRecord.name, 'ru'))
+  return uniqueRecords.slice(0, 500)
 }
 
-function getComponentById(categoryKey, componentId) {
+function getRecordById(categoryKey, recordId) {
   const records = applicationState.componentsByCategory[categoryKey] || []
-  return records.find((record) => record.id === componentId) || null
+  return records.find((record) => record.id === recordId) || null
+}
+
+function renderMainTabs() {
+  const allMainTabs = interfaceElements.mainTabsContainer.querySelectorAll('[data-main-tab]')
+  for (const mainTabButton of allMainTabs) {
+    const isActive = mainTabButton.dataset.mainTab === applicationState.activeMainTab
+    mainTabButton.classList.toggle('active', isActive)
+  }
+  for (const mainPanel of interfaceElements.mainPanels) {
+    const isActive = mainPanel.dataset.mainPanel === applicationState.activeMainTab
+    mainPanel.classList.toggle('active', isActive)
+  }
+}
+
+function renderComparisonCategoryTabs() {
+  interfaceElements.comparisonCategoryTabs.innerHTML = Object.keys(categorySettings)
+    .map((categoryKey) => {
+      const isActive = categoryKey === applicationState.activeComparisonCategory
+      const count = applicationState.componentsByCategory[categoryKey]?.length || 0
+      return `<button type="button" class="category-tab ${isActive ? 'active' : ''}" data-comparison-category="${escapeHtml(categoryKey)}">${escapeHtml(categorySettings[categoryKey].title)} <span>${count}</span></button>`
+    })
+    .join('')
 }
 
 function renderComparisonSelectors() {
-  interfaceElements.comparisonCategorySelect.innerHTML = Object.keys(categorySettings)
-    .map((categoryKey) => `<option value="${escapeHtml(categoryKey)}">${escapeHtml(categorySettings[categoryKey].title)}</option>`)
-    .join('')
-
-  interfaceElements.comparisonCategorySelect.value = applicationState.selectedComparisonCategory
-  renderComparisonComponentOptions()
-}
-
-function renderComparisonComponentOptions() {
-  const activeCategoryKey = applicationState.selectedComparisonCategory
-  const categoryComponents = applicationState.componentsByCategory[activeCategoryKey] || []
-  const optionsMarkup = categoryComponents
-    .map((record) => `<option value="${escapeHtml(record.id)}">${escapeHtml(record.name)}</option>`)
-    .join('')
+  const categoryKey = applicationState.activeComparisonCategory
+  const categoryRecords = applicationState.componentsByCategory[categoryKey] || []
+  const optionsMarkup = categoryRecords.map((record) => `<option value="${escapeHtml(record.id)}">${escapeHtml(record.name)}</option>`).join('')
 
   interfaceElements.comparisonFirstSelect.innerHTML = optionsMarkup
   interfaceElements.comparisonSecondSelect.innerHTML = optionsMarkup
 
-  if (categoryComponents.length > 1) {
-    interfaceElements.comparisonFirstSelect.value = categoryComponents[0].id
-    interfaceElements.comparisonSecondSelect.value = categoryComponents[1].id
+  if (categoryRecords.length > 1) {
+    interfaceElements.comparisonFirstSelect.value = categoryRecords[0].id
+    interfaceElements.comparisonSecondSelect.value = categoryRecords[1].id
   }
 
-  renderComparisonResult()
+  renderComparisonTable()
 }
 
-function collectPropertyNames(firstComponent, secondComponent) {
-  const propertyNameSet = new Set()
-  for (const propertyName of Object.keys(firstComponent.propertyRows || {})) {
-    if (firstComponent.propertyRows[propertyName]) {
-      propertyNameSet.add(propertyName)
+function collectSpecNames(firstRecord, secondRecord) {
+  const specificationSet = new Set()
+  for (const specName of Object.keys(firstRecord.specs || {})) {
+    if (normalizeText(firstRecord.specs[specName])) {
+      specificationSet.add(specName)
     }
   }
-  for (const propertyName of Object.keys(secondComponent.propertyRows || {})) {
-    if (secondComponent.propertyRows[propertyName]) {
-      propertyNameSet.add(propertyName)
+  for (const specName of Object.keys(secondRecord.specs || {})) {
+    if (normalizeText(secondRecord.specs[specName])) {
+      specificationSet.add(specName)
     }
   }
-  return Array.from(propertyNameSet)
+  return Array.from(specificationSet)
 }
 
-function renderComparisonResult() {
-  const categoryKey = applicationState.selectedComparisonCategory
-  const firstComponent = getComponentById(categoryKey, interfaceElements.comparisonFirstSelect.value)
-  const secondComponent = getComponentById(categoryKey, interfaceElements.comparisonSecondSelect.value)
+function renderComparisonTable() {
+  const categoryKey = applicationState.activeComparisonCategory
+  const firstRecord = getRecordById(categoryKey, interfaceElements.comparisonFirstSelect.value)
+  const secondRecord = getRecordById(categoryKey, interfaceElements.comparisonSecondSelect.value)
 
-  if (!firstComponent || !secondComponent) {
-    interfaceElements.comparisonResult.innerHTML = '<p>Для выбранной категории пока недостаточно данных.</p>'
+  if (!firstRecord || !secondRecord) {
+    interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Недостаточно данных для сравнения выбранной категории.</p>'
     return
   }
 
-  const propertyNames = collectPropertyNames(firstComponent, secondComponent)
-  const rowsMarkup = propertyNames
-    .map((propertyName) => {
-      const firstValue = normalizeText(firstComponent.propertyRows[propertyName]) || '—'
-      const secondValue = normalizeText(secondComponent.propertyRows[propertyName]) || '—'
-      return `<tr><th>${escapeHtml(propertyName)}</th><td>${escapeHtml(firstValue)}</td><td>${escapeHtml(secondValue)}</td></tr>`
+  const specNames = collectSpecNames(firstRecord, secondRecord)
+  const specRows = specNames
+    .map((specName) => {
+      const firstValue = normalizeText(firstRecord.specs[specName]) || '—'
+      const secondValue = normalizeText(secondRecord.specs[specName]) || '—'
+      return `<tr><th>${escapeHtml(specName)}</th><td>${escapeHtml(firstValue)}</td><td>${escapeHtml(secondValue)}</td></tr>`
     })
     .join('')
 
-  const priceRow = `<tr><th>Цена</th><td>${firstComponent.price ? escapeHtml(formatCurrency(firstComponent.price)) : '—'}</td><td>${secondComponent.price ? escapeHtml(formatCurrency(secondComponent.price)) : '—'}</td></tr>`
+  const priceRow = `<tr><th>Цена</th><td>${firstRecord.price ? escapeHtml(formatPrice(firstRecord.price)) : '—'}</td><td>${secondRecord.price ? escapeHtml(formatPrice(secondRecord.price)) : '—'}</td></tr>`
 
   interfaceElements.comparisonResult.innerHTML = `
     <table class="comparison-table">
       <thead>
         <tr>
           <th>Параметр</th>
-          <th>${escapeHtml(firstComponent.name)}</th>
-          <th>${escapeHtml(secondComponent.name)}</th>
+          <th>${escapeHtml(firstRecord.name)}</th>
+          <th>${escapeHtml(secondRecord.name)}</th>
         </tr>
       </thead>
       <tbody>
         ${priceRow}
-        ${rowsMarkup}
+        ${specRows}
       </tbody>
     </table>
   `
 }
 
-function renderConfiguratorForm() {
-  interfaceElements.configuratorForm.innerHTML = componentOrder
+function renderConfigurator() {
+  interfaceElements.configuratorGrid.innerHTML = configuratorCategoryOrder
     .map((categoryKey) => {
-      const records = applicationState.componentsByCategory[categoryKey] || []
-      const selectedRecordId = applicationState.selectedConfiguration[categoryKey] || ''
+      const categoryRecords = applicationState.componentsByCategory[categoryKey] || []
       const optionsMarkup = ['<option value="">Не выбрано</option>']
-      for (const record of records) {
-        const recordPrice = record.price ? ` · ${formatCurrency(record.price)}` : ''
-        optionsMarkup.push(`<option value="${escapeHtml(record.id)}">${escapeHtml(record.name + recordPrice)}</option>`)
+      for (const categoryRecord of categoryRecords) {
+        const priceLabel = categoryRecord.price ? ` · ${formatPrice(categoryRecord.price)}` : ''
+        optionsMarkup.push(`<option value="${escapeHtml(categoryRecord.id)}">${escapeHtml(categoryRecord.name + priceLabel)}</option>`)
       }
       return `
-        <label>
+        <label class="configurator-field">
           ${escapeHtml(categorySettings[categoryKey].title)}
-          <select data-config-category="${escapeHtml(categoryKey)}">${optionsMarkup.join('')}</select>
+          <select data-configurator-category="${escapeHtml(categoryKey)}">${optionsMarkup.join('')}</select>
         </label>
       `
     })
     .join('')
 
-  for (const categoryKey of componentOrder) {
-    const selectElement = interfaceElements.configuratorForm.querySelector(`[data-config-category="${categoryKey}"]`)
+  for (const categoryKey of configuratorCategoryOrder) {
+    const selectedRecordId = applicationState.selectedConfigurationByCategory[categoryKey] || ''
+    const selectElement = interfaceElements.configuratorGrid.querySelector(`[data-configurator-category="${categoryKey}"]`)
     if (selectElement) {
-      selectElement.value = applicationState.selectedConfiguration[categoryKey] || ''
+      selectElement.value = selectedRecordId
     }
   }
 }
 
-function validateConfiguration() {
-  const selectedProcessor = getComponentById('cpu', applicationState.selectedConfiguration.cpu)
-  const selectedMotherboard = getComponentById('motherboard', applicationState.selectedConfiguration.motherboard)
-
-  if (!selectedProcessor || !selectedMotherboard) {
+function validateSocketCompatibility() {
+  const processorRecord = getRecordById('cpu', applicationState.selectedConfigurationByCategory.cpu)
+  const motherboardRecord = getRecordById('motherboard', applicationState.selectedConfigurationByCategory.motherboard)
+  if (!processorRecord || !motherboardRecord) {
     return ''
   }
 
-  const processorSocket = normalizeText(selectedProcessor.propertyRows.Сокет)
-  const motherboardSocket = normalizeText(selectedMotherboard.propertyRows.Сокет)
-
+  const processorSocket = normalizeText(processorRecord.specs.Сокет)
+  const motherboardSocket = normalizeText(motherboardRecord.specs.Сокет)
   if (processorSocket && motherboardSocket && processorSocket !== motherboardSocket) {
     return `Сокет процессора (${processorSocket}) не совпадает с сокетом материнской платы (${motherboardSocket}).`
   }
@@ -340,64 +389,80 @@ function validateConfiguration() {
 }
 
 function renderConfigurationSummary() {
-  const summaryRows = []
+  const summaryItems = []
   let totalPrice = 0
 
-  for (const categoryKey of componentOrder) {
-    const selectedRecord = getComponentById(categoryKey, applicationState.selectedConfiguration[categoryKey])
+  for (const categoryKey of configuratorCategoryOrder) {
+    const selectedRecordId = applicationState.selectedConfigurationByCategory[categoryKey]
+    const selectedRecord = getRecordById(categoryKey, selectedRecordId)
     if (!selectedRecord) {
       continue
     }
     if (selectedRecord.price) {
       totalPrice += selectedRecord.price
     }
-    const itemPrice = selectedRecord.price ? ` · ${formatCurrency(selectedRecord.price)}` : ''
-    summaryRows.push(`<li><strong>${escapeHtml(categorySettings[categoryKey].title)}:</strong> ${escapeHtml(selectedRecord.name)}${escapeHtml(itemPrice)}</li>`)
+    const priceLabel = selectedRecord.price ? ` · ${formatPrice(selectedRecord.price)}` : ''
+    summaryItems.push(`<li><strong>${escapeHtml(categorySettings[categoryKey].title)}:</strong> ${escapeHtml(selectedRecord.name)}${escapeHtml(priceLabel)}</li>`)
   }
 
-  interfaceElements.configurationList.innerHTML = summaryRows.join('') || '<li>Выберите комплектующие для формирования сборки.</li>'
-  interfaceElements.configurationTotal.textContent = totalPrice > 0 ? `Общая стоимость: ${formatCurrency(totalPrice)}` : 'Общая стоимость: рассчитывается по доступным ценам'
-  interfaceElements.configurationWarning.textContent = validateConfiguration()
+  interfaceElements.configurationList.innerHTML = summaryItems.join('') || '<li>Выберите комплектующие в конфигураторе.</li>'
+  interfaceElements.configurationTotal.textContent = totalPrice > 0 ? `Общая стоимость: ${formatPrice(totalPrice)}` : 'Общая стоимость: нет данных по ценам'
+  interfaceElements.configurationWarning.textContent = validateSocketCompatibility()
 }
 
-function attachEventListeners() {
-  interfaceElements.comparisonCategorySelect.addEventListener('change', (event) => {
-    applicationState.selectedComparisonCategory = event.target.value
-    renderComparisonComponentOptions()
-  })
-
-  interfaceElements.comparisonFirstSelect.addEventListener('change', renderComparisonResult)
-  interfaceElements.comparisonSecondSelect.addEventListener('change', renderComparisonResult)
-
-  interfaceElements.configuratorForm.addEventListener('change', (event) => {
-    const changedSelect = event.target.closest('select[data-config-category]')
-    if (!changedSelect) {
+function bindEvents() {
+  interfaceElements.mainTabsContainer.addEventListener('click', (event) => {
+    const tabButton = event.target.closest('[data-main-tab]')
+    if (!tabButton) {
       return
     }
-    const categoryKey = changedSelect.dataset.configCategory
-    applicationState.selectedConfiguration[categoryKey] = changedSelect.value
+    applicationState.activeMainTab = tabButton.dataset.mainTab
+    renderMainTabs()
+  })
+
+  interfaceElements.comparisonCategoryTabs.addEventListener('click', (event) => {
+    const tabButton = event.target.closest('[data-comparison-category]')
+    if (!tabButton) {
+      return
+    }
+    applicationState.activeComparisonCategory = tabButton.dataset.comparisonCategory
+    renderComparisonCategoryTabs()
+    renderComparisonSelectors()
+  })
+
+  interfaceElements.comparisonFirstSelect.addEventListener('change', renderComparisonTable)
+  interfaceElements.comparisonSecondSelect.addEventListener('change', renderComparisonTable)
+
+  interfaceElements.configuratorGrid.addEventListener('change', (event) => {
+    const categorySelect = event.target.closest('[data-configurator-category]')
+    if (!categorySelect) {
+      return
+    }
+    applicationState.selectedConfigurationByCategory[categorySelect.dataset.configuratorCategory] = categorySelect.value
     renderConfigurationSummary()
   })
 }
 
-async function bootstrapApplication() {
+async function initializeApplication() {
   for (const categoryKey of Object.keys(categorySettings)) {
-    applicationState.componentsByCategory[categoryKey] = await loadCategoryComponents(categoryKey)
+    applicationState.componentsByCategory[categoryKey] = await loadCategory(categoryKey)
   }
 
   const firstProcessor = applicationState.componentsByCategory.cpu[0]
   const firstMotherboard = applicationState.componentsByCategory.motherboard[0]
   if (firstProcessor) {
-    applicationState.selectedConfiguration.cpu = firstProcessor.id
+    applicationState.selectedConfigurationByCategory.cpu = firstProcessor.id
   }
   if (firstMotherboard) {
-    applicationState.selectedConfiguration.motherboard = firstMotherboard.id
+    applicationState.selectedConfigurationByCategory.motherboard = firstMotherboard.id
   }
 
+  renderMainTabs()
+  renderComparisonCategoryTabs()
   renderComparisonSelectors()
-  renderConfiguratorForm()
+  renderConfigurator()
   renderConfigurationSummary()
-  attachEventListeners()
+  bindEvents()
 }
 
-bootstrapApplication()
+initializeApplication()
