@@ -52,7 +52,6 @@
         </div>
 
         <div class="comparison-actions">
-          <button id="comparison-swap" type="button">Поменять модели местами</button>
           <p id="comparison-count" class="comparison-count"></p>
         </div>
 
@@ -73,6 +72,25 @@
           <ul id="configuration-list"></ul>
           <p id="configuration-total" class="configuration-total"></p>
           <p id="configuration-warning" class="configuration-warning"></p>
+        </div>
+
+        <div class="firebase-box">
+          <h3>Добавление компонентов в Firebase</h3>
+          <p>Сохранение выполняется в структуру вида <strong>PC/CPU/Название компонента</strong> (и для других категорий).</p>
+          <form id="firebase-component-form" class="firebase-form">
+            <label>
+              Категория
+              <select name="firebaseCategory"></select>
+            </label>
+            <label>
+              Название компонента
+              <input name="firebaseComponentName" type="text" placeholder="Например, Ryzen 7 7800X3D">
+            </label>
+            <div id="firebase-specs-container" class="firebase-specs-container"></div>
+            <button id="add-firebase-spec" class="secondary-action" type="button">Добавить характеристику</button>
+            <button class="secondary-action" type="submit">Сохранить в Firebase</button>
+            <p id="firebase-status" class="comparison-count"></p>
+          </form>
         </div>
       </section>
 

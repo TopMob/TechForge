@@ -180,8 +180,7 @@ input[type='search'] {
   font-size: 14px;
 }
 
-.secondary-action,
-.comparison-actions button {
+.secondary-action {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: rgba(9, 13, 24, 0.82);
@@ -259,6 +258,49 @@ input[type='search'] {
   color: var(--warning);
 }
 
+
+.firebase-box {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(8, 12, 24, 0.72);
+}
+
+.firebase-box h3 {
+  margin: 0;
+}
+
+.firebase-box p {
+  color: var(--muted);
+}
+
+.firebase-form {
+  display: grid;
+  gap: 10px;
+}
+
+.firebase-specs-container {
+  display: grid;
+  gap: 8px;
+}
+
+.firebase-spec-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+}
+
+.configurator-search {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(8, 12, 24, 0.85);
+  color: var(--text);
+  font: inherit;
+}
+
 .guide-list {
   margin: 14px 0 0;
   padding-left: 18px;
@@ -269,6 +311,10 @@ input[type='search'] {
 
 @media (max-width: 760px) {
   .main-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .firebase-spec-row {
     grid-template-columns: 1fr;
   }
 }
