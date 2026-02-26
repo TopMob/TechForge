@@ -72,35 +72,86 @@ function normalizeComponentName(componentName) {
   return componentName.replace(/\s+/g, ' ').trim()
 }
 
-function parsePowerValue(powerText) {
-  const numericPart = powerText.match(/\d+/)
-  return numericPart ? Number(numericPart[0]) : 0
-}
-
 function parseSocket(socketText) {
   return socketText.replace('Socket', '').replace(/\s+/g, '').toUpperCase()
 }
 
+function resolveProcessorSocket(manufacturer, modelName, microarchitecture) {
+  const architecture = (microarchitecture || '').toLowerCase()
+  const normalizedManufacturer = manufacturer.toLowerCase()
+  if (normalizedManufacturer === 'intel') {
+    if (architecture.includes('arrow lake') || architecture.includes('lunar lake')) {
+      return 'LGA1851'
+    }
+    if (architecture.includes('raptor lake') || architecture.includes('alder lake')) {
+      return 'LGA1700'
+    }
+    if (architecture.includes('comet lake') || architecture.includes('coffee lake') || architecture.includes('kaby lake') || architecture.includes('skylake')) {
+      return 'LGA1151'
+    }
+    if (architecture.includes('haswell') || architecture.includes('broadwell')) {
+      return 'LGA1150'
+    }
+    if (architecture.includes('ivy bridge') || architecture.includes('sandy bridge')) {
+      return 'LGA1155'
+    }
+    if (architecture.includes('westmere') || architecture.includes('nehalem')) {
+      return 'LGA1366'
+    }
+    return ''
+  }
+
+  if (normalizedManufacturer === 'amd') {
+    const normalizedName = modelName.toLowerCase()
+    if (normalizedName.includes('threadripper 7') || normalizedName.includes('threadripper pro 7')) {
+      return 'STR5'
+    }
+    if (normalizedName.includes('threadripper')) {
+      return 'STRX4'
+    }
+    if (architecture.includes('zen 5') || architecture.includes('zen 4')) {
+      return 'AM5'
+    }
+    if (architecture.includes('zen 3') || architecture.includes('zen 2') || architecture.includes('zen+') || architecture.includes('zen')) {
+      return 'AM4'
+    }
+    if (architecture.includes('excavator') || architecture.includes('steamroller') || architecture.includes('piledriver') || architecture.includes('bulldozer')) {
+      return 'AM3+'
+    }
+    return ''
+  }
+
+  return ''
+}
+
 async function loadData() {
-  const [processorResponse, graphicsResponse, motherboardResponse] = await Promise.all([
-    fetch('BD/cpu.csv'),
-    fetch('BD/gpu.csv'),
-    fetch('BD/PC-Components-main/motherboards.json')
+  const [intelProcessorResponse, amdProcessorResponse, graphicsResponse, motherboardResponse] = await Promise.all([
+    fetch('BD/CPU/intel_processors.json'),
+    fetch('BD/CPU/amd_processors.json'),
+    fetch('BD/GPU/gpu.csv'),
+    fetch('BD/motherboards.json')
   ])
 
-  const processorRows = parseCommaSeparatedValues(await processorResponse.text())
+  const intelProcessorRows = await intelProcessorResponse.json()
+  const amdProcessorRows = await amdProcessorResponse.json()
   const graphicsRows = parseCommaSeparatedValues(await graphicsResponse.text())
   const motherboardRows = await motherboardResponse.json()
 
+  const processorRows = intelProcessorRows.items.concat(amdProcessorRows.items)
+
   applicationState.processors = processorRows
-    .filter((processor) => processor.Name && processor.Socket)
-    .map((processor) => ({
-      name: normalizeComponentName(processor.Name),
-      socket: parseSocket(processor.Socket),
-      cores: processor.Cores,
-      boostClock: processor.Clock,
-      tdpWatts: parsePowerValue(processor.TDP)
-    }))
+    .filter((processor) => processor.name)
+    .map((processor) => {
+      const socket = resolveProcessorSocket(processor.manufacturer || '', processor.name, processor.microarchitecture || '')
+      return {
+        name: normalizeComponentName(processor.name),
+        socket,
+        cores: processor.core_count ? String(processor.core_count) : 'Не указано',
+        boostClock: processor.boost_clock_ghz ? `${processor.boost_clock_ghz} ГГц` : 'Не указано',
+        tdpWatts: Number(processor.tdp_watts) || 65
+      }
+    })
+    .filter((processor) => processor.socket)
 
   applicationState.graphicsCards = graphicsRows
     .filter((graphicsCard) => graphicsCard.Name)
