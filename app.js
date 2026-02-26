@@ -1,14 +1,28 @@
+const dataPaths = {
+  cpu: ['BD/CPU/AMD.json', 'BD/CPU/INTEL.json'],
+  gpu: ['BD/GPU/AMD.json', 'BD/GPU/INTEL.json', 'BD/GPU/NVIDIA.json', 'BD/GPU/OTHER.json'],
+  motherboard: 'BD/MOTHERBOARDS/motherboards.json',
+  ram: ['BD/RAM/ddr4.json', 'BD/RAM/ddr5.json'],
+  powerSupply: 'BD/POWER_SUPPLIES/power_supplies.json'
+}
+
+const storageKeys = {
+  currentSelection: 'techforge.currentSelection',
+  savedConfigurations: 'techforge.savedConfigurations'
+}
+
 const applicationState = {
-  processors: [],
-  graphicsCards: [],
-  motherboards: [],
-  memoryModules: [],
-  powerSupplies: [],
-  selectedProcessorName: '',
-  selectedGraphicsCardName: '',
+  cpuList: [],
+  gpuList: [],
+  motherboardList: [],
+  ramList: [],
+  powerSupplyList: [],
+  selectedCpuName: '',
+  selectedGpuName: '',
   selectedMotherboardName: '',
-  selectedMemoryName: '',
-  selectedPowerSupplyName: ''
+  selectedRamName: '',
+  selectedPowerSupplyName: '',
+  savedConfigurations: []
 }
 
 const userInterface = {
@@ -37,678 +51,557 @@ const userInterface = {
 const tabButtons = [...document.querySelectorAll('.tab-button')]
 const tabPanels = [...document.querySelectorAll('.tab-panel')]
 
-function parseCommaSeparatedValues(rawText) {
-  const lines = rawText.split(/\r?\n/).filter((line) => line.trim().length > 0)
-  const headers = splitCommaSeparatedLine(lines[0]).map((header) => header.trim())
-  const records = []
-  for (let lineIndex = 1; lineIndex < lines.length; lineIndex += 1) {
-    const values = splitCommaSeparatedLine(lines[lineIndex])
-    const record = {}
-    for (let headerIndex = 0; headerIndex < headers.length; headerIndex += 1) {
-      const header = headers[headerIndex]
-      record[header] = (values[headerIndex] || '').trim()
-    }
-    records.push(record)
-  }
-  return records
-}
-
-function splitCommaSeparatedLine(line) {
-  const columns = []
-  let currentValue = ''
-  let insideQuotes = false
-  for (let index = 0; index < line.length; index += 1) {
-    const symbol = line[index]
-    if (symbol === '"') {
-      insideQuotes = !insideQuotes
-    } else if (symbol === ',' && !insideQuotes) {
-      columns.push(currentValue.replace(/^"|"$/g, ''))
-      currentValue = ''
-    } else {
-      currentValue += symbol
-    }
-  }
-  columns.push(currentValue.replace(/^"|"$/g, ''))
-  return columns
-}
-
-function normalizeComponentName(componentName) {
-  return String(componentName || '').replace(/\s+/g, ' ').trim()
-}
-
-function parseSocket(socketText) {
-  return normalizeComponentName(socketText).replace('Socket', '').replace(/\s+/g, '').toUpperCase()
+function normalizeText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim()
 }
 
 function toNumber(value, fallback = 0) {
-  const parsedValue = Number(value)
-  return Number.isFinite(parsedValue) ? parsedValue : fallback
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? numericValue : fallback
 }
 
-function parseGpuMemoryGigabytes(memoryText) {
-  const match = String(memoryText || '').match(/(\d+(?:\.\d+)?)\s*GB/i)
-  return match ? toNumber(match[1]) : 0
+function parseSocket(socketText) {
+  return normalizeText(socketText).replace(/^socket\s*/i, '').replace(/\s+/g, '').toUpperCase()
 }
 
-function parseProcessorRecord(processor) {
-  const modelName = normalizeComponentName(processor.name)
-  const manufacturer = normalizeComponentName(processor.manufacturer) || inferProcessorManufacturer(modelName)
-  const microarchitecture = normalizeComponentName(processor.microarchitecture)
-  const socket = resolveProcessorSocket(manufacturer, modelName, microarchitecture)
+function buildUniqueListByName(records) {
+  const processedNames = new Set()
+  return records.filter((record) => {
+    const name = normalizeText(record?.name)
+    if (!name) return false
+    const uniqueKey = name.toLowerCase()
+    if (processedNames.has(uniqueKey)) return false
+    processedNames.add(uniqueKey)
+    return true
+  })
+}
+
+async function fetchJson(path) {
+  const response = await fetch(path)
+  if (!response.ok) {
+    throw new Error(`Не удалось загрузить ${path}`)
+  }
+  return response.json()
+}
+
+function parseCpuRecord(record) {
   return {
-    name: modelName,
-    manufacturer,
-    socket,
-    cores: toNumber(processor.core_count, 0),
-    boostClockGigahertz: toNumber(processor.boost_clock_ghz, 0),
-    tdpWatts: toNumber(processor.tdp_watts, 65),
-    microarchitecture: microarchitecture || 'Не указано'
+    name: normalizeText(record.name),
+    manufacturer: normalizeText(record.manufacturer).toUpperCase() || 'UNKNOWN',
+    coreCount: toNumber(record.core_count),
+    boostClockGhz: toNumber(record.boost_clock_ghz),
+    tdpWatts: toNumber(record.tdp_watts, 65),
+    socket: inferCpuSocket(record),
+    architecture: normalizeText(record.microarchitecture) || 'Не указано'
   }
 }
 
-function inferProcessorManufacturer(modelName) {
-  const normalizedName = modelName.toLowerCase()
-  if (normalizedName.startsWith('amd')) {
-    return 'AMD'
-  }
-  if (normalizedName.startsWith('intel')) {
-    return 'Intel'
-  }
-  return 'Не указано'
-}
-
-function resolveProcessorSocket(manufacturer, modelName, microarchitecture) {
-  const architecture = microarchitecture.toLowerCase()
-  const normalizedManufacturer = manufacturer.toLowerCase()
-  if (normalizedManufacturer === 'intel') {
+function inferCpuSocket(record) {
+  const manufacturer = normalizeText(record.manufacturer).toUpperCase()
+  const architecture = normalizeText(record.microarchitecture).toLowerCase()
+  if (manufacturer === 'INTEL') {
     if (architecture.includes('arrow lake') || architecture.includes('lunar lake')) return 'LGA1851'
     if (architecture.includes('raptor lake') || architecture.includes('alder lake')) return 'LGA1700'
     if (architecture.includes('comet lake')) return 'LGA1200'
     if (architecture.includes('coffee lake') || architecture.includes('kaby lake') || architecture.includes('skylake')) return 'LGA1151'
-    if (architecture.includes('haswell') || architecture.includes('broadwell')) return 'LGA1150'
-    if (architecture.includes('ivy bridge') || architecture.includes('sandy bridge')) return 'LGA1155'
-    if (architecture.includes('westmere') || architecture.includes('nehalem')) return 'LGA1366'
-    return ''
+    return 'INTEL'
   }
-  if (normalizedManufacturer === 'amd') {
-    const normalizedName = modelName.toLowerCase()
-    if (normalizedName.includes('threadripper 7') || normalizedName.includes('threadripper pro 7')) return 'STR5'
-    if (normalizedName.includes('threadripper')) return 'STRX4'
+  if (manufacturer === 'AMD') {
     if (architecture.includes('zen 5') || architecture.includes('zen 4')) return 'AM5'
-    if (architecture.includes('zen 3') || architecture.includes('zen 2') || architecture.includes('zen+') || architecture.includes('zen')) return 'AM4'
-    if (architecture.includes('excavator') || architecture.includes('steamroller') || architecture.includes('piledriver') || architecture.includes('bulldozer')) return 'AM3+'
-    return ''
+    if (architecture.includes('zen')) return 'AM4'
+    return 'AMD'
   }
-  return ''
+  return 'UNKNOWN'
 }
 
-function parseMemoryRecord(record, generation) {
-  const moduleInfo = Array.isArray(record.modules) ? record.modules : [0, 0]
-  const speedInfo = Array.isArray(record.speed) ? record.speed : [generation, 0]
-  const moduleCount = toNumber(moduleInfo[0], 0)
-  const moduleSizeGigabytes = toNumber(moduleInfo[1], 0)
-  const totalCapacityGigabytes = moduleCount * moduleSizeGigabytes
+function parseGpuRecord(rawRecord, vendorLabel) {
+  const name = normalizeText(rawRecord?.data?.name)
   return {
-    name: normalizeComponentName(record.name),
-    generation: `DDR${generation}`,
-    speedMegahertz: toNumber(speedInfo[1], 0),
-    moduleCount,
-    moduleSizeGigabytes,
-    totalCapacityGigabytes,
-    casLatency: toNumber(record.cas_latency, 0),
-    firstWordLatency: toNumber(record.first_word_latency, 0),
-    priceUsd: toNumber(record.price, 0)
+    name,
+    manufacturer: vendorLabel,
+    memoryGb: inferGpuMemory(name),
+    tdpWatts: inferGpuPower(name)
+  }
+}
+
+function inferGpuMemory(name) {
+  const match = normalizeText(name).match(/(\d+)\s*GB/i)
+  return match ? toNumber(match[1], 0) : 0
+}
+
+function inferGpuPower(name) {
+  const modelName = normalizeText(name).toUpperCase()
+  if (modelName.includes('4090') || modelName.includes('7900 XTX')) return 450
+  if (modelName.includes('4080') || modelName.includes('7900 XT')) return 320
+  if (modelName.includes('4070') || modelName.includes('7800 XT')) return 250
+  if (modelName.includes('4060') || modelName.includes('7700 XT')) return 200
+  if (modelName.includes('3060') || modelName.includes('6600')) return 170
+  return 150
+}
+
+function parseRamRecord(record, generationLabel) {
+  const modules = Array.isArray(record.modules) ? record.modules : [0, 0]
+  const speed = Array.isArray(record.speed) ? record.speed : [generationLabel, 0]
+  const moduleCount = toNumber(modules[0])
+  const moduleSizeGb = toNumber(modules[1])
+  return {
+    name: normalizeText(record.name),
+    generation: `DDR${generationLabel}`,
+    totalCapacityGb: moduleCount * moduleSizeGb,
+    speedMhz: toNumber(speed[1]),
+    firstWordLatency: toNumber(record.first_word_latency),
+    casLatency: toNumber(record.cas_latency),
+    priceUsd: toNumber(record.price)
   }
 }
 
 function parsePowerSupplyRecord(record) {
-  const efficiencyRating = normalizeComponentName(record.efficiency_rating).toUpperCase() || 'UNKNOWN'
-  const modularLabel = String(record.is_modular)
-  const modularRank = modularLabel === 'Full' ? 3 : modularLabel === 'Semi' ? 2 : 1
+  const modularLabel = normalizeText(record.is_modular)
   return {
-    name: normalizeComponentName(record.name),
-    wattage: toNumber(record.wattage, 0),
-    efficiencyRating,
-    formFactor: normalizeComponentName(record.form_factor) || 'Не указано',
-    modular: modularLabel,
-    modularRank,
-    priceUsd: toNumber(record.price_last_usd || record.price_usd, 0)
+    name: normalizeText(record.name),
+    wattage: toNumber(record.wattage),
+    efficiency: normalizeText(record.efficiency_rating).toUpperCase() || 'UNKNOWN',
+    modular: modularLabel || 'No',
+    modularRank: modularLabel === 'Full' ? 3 : modularLabel === 'Semi' ? 2 : 1,
+    priceUsd: toNumber(record.price_last_usd || record.price_usd)
   }
 }
 
-function parseGpuVendorRecord(rawRecord, vendorName) {
-  const cardName = normalizeComponentName(rawRecord?.data?.name)
-  if (!cardName) {
-    return null
-  }
-  return {
-    name: cardName,
-    vendor: vendorName.toUpperCase(),
-    architecture: 'Не указано',
-    memory: 'Не указано',
-    bus: 'Не указано',
-    memoryGigabytes: 0,
-    tdpWatts: estimateGraphicsCardPower(cardName)
-  }
-}
-
-function deduplicateByName(records) {
-  const uniqueRecords = []
-  const usedNames = new Set()
-  for (const record of records) {
-    if (!record || !record.name) {
-      continue
-    }
-    const key = record.name.toLowerCase()
-    if (usedNames.has(key)) {
-      continue
-    }
-    usedNames.add(key)
-    uniqueRecords.push(record)
-  }
-  return uniqueRecords
-}
-
-async function loadData() {
-  const [
-    intelProcessorResponse,
-    amdProcessorResponse,
-    graphicsResponse,
-    motherboardResponse,
-    powerSupplyResponse,
-    ddr2MemoryResponse,
-    ddr3MemoryResponse,
-    ddr4MemoryResponse,
-    ddr5MemoryResponse,
-    nvidiaGraphicsResponse,
-    amdGraphicsResponse,
-    intelGraphicsResponse,
-    otherGraphicsResponse
-  ] = await Promise.all([
-    fetch('BD/CPU/intel_processors.json'),
-    fetch('BD/CPU/amd_processors.json'),
-    fetch('BD/GPU/gpu.csv'),
-    fetch('BD/motherboards.json'),
-    fetch('BD/power_supplies/catalog.json'),
-    fetch('BD/RAM/ddr2/memory.json'),
-    fetch('BD/RAM/ddr3/memory.json'),
-    fetch('BD/RAM/ddr4/ddr4_memory.json'),
-    fetch('BD/RAM/ddr5/ddr5_memory.json'),
-    fetch('BD/GPU/nvidia_video_cards.json'),
-    fetch('BD/GPU/amd_video_cards.json'),
-    fetch('BD/GPU/intel_video_cards.json'),
-    fetch('BD/GPU/other_video_cards.json')
+async function loadDatasets() {
+  const [amdCpuDataset, intelCpuDataset, amdGpuDataset, intelGpuDataset, nvidiaGpuDataset, otherGpuDataset, motherboardDataset, ddr4Dataset, ddr5Dataset, powerSupplyDataset] = await Promise.all([
+    fetchJson(dataPaths.cpu[0]),
+    fetchJson(dataPaths.cpu[1]),
+    fetchJson(dataPaths.gpu[0]),
+    fetchJson(dataPaths.gpu[1]),
+    fetchJson(dataPaths.gpu[2]),
+    fetchJson(dataPaths.gpu[3]),
+    fetchJson(dataPaths.motherboard),
+    fetchJson(dataPaths.ram[0]),
+    fetchJson(dataPaths.ram[1]),
+    fetchJson(dataPaths.powerSupply)
   ])
 
-  const intelProcessorDataset = await intelProcessorResponse.json()
-  const amdProcessorDataset = await amdProcessorResponse.json()
-  const graphicsRows = parseCommaSeparatedValues(await graphicsResponse.text())
-  const motherboardRows = await motherboardResponse.json()
-  const powerSupplyDataset = await powerSupplyResponse.json()
-  const ddr2Rows = await ddr2MemoryResponse.json()
-  const ddr3Rows = await ddr3MemoryResponse.json()
-  const ddr4Rows = await ddr4MemoryResponse.json()
-  const ddr5Rows = await ddr5MemoryResponse.json()
-  const nvidiaGraphicsDataset = await nvidiaGraphicsResponse.json()
-  const amdGraphicsDataset = await amdGraphicsResponse.json()
-  const intelGraphicsDataset = await intelGraphicsResponse.json()
-  const otherGraphicsDataset = await otherGraphicsResponse.json()
+  applicationState.cpuList = buildUniqueListByName(amdCpuDataset.items.concat(intelCpuDataset.items).map(parseCpuRecord))
+  applicationState.gpuList = buildUniqueListByName(
+    amdGpuDataset.records.map((record) => parseGpuRecord(record, 'AMD'))
+      .concat(intelGpuDataset.records.map((record) => parseGpuRecord(record, 'INTEL')))
+      .concat(nvidiaGpuDataset.records.map((record) => parseGpuRecord(record, 'NVIDIA')))
+      .concat(otherGpuDataset.records.map((record) => parseGpuRecord(record, 'OTHER')))
+  )
+  applicationState.motherboardList = buildUniqueListByName(motherboardDataset.map((record) => ({
+    name: normalizeText(record.name),
+    manufacturer: normalizeText(record.name).split(' ')[0] || 'Не указано',
+    socket: parseSocket(record.socket),
+    chipset: normalizeText(record.chipset) || 'Не указано'
+  })).filter((record) => record.socket))
 
-  applicationState.processors = deduplicateByName(
-    intelProcessorDataset.items.concat(amdProcessorDataset.items)
-      .map(parseProcessorRecord)
-      .filter((processor) => processor.socket)
+  applicationState.ramList = buildUniqueListByName(
+    ddr4Dataset.map((record) => parseRamRecord(record, 4)).concat(ddr5Dataset.map((record) => parseRamRecord(record, 5))).filter((record) => record.totalCapacityGb > 0)
   )
 
-  const csvGraphicsCards = graphicsRows
-    .filter((graphicsCard) => graphicsCard.Name)
-    .map((graphicsCard) => ({
-      name: normalizeComponentName(graphicsCard.Name),
-      vendor: inferGraphicsVendor(graphicsCard.Name),
-      architecture: normalizeComponentName(graphicsCard.GPUChip) || 'Не указано',
-      memory: normalizeComponentName(graphicsCard.Memory) || 'Не указано',
-      bus: normalizeComponentName(graphicsCard.Bus) || 'Не указано',
-      memoryGigabytes: parseGpuMemoryGigabytes(graphicsCard.Memory),
-      tdpWatts: estimateGraphicsCardPower(graphicsCard.Name)
-    }))
+  applicationState.powerSupplyList = buildUniqueListByName(powerSupplyDataset.items.map(parsePowerSupplyRecord).filter((record) => record.wattage > 0))
+}
 
-  const vendorGraphicsCards = []
-  for (const record of nvidiaGraphicsDataset.records) {
-    vendorGraphicsCards.push(parseGpuVendorRecord(record, 'nvidia'))
+function fillSelect(selectElement, options, valueMapper, labelMapper) {
+  const selectedValue = selectElement.value
+  const optionMarkup = [`<option value="">Не выбрано</option>`].concat(options.map((option) => {
+    const value = valueMapper(option)
+    const label = labelMapper(option)
+    return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`
+  }))
+  selectElement.innerHTML = optionMarkup.join('')
+  if (options.some((option) => valueMapper(option) === selectedValue)) {
+    selectElement.value = selectedValue
   }
-  for (const record of amdGraphicsDataset.records) {
-    vendorGraphicsCards.push(parseGpuVendorRecord(record, 'amd'))
-  }
-  for (const record of intelGraphicsDataset.records) {
-    vendorGraphicsCards.push(parseGpuVendorRecord(record, 'intel'))
-  }
-  for (const record of otherGraphicsDataset.records) {
-    vendorGraphicsCards.push(parseGpuVendorRecord(record, 'other'))
-  }
-
-  applicationState.graphicsCards = deduplicateByName(csvGraphicsCards.concat(vendorGraphicsCards))
-
-  applicationState.motherboards = deduplicateByName(
-    motherboardRows
-      .filter((motherboard) => motherboard.name && motherboard.socket)
-      .map((motherboard) => ({
-        name: normalizeComponentName(motherboard.name),
-        manufacturer: inferMotherboardManufacturer(motherboard.name),
-        socket: parseSocket(motherboard.socket),
-        chipset: normalizeComponentName(motherboard.chipset) || 'Не указано'
-      }))
-  )
-
-  applicationState.memoryModules = deduplicateByName(
-    ddr2Rows.map((memory) => parseMemoryRecord(memory, 2))
-      .concat(ddr3Rows.map((memory) => parseMemoryRecord(memory, 3)))
-      .concat(ddr4Rows.map((memory) => parseMemoryRecord(memory, 4)))
-      .concat(ddr5Rows.map((memory) => parseMemoryRecord(memory, 5)))
-      .filter((memory) => memory.name && memory.totalCapacityGigabytes > 0)
-  )
-
-  applicationState.powerSupplies = deduplicateByName(
-    powerSupplyDataset.items
-      .map(parsePowerSupplyRecord)
-      .filter((powerSupply) => powerSupply.name && powerSupply.wattage > 0)
-  )
-
-  initializeSelectors()
-  refreshDashboard()
 }
 
-function inferGraphicsVendor(name) {
-  const normalizedName = String(name || '').toLowerCase()
-  if (normalizedName.includes('radeon') || normalizedName.includes('rx ')) return 'AMD'
-  if (normalizedName.includes('geforce') || normalizedName.includes('rtx') || normalizedName.includes('gtx')) return 'NVIDIA'
-  if (normalizedName.includes('arc') || normalizedName.includes('intel')) return 'INTEL'
-  return 'OTHER'
-}
-
-function inferMotherboardManufacturer(name) {
-  const firstToken = normalizeComponentName(name).split(' ')[0]
-  return firstToken || 'Не указано'
-}
-
-function estimateGraphicsCardPower(graphicsCardName) {
-  const normalizedName = String(graphicsCardName || '').toUpperCase()
-  if (normalizedName.includes('4090') || normalizedName.includes('7900 XTX')) return 450
-  if (normalizedName.includes('4080') || normalizedName.includes('7900 XT')) return 320
-  if (normalizedName.includes('4070') || normalizedName.includes('7800 XT')) return 250
-  if (normalizedName.includes('4060') || normalizedName.includes('7700 XT') || normalizedName.includes('6700')) return 200
-  if (normalizedName.includes('3060') || normalizedName.includes('6600')) return 170
-  return 150
-}
-
-function formatMemoryOption(memoryModule) {
-  return `${memoryModule.name} — ${memoryModule.generation}, ${memoryModule.totalCapacityGigabytes} ГБ, ${memoryModule.speedMegahertz} МГц`
-}
-
-function formatPowerSupplyOption(powerSupply) {
-  return `${powerSupply.name} — ${powerSupply.wattage} Вт, ${powerSupply.efficiencyRating}`
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
 }
 
 function initializeSelectors() {
-  fillSelector(userInterface.cpuSelect, applicationState.processors.map((processor) => processor.name))
-  fillSelector(userInterface.gpuSelect, applicationState.graphicsCards.map((graphicsCard) => graphicsCard.name))
-  fillSelector(userInterface.motherboardSelect, applicationState.motherboards.map((motherboard) => motherboard.name))
-  fillSelector(userInterface.memorySelect, applicationState.memoryModules.map((memoryModule) => formatMemoryOption(memoryModule)))
-  fillSelector(userInterface.powerSupplySelect, applicationState.powerSupplies.map((powerSupply) => formatPowerSupplyOption(powerSupply)))
-  applicationState.selectedProcessorName = userInterface.cpuSelect.value
-  applicationState.selectedGraphicsCardName = userInterface.gpuSelect.value
-  applicationState.selectedMotherboardName = userInterface.motherboardSelect.value
-  applicationState.selectedMemoryName = extractNameFromOption(userInterface.memorySelect.value)
-  applicationState.selectedPowerSupplyName = extractNameFromOption(userInterface.powerSupplySelect.value)
-  initializeComparisonControls()
-  bindEvents()
+  fillSelect(userInterface.cpuSelect, applicationState.cpuList, (item) => item.name, (item) => `${item.name} · ${item.socket} · ${item.coreCount}C`)
+  fillSelect(userInterface.gpuSelect, applicationState.gpuList, (item) => item.name, (item) => `${item.name} · ${item.manufacturer}`)
+  fillSelect(userInterface.motherboardSelect, applicationState.motherboardList, (item) => item.name, (item) => `${item.name} · ${item.socket}`)
+  fillSelect(userInterface.memorySelect, applicationState.ramList, (item) => item.name, (item) => `${item.name} · ${item.generation} · ${item.totalCapacityGb} ГБ`)
+  fillSelect(userInterface.powerSupplySelect, applicationState.powerSupplyList, (item) => item.name, (item) => `${item.name} · ${item.wattage} Вт · ${item.efficiency}`)
 }
 
-function fillSelector(selector, values) {
-  selector.innerHTML = ''
-  const limitedValues = values.slice(0, 1200)
-  for (const value of limitedValues) {
-    const optionElement = document.createElement('option')
-    optionElement.value = value
-    optionElement.textContent = value
-    selector.append(optionElement)
+function getCurrentSelection() {
+  return {
+    cpu: applicationState.cpuList.find((item) => item.name === applicationState.selectedCpuName) || null,
+    gpu: applicationState.gpuList.find((item) => item.name === applicationState.selectedGpuName) || null,
+    motherboard: applicationState.motherboardList.find((item) => item.name === applicationState.selectedMotherboardName) || null,
+    ram: applicationState.ramList.find((item) => item.name === applicationState.selectedRamName) || null,
+    powerSupply: applicationState.powerSupplyList.find((item) => item.name === applicationState.selectedPowerSupplyName) || null
   }
 }
 
-function extractNameFromOption(optionValue) {
-  return String(optionValue || '').split('—')[0].trim()
+function calculatePower(selection, storageGb) {
+  if (!selection.cpu || !selection.gpu || !selection.ram) return 0
+  const ramPower = Math.ceil(selection.ram.totalCapacityGb * 0.45)
+  const storagePower = Math.ceil((storageGb / 1000) * 8)
+  return selection.cpu.tdpWatts + selection.gpu.tdpWatts + ramPower + storagePower + 60
 }
 
-function bindEvents() {
+function renderCompatibility(selection, recommendedPower) {
+  const checks = [
+    {
+      label: 'CPU ↔ Материнская плата',
+      status: selection.cpu && selection.motherboard && selection.cpu.socket === selection.motherboard.socket,
+      good: 'Сокеты совпадают',
+      bad: 'Выберите плату с подходящим сокетом'
+    },
+    {
+      label: 'GPU ↔ Блок питания',
+      status: selection.powerSupply && selection.powerSupply.wattage >= recommendedPower,
+      good: 'Запас мощности достаточный',
+      bad: 'Нужен блок питания мощнее'
+    },
+    {
+      label: 'RAM ↔ Платформа',
+      status: selection.ram && selection.cpu && ((selection.ram.generation === 'DDR5' && selection.cpu.socket !== 'AM4') || selection.ram.generation === 'DDR4'),
+      good: 'Поколение памяти подходит',
+      bad: 'Проверьте поддержку DDR у платформы'
+    }
+  ]
+
+  userInterface.compatibilityList.innerHTML = checks.map((check) => `<li class="${check.status ? 'good' : 'bad'}"><strong>${escapeHtml(check.label)}</strong><span>${escapeHtml(check.status ? check.good : check.bad)}</span></li>`).join('')
+}
+
+function renderBuildSummary(selection, recommendedPower) {
+  const rows = [
+    ['CPU', selection.cpu?.name || 'Не выбран'],
+    ['GPU', selection.gpu?.name || 'Не выбрана'],
+    ['Материнская плата', selection.motherboard?.name || 'Не выбрана'],
+    ['RAM', selection.ram?.name || 'Не выбрана'],
+    ['Блок питания', selection.powerSupply?.name || 'Не выбран'],
+    ['Рекомендованная мощность', `${recommendedPower} Вт`]
+  ]
+  userInterface.buildSummary.innerHTML = rows.map((row) => `<div class="summary-row"><span>${escapeHtml(row[0])}</span><strong>${escapeHtml(row[1])}</strong></div>`).join('')
+}
+
+function updateCounters() {
+  userInterface.cpuCount.textContent = String(applicationState.cpuList.length)
+  userInterface.gpuCount.textContent = String(applicationState.gpuList.length)
+  userInterface.motherboardCount.textContent = String(applicationState.motherboardList.length)
+}
+
+function getDatasetByCategory(category) {
+  if (category === 'gpu') return applicationState.gpuList
+  if (category === 'motherboard') return applicationState.motherboardList
+  if (category === 'ram') return applicationState.ramList
+  if (category === 'psu') return applicationState.powerSupplyList
+  return applicationState.cpuList
+}
+
+function buildSortFields(category) {
+  if (category === 'gpu') return [{ value: 'tdpWatts', label: 'Энергопотребление' }, { value: 'memoryGb', label: 'Объем памяти' }, { value: 'manufacturer', label: 'Производитель' }]
+  if (category === 'motherboard') return [{ value: 'socket', label: 'Сокет' }, { value: 'chipset', label: 'Чипсет' }, { value: 'manufacturer', label: 'Бренд' }]
+  if (category === 'ram') return [{ value: 'generation', label: 'Поколение' }, { value: 'totalCapacityGb', label: 'Объем' }, { value: 'speedMhz', label: 'Частота' }]
+  if (category === 'psu') return [{ value: 'wattage', label: 'Мощность' }, { value: 'efficiency', label: 'Сертификация' }, { value: 'modularRank', label: 'Модульность' }]
+  return [{ value: 'coreCount', label: 'Ядра' }, { value: 'boostClockGhz', label: 'Boost Ghz' }, { value: 'socket', label: 'Сокет' }]
+}
+
+function initializeComparisonControls() {
+  const category = userInterface.comparisonCategory.value
+  const fields = buildSortFields(category)
+  fillSelect(userInterface.comparisonSortField, fields, (field) => field.value, (field) => field.label)
+  fillSelect(userInterface.comparisonFirst, getDatasetByCategory(category), (item) => item.name, (item) => item.name)
+  fillSelect(userInterface.comparisonSecond, getDatasetByCategory(category), (item) => item.name, (item) => item.name)
+}
+
+function sortDataset(records, fieldName, direction) {
+  const modifier = direction === 'asc' ? 1 : -1
+  return [...records].sort((first, second) => {
+    const leftValue = first[fieldName]
+    const rightValue = second[fieldName]
+    if (typeof leftValue === 'number' || typeof rightValue === 'number') {
+      return (toNumber(leftValue) - toNumber(rightValue)) * modifier
+    }
+    return String(leftValue).localeCompare(String(rightValue), 'ru') * modifier
+  })
+}
+
+function filterComparisonByCompatibility(records, category, selection) {
+  if (!userInterface.comparisonCompatibilityOnly.checked) return records
+  if (category === 'cpu' && selection.motherboard) return records.filter((item) => item.socket === selection.motherboard.socket)
+  if (category === 'motherboard' && selection.cpu) return records.filter((item) => item.socket === selection.cpu.socket)
+  if (category === 'gpu' && selection.powerSupply) return records.filter((item) => item.tdpWatts + 120 <= selection.powerSupply.wattage)
+  return records
+}
+
+function renderComparisonTable() {
+  const category = userInterface.comparisonCategory.value
+  const sortField = userInterface.comparisonSortField.value
+  const sortDirection = userInterface.comparisonSortDirection.value
+  const selection = getCurrentSelection()
+  const initialRecords = getDatasetByCategory(category)
+  const filteredRecords = filterComparisonByCompatibility(initialRecords, category, selection)
+  const sortedRecords = sortDataset(filteredRecords, sortField, sortDirection)
+
+  fillSelect(userInterface.comparisonFirst, sortedRecords, (item) => item.name, (item) => item.name)
+  fillSelect(userInterface.comparisonSecond, sortedRecords, (item) => item.name, (item) => item.name)
+
+  const firstItem = sortedRecords.find((item) => item.name === userInterface.comparisonFirst.value) || sortedRecords[0] || null
+  const secondItem = sortedRecords.find((item) => item.name === userInterface.comparisonSecond.value) || sortedRecords[1] || null
+
+  if (!firstItem || !secondItem) {
+    userInterface.comparisonTable.innerHTML = '<p class="empty-state">Недостаточно данных для сравнения.</p>'
+    return
+  }
+
+  const keys = Object.keys(firstItem).filter((key) => key !== 'name')
+  const rows = keys.map((key) => {
+    const firstValue = firstItem[key]
+    const secondValue = secondItem[key]
+    const winnerClass = toNumber(firstValue, NaN) > toNumber(secondValue, NaN) ? 'left-better' : toNumber(firstValue, NaN) < toNumber(secondValue, NaN) ? 'right-better' : ''
+    return `<tr class="${winnerClass}"><td>${escapeHtml(key)}</td><td>${escapeHtml(firstValue)}</td><td>${escapeHtml(secondValue)}</td></tr>`
+  }).join('')
+
+  userInterface.comparisonTable.innerHTML = `<table><thead><tr><th>Параметр</th><th>${escapeHtml(firstItem.name)}</th><th>${escapeHtml(secondItem.name)}</th></tr></thead><tbody>${rows}</tbody></table>`
+}
+
+function renderAssemblySteps(selection) {
+  const steps = [
+    `Подготовьте корпус, установите стойки под материнскую плату и проверьте формат ${selection.motherboard?.name || 'выбранной платы'}.`,
+    `Установите процессор ${selection.cpu?.name || ''} в сокет ${selection.cpu?.socket || ''} без лишнего усилия.`,
+    `Нанесите термоинтерфейс и установите систему охлаждения.`,
+    `Установите модули памяти ${selection.ram?.name || ''} в рекомендованные слоты.`,
+    `Закрепите материнскую плату, подключите питание CPU и ATX 24-pin.`,
+    `Установите видеокарту ${selection.gpu?.name || ''} и подключите кабели питания PCIe.`,
+    `Установите накопители, подключите SATA или M.2, после чего организуйте кабель-менеджмент.`,
+    `Проведите первый запуск, обновите BIOS и включите XMP/EXPO профиль памяти.`
+  ]
+  userInterface.assemblySteps.innerHTML = steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')
+}
+
+function saveCurrentSelection() {
+  const selection = {
+    selectedCpuName: applicationState.selectedCpuName,
+    selectedGpuName: applicationState.selectedGpuName,
+    selectedMotherboardName: applicationState.selectedMotherboardName,
+    selectedRamName: applicationState.selectedRamName,
+    selectedPowerSupplyName: applicationState.selectedPowerSupplyName,
+    storageSize: userInterface.storageSize.value
+  }
+  localStorage.setItem(storageKeys.currentSelection, JSON.stringify(selection))
+}
+
+function restoreCurrentSelection() {
+  const rawSelection = localStorage.getItem(storageKeys.currentSelection)
+  if (!rawSelection) return
+  const selection = JSON.parse(rawSelection)
+  applicationState.selectedCpuName = normalizeText(selection.selectedCpuName)
+  applicationState.selectedGpuName = normalizeText(selection.selectedGpuName)
+  applicationState.selectedMotherboardName = normalizeText(selection.selectedMotherboardName)
+  applicationState.selectedRamName = normalizeText(selection.selectedRamName)
+  applicationState.selectedPowerSupplyName = normalizeText(selection.selectedPowerSupplyName)
+  userInterface.storageSize.value = toNumber(selection.storageSize, 1000)
+}
+
+function createConfigurationPanel() {
+  const configuratorPanel = document.querySelector('#configurator .grid')
+  const container = document.createElement('article')
+  container.className = 'panel saved-configurations'
+  container.innerHTML = '<h2>Сохраненные конфигурации</h2><div class="config-actions"><button id="save-build-button" type="button">Сохранить текущую</button><button id="export-builds-button" type="button">Экспорт JSON</button><label class="import-button" for="import-builds-input">Импорт JSON</label><input id="import-builds-input" type="file" accept="application/json"></div><div id="saved-builds-list" class="saved-builds-list"></div>'
+  configuratorPanel.append(container)
+  return {
+    saveButton: container.querySelector('#save-build-button'),
+    exportButton: container.querySelector('#export-builds-button'),
+    importInput: container.querySelector('#import-builds-input'),
+    listElement: container.querySelector('#saved-builds-list')
+  }
+}
+
+function persistSavedConfigurations() {
+  localStorage.setItem(storageKeys.savedConfigurations, JSON.stringify(applicationState.savedConfigurations))
+}
+
+function restoreSavedConfigurations() {
+  const rawConfigurations = localStorage.getItem(storageKeys.savedConfigurations)
+  if (!rawConfigurations) return
+  applicationState.savedConfigurations = JSON.parse(rawConfigurations)
+}
+
+function saveConfigurationFromCurrentSelection() {
+  const now = new Date().toISOString()
+  const configuration = {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    title: `Сборка ${new Date().toLocaleString('ru-RU')}`,
+    createdAt: now,
+    selectedCpuName: applicationState.selectedCpuName,
+    selectedGpuName: applicationState.selectedGpuName,
+    selectedMotherboardName: applicationState.selectedMotherboardName,
+    selectedRamName: applicationState.selectedRamName,
+    selectedPowerSupplyName: applicationState.selectedPowerSupplyName,
+    storageSize: toNumber(userInterface.storageSize.value, 1000)
+  }
+  applicationState.savedConfigurations = [configuration].concat(applicationState.savedConfigurations)
+  persistSavedConfigurations()
+}
+
+function applyConfiguration(configuration) {
+  applicationState.selectedCpuName = normalizeText(configuration.selectedCpuName)
+  applicationState.selectedGpuName = normalizeText(configuration.selectedGpuName)
+  applicationState.selectedMotherboardName = normalizeText(configuration.selectedMotherboardName)
+  applicationState.selectedRamName = normalizeText(configuration.selectedRamName)
+  applicationState.selectedPowerSupplyName = normalizeText(configuration.selectedPowerSupplyName)
+  userInterface.storageSize.value = toNumber(configuration.storageSize, 1000)
+  syncSelectedValuesToUi()
+  refreshDashboard()
+}
+
+function deleteConfiguration(configurationId) {
+  applicationState.savedConfigurations = applicationState.savedConfigurations.filter((configuration) => configuration.id !== configurationId)
+  persistSavedConfigurations()
+}
+
+function exportSavedConfigurations() {
+  const fileContent = JSON.stringify(applicationState.savedConfigurations, null, 2)
+  const dataBlob = new Blob([fileContent], { type: 'application/json' })
+  const downloadUrl = URL.createObjectURL(dataBlob)
+  const anchor = document.createElement('a')
+  anchor.href = downloadUrl
+  anchor.download = `techforge-configurations-${Date.now()}.json`
+  anchor.click()
+  URL.revokeObjectURL(downloadUrl)
+}
+
+async function importSavedConfigurations(file) {
+  const text = await file.text()
+  const configurations = JSON.parse(text)
+  if (!Array.isArray(configurations)) return
+  applicationState.savedConfigurations = buildUniqueListByName(configurations.map((configuration) => ({ ...configuration, name: configuration.id || '' }))).map((entry) => {
+    const { name, ...configuration } = entry
+    return configuration
+  })
+  persistSavedConfigurations()
+}
+
+function renderSavedConfigurations(savedConfigurationsUi) {
+  if (!applicationState.savedConfigurations.length) {
+    savedConfigurationsUi.listElement.innerHTML = '<p class="empty-state">Пока нет сохранённых конфигураций.</p>'
+    return
+  }
+
+  savedConfigurationsUi.listElement.innerHTML = applicationState.savedConfigurations.map((configuration) => {
+    const title = normalizeText(configuration.title) || 'Конфигурация'
+    return `<article class="saved-build-card"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(new Date(configuration.createdAt).toLocaleString('ru-RU'))}</p><div><button data-action="apply" data-id="${escapeHtml(configuration.id)}">Применить</button><button data-action="remove" data-id="${escapeHtml(configuration.id)}">Удалить</button></div></article>`
+  }).join('')
+}
+
+function syncSelectedValuesToUi() {
+  userInterface.cpuSelect.value = applicationState.selectedCpuName
+  userInterface.gpuSelect.value = applicationState.selectedGpuName
+  userInterface.motherboardSelect.value = applicationState.selectedMotherboardName
+  userInterface.memorySelect.value = applicationState.selectedRamName
+  userInterface.powerSupplySelect.value = applicationState.selectedPowerSupplyName
+}
+
+function refreshDashboard() {
+  const selection = getCurrentSelection()
+  const storageSizeGb = toNumber(userInterface.storageSize.value, 1000)
+  const estimatedPower = calculatePower(selection, storageSizeGb)
+  const recommendedPower = Math.ceil(estimatedPower * 1.35)
+  userInterface.powerEstimation.textContent = `${estimatedPower} Вт · рекомендовано ${recommendedPower} Вт`
+  renderCompatibility(selection, recommendedPower)
+  renderBuildSummary(selection, recommendedPower)
+  renderAssemblySteps(selection)
+  renderComparisonTable()
+  saveCurrentSelection()
+}
+
+function openTab(tabName) {
+  tabButtons.forEach((button) => button.classList.toggle('active', button.dataset.tab === tabName))
+  tabPanels.forEach((panel) => panel.classList.toggle('active', panel.id === tabName))
+}
+
+function bindEvents(savedConfigurationsUi) {
   userInterface.cpuSelect.addEventListener('change', (event) => {
-    applicationState.selectedProcessorName = event.target.value
+    applicationState.selectedCpuName = normalizeText(event.target.value)
     refreshDashboard()
   })
-
   userInterface.gpuSelect.addEventListener('change', (event) => {
-    applicationState.selectedGraphicsCardName = event.target.value
+    applicationState.selectedGpuName = normalizeText(event.target.value)
     refreshDashboard()
   })
-
   userInterface.motherboardSelect.addEventListener('change', (event) => {
-    applicationState.selectedMotherboardName = event.target.value
+    applicationState.selectedMotherboardName = normalizeText(event.target.value)
     refreshDashboard()
   })
-
   userInterface.memorySelect.addEventListener('change', (event) => {
-    applicationState.selectedMemoryName = extractNameFromOption(event.target.value)
+    applicationState.selectedRamName = normalizeText(event.target.value)
     refreshDashboard()
   })
-
   userInterface.powerSupplySelect.addEventListener('change', (event) => {
-    applicationState.selectedPowerSupplyName = extractNameFromOption(event.target.value)
+    applicationState.selectedPowerSupplyName = normalizeText(event.target.value)
     refreshDashboard()
   })
-
   userInterface.storageSize.addEventListener('input', refreshDashboard)
 
   userInterface.comparisonCategory.addEventListener('change', () => {
     initializeComparisonControls()
-    refreshComparisonTable()
+    renderComparisonTable()
   })
-  userInterface.comparisonSortField.addEventListener('change', () => {
-    fillComparisonSelectors()
-    refreshComparisonTable()
+  userInterface.comparisonSortField.addEventListener('change', renderComparisonTable)
+  userInterface.comparisonSortDirection.addEventListener('change', renderComparisonTable)
+  userInterface.comparisonCompatibilityOnly.addEventListener('change', renderComparisonTable)
+  userInterface.comparisonFirst.addEventListener('change', renderComparisonTable)
+  userInterface.comparisonSecond.addEventListener('change', renderComparisonTable)
+
+  tabButtons.forEach((button) => button.addEventListener('click', () => openTab(button.dataset.tab)))
+
+  savedConfigurationsUi.saveButton.addEventListener('click', () => {
+    saveConfigurationFromCurrentSelection()
+    renderSavedConfigurations(savedConfigurationsUi)
   })
-  userInterface.comparisonSortDirection.addEventListener('change', () => {
-    fillComparisonSelectors()
-    refreshComparisonTable()
+  savedConfigurationsUi.exportButton.addEventListener('click', exportSavedConfigurations)
+  savedConfigurationsUi.importInput.addEventListener('change', async (event) => {
+    const file = event.target.files && event.target.files[0]
+    if (!file) return
+    await importSavedConfigurations(file)
+    renderSavedConfigurations(savedConfigurationsUi)
+    event.target.value = ''
   })
-  userInterface.comparisonCompatibilityOnly.addEventListener('change', () => {
-    fillComparisonSelectors()
-    refreshComparisonTable()
-  })
-  userInterface.comparisonFirst.addEventListener('change', refreshComparisonTable)
-  userInterface.comparisonSecond.addEventListener('change', refreshComparisonTable)
-
-  for (const tabButton of tabButtons) {
-    tabButton.addEventListener('click', () => openTab(tabButton.dataset.tab))
-  }
-}
-
-function getCurrentSelection() {
-  const processor = applicationState.processors.find((item) => item.name === applicationState.selectedProcessorName)
-  const graphicsCard = applicationState.graphicsCards.find((item) => item.name === applicationState.selectedGraphicsCardName)
-  const motherboard = applicationState.motherboards.find((item) => item.name === applicationState.selectedMotherboardName)
-  const memoryModule = applicationState.memoryModules.find((item) => item.name === applicationState.selectedMemoryName)
-  const powerSupply = applicationState.powerSupplies.find((item) => item.name === applicationState.selectedPowerSupplyName)
-  return { processor, graphicsCard, motherboard, memoryModule, powerSupply }
-}
-
-function buildSortOptionsForCategory(category) {
-  if (category === 'gpu') {
-    return [
-      { value: 'compatibility', label: 'Совместимость с текущим БП' },
-      { value: 'tdpWatts', label: 'Энергопотребление' },
-      { value: 'memoryGigabytes', label: 'Объем видеопамяти' },
-      { value: 'vendor', label: 'Производитель' }
-    ]
-  }
-  if (category === 'motherboard') {
-    return [
-      { value: 'compatibility', label: 'Совместимость с текущим CPU' },
-      { value: 'chipset', label: 'Чипсет' },
-      { value: 'socket', label: 'Сокет' },
-      { value: 'manufacturer', label: 'Бренд' }
-    ]
-  }
-  if (category === 'ram') {
-    return [
-      { value: 'compatibility', label: 'Совместимость с текущей платой' },
-      { value: 'generation', label: 'Поколение DDR' },
-      { value: 'totalCapacityGigabytes', label: 'Объем комплекта' },
-      { value: 'speedMegahertz', label: 'Частота' }
-    ]
-  }
-  if (category === 'psu') {
-    return [
-      { value: 'compatibility', label: 'Совместимость с текущей сборкой' },
-      { value: 'wattage', label: 'Мощность' },
-      { value: 'efficiencyRating', label: 'Сертификация' },
-      { value: 'modularRank', label: 'Модульность' }
-    ]
-  }
-  return [
-    { value: 'compatibility', label: 'Совместимость с текущей платой' },
-    { value: 'manufacturer', label: 'Производитель' },
-    { value: 'socket', label: 'Сокет' },
-    { value: 'cores', label: 'Количество ядер' },
-    { value: 'boostClockGigahertz', label: 'Буст-частота' }
-  ]
-}
-
-function initializeComparisonControls() {
-  const options = buildSortOptionsForCategory(userInterface.comparisonCategory.value)
-  fillSelector(userInterface.comparisonSortField, options.map((item) => item.value))
-  const sortFieldOptions = userInterface.comparisonSortField.querySelectorAll('option')
-  sortFieldOptions.forEach((option) => {
-    const found = options.find((item) => item.value === option.value)
-    option.textContent = found ? found.label : option.value
-  })
-  fillComparisonSelectors()
-}
-
-function getComparisonDataset() {
-  const category = userInterface.comparisonCategory.value
-  if (category === 'gpu') return applicationState.graphicsCards
-  if (category === 'motherboard') return applicationState.motherboards
-  if (category === 'ram') return applicationState.memoryModules
-  if (category === 'psu') return applicationState.powerSupplies
-  return applicationState.processors
-}
-
-function computeTotalPower(processor, graphicsCard, memoryModule, storageSize) {
-  return processor.tdpWatts + graphicsCard.tdpWatts + Math.ceil(memoryModule.totalCapacityGigabytes * 0.5) + Math.ceil(storageSize / 1000 * 8) + 60
-}
-
-function getCompatibilityScore(item, category, selection, totalPower, recommendedPower) {
-  if (category === 'cpu') {
-    return item.socket === selection.motherboard.socket ? 2 : 0
-  }
-  if (category === 'gpu') {
-    if (selection.powerSupply.wattage >= recommendedPower) return 2
-    if (selection.powerSupply.wattage >= totalPower) return 1
-    return 0
-  }
-  if (category === 'motherboard') {
-    return item.socket === selection.processor.socket ? 2 : 0
-  }
-  if (category === 'ram') {
-    const boardSocket = selection.motherboard.socket
-    if ((boardSocket === 'AM5' || boardSocket === 'LGA1851') && item.generation === 'DDR5') return 2
-    if ((boardSocket !== 'AM5' && boardSocket !== 'LGA1851') && (item.generation === 'DDR4' || item.generation === 'DDR3')) return 1
-    return 0
-  }
-  if (category === 'psu') {
-    if (item.wattage >= recommendedPower) return 2
-    if (item.wattage >= totalPower) return 1
-    return 0
-  }
-  return 0
-}
-
-function compareValues(firstValue, secondValue, direction) {
-  if (typeof firstValue === 'number' && typeof secondValue === 'number') {
-    return direction === 'desc' ? secondValue - firstValue : firstValue - secondValue
-  }
-  const firstText = String(firstValue || '')
-  const secondText = String(secondValue || '')
-  return direction === 'desc' ? secondText.localeCompare(firstText, 'ru') : firstText.localeCompare(secondText, 'ru')
-}
-
-function getSortedComparisonDataset() {
-  const category = userInterface.comparisonCategory.value
-  const dataset = getComparisonDataset().slice(0)
-  const sortField = userInterface.comparisonSortField.value
-  const sortDirection = userInterface.comparisonSortDirection.value
-  const compatibilityOnly = userInterface.comparisonCompatibilityOnly.checked
-  const selection = getCurrentSelection()
-  if (!selection.processor || !selection.graphicsCard || !selection.motherboard || !selection.memoryModule || !selection.powerSupply) {
-    return dataset
-  }
-  const storageSize = toNumber(userInterface.storageSize.value, 1000)
-  const totalPower = computeTotalPower(selection.processor, selection.graphicsCard, selection.memoryModule, storageSize)
-  const recommendedPower = Math.ceil(totalPower * 1.35)
-  const scoredDataset = dataset.map((item) => ({
-    item,
-    compatibilityScore: getCompatibilityScore(item, category, selection, totalPower, recommendedPower)
-  }))
-  const filteredDataset = compatibilityOnly ? scoredDataset.filter((entry) => entry.compatibilityScore > 0) : scoredDataset
-  filteredDataset.sort((firstEntry, secondEntry) => {
-    if (sortField === 'compatibility') {
-      return compareValues(firstEntry.compatibilityScore, secondEntry.compatibilityScore, sortDirection)
+  savedConfigurationsUi.listElement.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-action]')
+    if (!button) return
+    const action = button.getAttribute('data-action')
+    const configurationId = button.getAttribute('data-id')
+    const configuration = applicationState.savedConfigurations.find((entry) => entry.id === configurationId)
+    if (action === 'apply' && configuration) {
+      applyConfiguration(configuration)
+      return
     }
-    return compareValues(firstEntry.item[sortField], secondEntry.item[sortField], sortDirection)
-  })
-  return filteredDataset.map((entry) => entry.item)
-}
-
-function fillComparisonSelectors() {
-  const options = getSortedComparisonDataset().map((item) => item.name).slice(0, 1200)
-  fillSelector(userInterface.comparisonFirst, options)
-  fillSelector(userInterface.comparisonSecond, options.slice(1).concat(options[0] || ''))
-}
-
-function refreshDashboard() {
-  userInterface.cpuCount.textContent = applicationState.processors.length.toLocaleString('ru-RU')
-  userInterface.gpuCount.textContent = applicationState.graphicsCards.length.toLocaleString('ru-RU')
-  userInterface.motherboardCount.textContent = applicationState.motherboards.length.toLocaleString('ru-RU')
-  refreshCompatibility()
-  fillComparisonSelectors()
-  refreshComparisonTable()
-  refreshAssemblySteps()
-}
-
-function refreshCompatibility() {
-  const selection = getCurrentSelection()
-  if (!selection.processor || !selection.graphicsCard || !selection.motherboard || !selection.memoryModule || !selection.powerSupply) {
-    return
-  }
-  const storageSize = toNumber(userInterface.storageSize.value)
-  const totalPower = computeTotalPower(selection.processor, selection.graphicsCard, selection.memoryModule, storageSize)
-  const recommendedPower = Math.ceil(totalPower * 1.35)
-  const socketCompatible = selection.processor.socket === selection.motherboard.socket
-
-  const compatibilityMessages = [
-    {
-      level: socketCompatible ? 'good' : 'bad',
-      text: socketCompatible
-        ? `Сокеты совпадают: ${selection.processor.socket} поддерживается платой ${selection.motherboard.name}.`
-        : `Несовместимость сокетов: процессор ${selection.processor.socket}, материнская плата ${selection.motherboard.socket}.`
-    },
-    {
-      level: selection.powerSupply.wattage >= recommendedPower ? 'good' : (selection.powerSupply.wattage >= totalPower ? 'warn' : 'bad'),
-      text: selection.powerSupply.wattage >= recommendedPower
-        ? `БП ${selection.powerSupply.name} (${selection.powerSupply.wattage} Вт) имеет хороший запас.`
-        : selection.powerSupply.wattage >= totalPower
-          ? `БП ${selection.powerSupply.name} (${selection.powerSupply.wattage} Вт) запускает систему с минимальным запасом.`
-          : `БП ${selection.powerSupply.name} (${selection.powerSupply.wattage} Вт) недостаточен. Рекомендуется минимум ${recommendedPower} Вт.`
-    },
-    {
-      level: selection.memoryModule.totalCapacityGigabytes >= 16 ? 'good' : 'warn',
-      text: `Установлена память: ${selection.memoryModule.generation} ${selection.memoryModule.totalCapacityGigabytes} ГБ ${selection.memoryModule.speedMegahertz} МГц.`
-    },
-    {
-      level: storageSize >= 1000 ? 'good' : 'warn',
-      text: storageSize >= 1000
-        ? `SSD ${storageSize} ГБ удобен для игр и тяжелых проектов.`
-        : `SSD ${storageSize} ГБ может быстро заполниться после установки крупных игр.`
+    if (action === 'remove') {
+      deleteConfiguration(configurationId)
+      renderSavedConfigurations(savedConfigurationsUi)
     }
-  ]
-
-  userInterface.compatibilityList.innerHTML = ''
-  for (const compatibilityMessage of compatibilityMessages) {
-    const messageElement = document.createElement('li')
-    messageElement.className = compatibilityMessage.level
-    messageElement.textContent = compatibilityMessage.text
-    userInterface.compatibilityList.append(messageElement)
-  }
-
-  userInterface.powerEstimation.textContent = `${totalPower} Вт (рекомендовано ${recommendedPower} Вт)`
-  userInterface.buildSummary.textContent = `Конфигурация: ${selection.processor.name} + ${selection.graphicsCard.name} + ${selection.motherboard.name}. Память ${selection.memoryModule.generation} ${selection.memoryModule.totalCapacityGigabytes} ГБ, БП ${selection.powerSupply.wattage} Вт.`
+  })
 }
 
-function refreshComparisonTable() {
-  const comparisonData = getSortedComparisonDataset()
-  const firstItem = comparisonData.find((item) => item.name === userInterface.comparisonFirst.value)
-  const secondItem = comparisonData.find((item) => item.name === userInterface.comparisonSecond.value)
-  if (!firstItem || !secondItem) {
-    userInterface.comparisonTable.textContent = 'Недостаточно данных для сравнения.'
-    return
-  }
-  const keys = Object.keys(firstItem).filter((key) => key !== 'name')
-  const tableElement = document.createElement('table')
-  const header = document.createElement('tr')
-  header.innerHTML = `<th>Параметр</th><th>${firstItem.name}</th><th>${secondItem.name}</th>`
-  tableElement.append(header)
-  for (const key of keys) {
-    const row = document.createElement('tr')
-    row.innerHTML = `<td>${localizeComparisonField(key)}</td><td>${firstItem[key] || '—'}</td><td>${secondItem[key] || '—'}</td>`
-    tableElement.append(row)
-  }
-  userInterface.comparisonTable.innerHTML = ''
-  userInterface.comparisonTable.append(tableElement)
-}
-
-function localizeComparisonField(fieldName) {
-  const labels = {
-    manufacturer: 'Производитель',
-    socket: 'Сокет',
-    cores: 'Ядра',
-    boostClockGigahertz: 'Буст-частота, ГГц',
-    tdpWatts: 'TDP, Вт',
-    architecture: 'Графический чип',
-    memory: 'Память',
-    memoryGigabytes: 'Объем VRAM, ГБ',
-    bus: 'Интерфейс',
-    chipset: 'Чипсет',
-    generation: 'Тип памяти',
-    speedMegahertz: 'Частота памяти',
-    totalCapacityGigabytes: 'Объем комплекта, ГБ',
-    casLatency: 'CAS latency',
-    wattage: 'Мощность БП, Вт',
-    efficiencyRating: 'Сертификация БП',
-    modular: 'Модульность'
-  }
-  return labels[fieldName] || fieldName
-}
-
-function refreshAssemblySteps() {
-  const selection = getCurrentSelection()
-  if (!selection.processor || !selection.graphicsCard || !selection.motherboard || !selection.memoryModule || !selection.powerSupply) {
-    return
-  }
-  const steps = [
-    `Подготовьте рабочее место: антистатический коврик, отвертка и корпус с блоком питания ${selection.powerSupply.name}.`,
-    `Установите процессор ${selection.processor.name} в сокет ${selection.motherboard.socket} на плате ${selection.motherboard.name}.`,
-    'Нанесите термопасту и закрепите систему охлаждения согласно креплению сокета.',
-    `Установите модули ОЗУ: ${selection.memoryModule.name} (${selection.memoryModule.totalCapacityGigabytes} ГБ) в рекомендованные слоты A2/B2.`,
-    `Закрепите материнскую плату в корпусе, подключите питание ATX 24-pin и EPS 8-pin от БП ${selection.powerSupply.name}.`,
-    `Установите видеокарту ${selection.graphicsCard.name} в верхний PCIe x16 слот и подключите кабели питания.`,
-    `Подключите накопители общим объемом ${userInterface.storageSize.value} ГБ, фронтальную панель и вентиляторы корпуса.`,
-    'Выполните первый запуск, проверьте температуры, обновите BIOS и установите драйверы.'
-  ]
-  userInterface.assemblySteps.innerHTML = ''
-  for (const step of steps) {
-    const stepElement = document.createElement('li')
-    stepElement.textContent = step
-    userInterface.assemblySteps.append(stepElement)
+async function initializeApplication() {
+  try {
+    await loadDatasets()
+    restoreSavedConfigurations()
+    initializeSelectors()
+    restoreCurrentSelection()
+    syncSelectedValuesToUi()
+    updateCounters()
+    initializeComparisonControls()
+    const savedConfigurationsUi = createConfigurationPanel()
+    bindEvents(savedConfigurationsUi)
+    renderSavedConfigurations(savedConfigurationsUi)
+    refreshDashboard()
+  } catch (error) {
+    document.body.innerHTML = `<main class="page"><article class="panel"><h2>Ошибка загрузки данных</h2><p>${escapeHtml(error.message)}</p></article></main>`
   }
 }
 
-function openTab(tabName) {
-  for (const tabButton of tabButtons) {
-    tabButton.classList.toggle('active', tabButton.dataset.tab === tabName)
-  }
-  for (const tabPanel of tabPanels) {
-    tabPanel.classList.toggle('active', tabPanel.id === tabName)
-  }
-}
-
-loadData().catch(() => {
-  userInterface.compatibilityList.innerHTML = '<li class="bad">Не удалось загрузить базу комплектующих. Проверьте структуру файлов.</li>'
-})
+initializeApplication()
