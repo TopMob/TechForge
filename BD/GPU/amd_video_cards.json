@@ -16179,7 +16179,7 @@
     {
       "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
       "data": {
-        "name": "ASRock RX6500XT CLI 4G:",
+        "name": "ASRock RX6500XT CLI 4G",
         "price": "",
         "chipset": "Radeon RX 6500 XT",
         "memory": "4",
@@ -19624,7 +19624,7 @@
     {
       "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
       "data": {
-        "name": "XFX RX-57XL828D6:",
+        "name": "XFX RX-57XL828D6",
         "price": "",
         "chipset": "Radeon RX 5700",
         "memory": "8",
@@ -47353,7 +47353,7 @@
     {
       "source_file": "pc-part-dataset-main/data/json/video-card.json",
       "data": {
-        "name": "ASRock RX6500XT CLI 4G:",
+        "name": "ASRock RX6500XT CLI 4G",
         "price": null,
         "chipset": "Radeon RX 6500 XT",
         "memory": 4,
@@ -50798,7 +50798,7 @@
     {
       "source_file": "pc-part-dataset-main/data/json/video-card.json",
       "data": {
-        "name": "XFX RX-57XL828D6:",
+        "name": "XFX RX-57XL828D6",
         "price": null,
         "chipset": "Radeon RX 5700",
         "memory": 8,

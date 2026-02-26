@@ -54,19 +54,17 @@
               <label for="gpu-select">Видеокарта</label>
               <select id="gpu-select"></select>
             </div>
-            <div class="field row-fields">
-              <div>
-                <label for="memory-size">ОЗУ (ГБ)</label>
-                <input id="memory-size" type="number" min="8" step="8" value="32">
-              </div>
-              <div>
-                <label for="storage-size">SSD (ГБ)</label>
-                <input id="storage-size" type="number" min="256" step="256" value="1000">
-              </div>
+            <div class="field">
+              <label for="memory-select">Оперативная память</label>
+              <select id="memory-select"></select>
             </div>
             <div class="field">
-              <label for="power-supply">Блок питания (Вт)</label>
-              <input id="power-supply" type="number" min="400" step="50" value="750">
+              <label for="power-supply-select">Блок питания</label>
+              <select id="power-supply-select"></select>
+            </div>
+            <div class="field">
+              <label for="storage-size">SSD (ГБ)</label>
+              <input id="storage-size" type="number" min="256" step="256" value="1000">
             </div>
           </article>
 
@@ -92,7 +90,26 @@
                 <option value="cpu">Процессоры</option>
                 <option value="gpu">Видеокарты</option>
                 <option value="motherboard">Материнские платы</option>
+                <option value="ram">Оперативная память</option>
+                <option value="psu">Блоки питания</option>
               </select>
+            </div>
+            <div class="field row-fields">
+              <div>
+                <label for="comparison-sort-field">Сортировка</label>
+                <select id="comparison-sort-field"></select>
+              </div>
+              <div>
+                <label for="comparison-sort-direction">Порядок</label>
+                <select id="comparison-sort-direction">
+                  <option value="desc">По убыванию</option>
+                  <option value="asc">По возрастанию</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="comparison-compatibility-only">Показывать только совместимые</label>
+              <input id="comparison-compatibility-only" type="checkbox">
             </div>
             <div class="field">
               <label for="comparison-first">Первая модель</label>
