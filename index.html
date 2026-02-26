@@ -3,139 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TechForge PC Lab</title>
+  <title>TechForge</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="css/techforge.css">
 </head>
 <body>
-  <div class="page">
-    <header class="hero">
-      <p class="eyebrow">TechForge PC Lab</p>
-      <h1>Конфигуратор ПК, сравнение железа и проверка совместимости</h1>
-      <p class="hero-text">Подберите процессор, видеокарту и материнскую плату, сравните комплектующие и получите пошаговую инструкцию по сборке.</p>
-      <div class="hero-stats">
-        <div class="stat-card">
-          <span id="cpu-count">0</span>
-          <p>Моделей CPU</p>
-        </div>
-        <div class="stat-card">
-          <span id="gpu-count">0</span>
-          <p>Моделей GPU</p>
-        </div>
-        <div class="stat-card">
-          <span id="motherboard-count">0</span>
-          <p>Материнских плат</p>
-        </div>
-      </div>
+  <div class="application-shell">
+    <header class="application-header">
+      <p class="application-label">TechForge</p>
+      <h1>Каталог комплектующих с загрузкой из Supabase</h1>
+      <p class="application-description">Данные берутся из Supabase и автоматически переключаются на локальную базу, если в облаке категория пуста или недоступна.</p>
     </header>
 
-    <nav class="tabs" aria-label="Разделы">
-      <button class="tab-button active" data-tab="configurator">Конфигуратор</button>
-      <button class="tab-button" data-tab="comparison">Сравнение</button>
-      <button class="tab-button" data-tab="instructions">Сборка ПК</button>
-    </nav>
+    <section class="configuration-panel">
+      <div class="field-group">
+        <label for="supabase-url-input">Supabase URL</label>
+        <input id="supabase-url-input" type="url" placeholder="https://your-project.supabase.co">
+      </div>
+      <div class="field-group">
+        <label for="supabase-key-input">Publishable key</label>
+        <input id="supabase-key-input" type="text">
+      </div>
+      <button id="save-supabase-settings" type="button">Сохранить подключение</button>
+      <p id="connection-status" class="connection-status"></p>
+    </section>
 
-    <main>
-      <section id="configurator" class="tab-panel active">
-        <div class="grid">
-          <article class="panel">
-            <h2>Выбор комплектующих</h2>
-            <div class="field">
-              <label for="cpu-select">Процессор</label>
-              <select id="cpu-select"></select>
-            </div>
-            <div class="field">
-              <label for="motherboard-select">Материнская плата</label>
-              <select id="motherboard-select"></select>
-            </div>
-            <div class="field">
-              <label for="gpu-select">Видеокарта</label>
-              <select id="gpu-select"></select>
-            </div>
-            <div class="field">
-              <label for="memory-select">Оперативная память</label>
-              <select id="memory-select"></select>
-            </div>
-            <div class="field">
-              <label for="power-supply-select">Блок питания</label>
-              <select id="power-supply-select"></select>
-            </div>
-            <div class="field">
-              <label for="storage-size">SSD (ГБ)</label>
-              <input id="storage-size" type="number" min="256" step="256" value="1000">
-            </div>
-          </article>
-
-          <article class="panel">
-            <h2>Совместимость и мощность</h2>
-            <ul id="compatibility-list" class="compatibility-list"></ul>
-            <div class="total-power">
-              <h3>Оценка энергопотребления</h3>
-              <p id="power-estimation">0 Вт</p>
-            </div>
-            <div class="build-summary" id="build-summary"></div>
-          </article>
+    <main class="components-layout">
+      <aside>
+        <h2>Категории</h2>
+        <ul id="category-list" class="category-list"></ul>
+      </aside>
+      <section>
+        <div class="components-header">
+          <h2 id="active-category-title">Компоненты</h2>
+          <span id="data-source-tag" class="data-source-tag">Источник: локальная база</span>
         </div>
-      </section>
-
-      <section id="comparison" class="tab-panel">
-        <div class="grid">
-          <article class="panel">
-            <h2>Сравнение комплектующих</h2>
-            <div class="field">
-              <label for="comparison-category">Категория</label>
-              <select id="comparison-category">
-                <option value="cpu">Процессоры</option>
-                <option value="gpu">Видеокарты</option>
-                <option value="motherboard">Материнские платы</option>
-                <option value="ram">Оперативная память</option>
-                <option value="psu">Блоки питания</option>
-              </select>
-            </div>
-            <div class="field row-fields">
-              <div>
-                <label for="comparison-sort-field">Сортировка</label>
-                <select id="comparison-sort-field"></select>
-              </div>
-              <div>
-                <label for="comparison-sort-direction">Порядок</label>
-                <select id="comparison-sort-direction">
-                  <option value="desc">По убыванию</option>
-                  <option value="asc">По возрастанию</option>
-                </select>
-              </div>
-            </div>
-            <div class="field">
-              <label for="comparison-compatibility-only">Показывать только совместимые</label>
-              <input id="comparison-compatibility-only" type="checkbox">
-            </div>
-            <div class="field">
-              <label for="comparison-first">Первая модель</label>
-              <select id="comparison-first"></select>
-            </div>
-            <div class="field">
-              <label for="comparison-second">Вторая модель</label>
-              <select id="comparison-second"></select>
-            </div>
-          </article>
-          <article class="panel">
-            <h2>Таблица отличий</h2>
-            <div id="comparison-table"></div>
-          </article>
-        </div>
-      </section>
-
-      <section id="instructions" class="tab-panel">
-        <article class="panel">
-          <h2>Инструкция по сборке ПК</h2>
-          <ol id="assembly-steps" class="assembly-steps"></ol>
-        </article>
+        <ul id="component-list" class="component-list"></ul>
       </section>
     </main>
   </div>
 
-  <script src="app.js" defer></script>
+  <script type="module" src="js/techforge.js"></script>
 </body>
 </html>
