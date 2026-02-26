@@ -13,34 +13,65 @@
   <div class="application-shell">
     <header class="application-header">
       <p class="application-label">TechForge</p>
-      <h1>Каталог комплектующих с загрузкой из Supabase</h1>
-      <p class="application-description">Данные берутся из Supabase и автоматически переключаются на локальную базу, если в облаке категория пуста или недоступна.</p>
+      <h1>Подбор комплектующих и сборка ПК</h1>
+      <p class="application-description">Сравнивайте компоненты по категориям, собирайте конфигурацию и сверяйтесь с краткой инструкцией по сборке.</p>
     </header>
 
-    <section class="configuration-panel">
-      <div class="field-group">
-        <label for="supabase-url-input">Supabase URL</label>
-        <input id="supabase-url-input" type="url" placeholder="https://your-project.supabase.co">
-      </div>
-      <div class="field-group">
-        <label for="supabase-key-input">Publishable key</label>
-        <input id="supabase-key-input" type="text">
-      </div>
-      <button id="save-supabase-settings" type="button">Сохранить подключение</button>
-      <p id="connection-status" class="connection-status"></p>
-    </section>
+    <nav class="main-tabs" id="main-tabs">
+      <button type="button" class="main-tab active" data-main-tab="comparison">Сравнение</button>
+      <button type="button" class="main-tab" data-main-tab="configurator">Конфигуратор</button>
+      <button type="button" class="main-tab" data-main-tab="guide">Инструкция</button>
+    </nav>
 
-    <main class="components-layout">
-      <aside>
-        <h2>Категории</h2>
-        <ul id="category-list" class="category-list"></ul>
-      </aside>
-      <section>
-        <div class="components-header">
-          <h2 id="active-category-title">Компоненты</h2>
-          <span id="data-source-tag" class="data-source-tag">Источник: локальная база</span>
+    <main>
+      <section class="main-panel active" data-main-panel="comparison">
+        <div class="panel-header">
+          <h2>Сравнение компонентов</h2>
+          <p>Переключайтесь между вкладками категорий и сравнивайте две модели в таблице.</p>
         </div>
-        <ul id="component-list" class="component-list"></ul>
+
+        <div id="comparison-category-tabs" class="category-tabs"></div>
+
+        <div class="comparison-selectors">
+          <label>
+            Первая модель
+            <select id="comparison-first-select"></select>
+          </label>
+          <label>
+            Вторая модель
+            <select id="comparison-second-select"></select>
+          </label>
+        </div>
+
+        <div id="comparison-result" class="comparison-result"></div>
+      </section>
+
+      <section class="main-panel" data-main-panel="configurator">
+        <div class="panel-header">
+          <h2>Конфигуратор ПК</h2>
+          <p>Подберите комплектующие по шагам и проверьте совместимость процессора с материнской платой.</p>
+        </div>
+
+        <div id="configurator-grid" class="configurator-grid"></div>
+
+        <div class="configuration-summary">
+          <h3>Итог сборки</h3>
+          <ul id="configuration-list"></ul>
+          <p id="configuration-total" class="configuration-total"></p>
+          <p id="configuration-warning" class="configuration-warning"></p>
+        </div>
+      </section>
+
+      <section class="main-panel" data-main-panel="guide">
+        <div class="panel-header">
+          <h2>Инструкция по сборке ПК</h2>
+          <p>Базовый порядок действий перед первым запуском.</p>
+        </div>
+        <ul class="guide-list">
+          <li>Установите процессор, кулер и оперативную память на материнскую плату до монтажа в корпус.</li>
+          <li>После установки платы подключите накопители, питание и фронтальную панель, затем аккуратно уложите кабели.</li>
+          <li>Перед закрытием корпуса проверьте первый старт, температуру и включите профиль памяти в BIOS.</li>
+        </ul>
       </section>
     </main>
   </div>
