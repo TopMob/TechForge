@@ -1,0 +1,1991 @@
+{
+  "vendor": "other",
+  "sources": [
+    "PC-Components-main/graphic_cards.json",
+    "pc-part-dataset-main/data/csv/video-card.csv",
+    "pc-part-dataset-main/data/json/video-card.json"
+  ],
+  "total_records": 309,
+  "records": [
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "15FF"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "3DP Edition"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "64MB DDR GeForce3 Ti 200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "64MB GeForce2 MX with TV Out"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "9xx Soldiers sans frontiers Sigma 2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "A10-8700P"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "A6 Micro-6500T Quad-Core APU with RadeonR4"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ABIT Siluro T400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ALL-IN-WONDER 9000"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ALL-IN-WONDER 9800"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "All-in-Wonder X1800XL"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "All-in-Wonder X1900"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ALL-IN-WONDER X800 GT"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "AMIGAMERLIN 3.1-R1 For Voodoo 4 4500 PCI"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ASUS A7000"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ASUS AGP-V3800PRO v31.40H"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ASUS EAH4870x2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ASUS V9520-X V62.11"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "B8DKMDAP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 1450"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 2600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 5400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 5450"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 5500"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 7100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 7400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 7500"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Barco MXRT 7600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "BASICDISPLAY"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "CARRIZO 9874"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Citrix Indirect Display Adapter"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Dell 8100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Dell 8200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Diamond X1300-PCIE 256MB"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "EAH5450"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "EG PARK"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Extreme AX850 PRO"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL T2-128"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V3100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V3200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V3300"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V3350"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V3400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V3600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V5100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V5200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V5600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V7100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V7200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V7300"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V7350"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V7600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V7700"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V8600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL V8650"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireGL X1"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireMV 2200 PCI"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireMV 2200 PCIe"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireMV 2250"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireMV 2260"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireMV 2400 PCIe"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireMV 2450"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireStream 9170"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireStream 9250"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireStream 9270"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "FireStream 9370"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 Go"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 GTS/GeForce2 Pro"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 Integrated GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 MX"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 MX 100/200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 MX with DVI-D and TV-out"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 MX/MX 400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 Ti"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce2 Ultra"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce3"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce3 Ti 200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce3 Ti 500"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 420 Go"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 420 Go 32M"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 4200 Go"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 440"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 440 Go"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 440 Go 64M"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 448 Go"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 MX 4000"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 MX 420"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 MX 440"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 MX 440 with AGP8X"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 MX 440SE"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 MX 460"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 MX Integrated GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 Ti 4200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 Ti 4400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 Ti 4600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 Ti 4800"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce4 Ti 4800 SE"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GeForce9400M"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GF117"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K1"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K120Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K140Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K160Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K180Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K220Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K240Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K260Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K280Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID K520"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M10-0Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M10-1B"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M10-1Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M10-2B"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M10-2Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M10-4Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M10-8Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M6-0B"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M6-1Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M6-8Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-0B"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-0Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-1B"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-1Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-2Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-4Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-8A"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID M60-8Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P100-16Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P100-1B"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P100-8Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P40-24Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P40-2B"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P40-2Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P40-3Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P40-4Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P6-2Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID P6-4Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID RTX6000P-4Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID RTX6000P-6Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID RTX8000-2Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID RTX8000-4Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID RTX8000P-2Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID T4-1Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID T4-2Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID T4-4Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID T4-8Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID V100-8Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GRID V100D-8Q"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "GT 430"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "HD6450"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "HIS DIGITAL HD 4650 AGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "IGP 340M"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "IncrediblE HD"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "IncrediblE HD 3000"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "IncrediblE HD 4000"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "IncrediblE HD 4600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ION"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ION LE"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "KV SPECTRE LITE MOBILE 25W"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "LMIMIRR"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "M71-M"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "M76M"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Master X3100 Driver"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox C420 LP PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox C680 PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox C900 PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200e WDDM 1.2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200e WDDM 2.0"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eh"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eh WDDM 1.2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eh WDDM 2.0"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eR"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eR WDDM 1.2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eR WDDM 2.0"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eW"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eW WDDM 1.2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox G200eW3 WDDM 2.0"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox M9120 PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox M9120 Plus LP PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox M9125 PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox M9128 LP PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox M9138 LP PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox M9140 LP PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox M9148 LP PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox Millennium P650 PCIe 128"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox Millennium P690 PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox Millennium P690 Plus LP PCIe x16"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox Parhelia 128MB"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox Parhelia 256MB"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Matrox Parhelia APVe"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MCT USB3.0 External Device"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MIRRORV3"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Mobile Intel965 Express"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY FIREGL 7800"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY FIREGL T2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY FIREGL T2/T2e"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY FireGL V3200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY FireGL V5000"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY FireGL V5200"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY FireGL V5250"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Mobility FireGL V5725"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MOBILITY IGP 9000/9100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "MxGPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "N16P-GX"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "N18E-Q1"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "nForce 750a SLI"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "nForce 760i SLI"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "nForce 780a SLI"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "nForce 980a/780a SLI"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "NV44"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "OPAL XT/GL"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "OpenXT Display Driver"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "P104-100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "P106-090"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "P106-100"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "PHDGD Ivy 4"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "PHDGD Ivy 5"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "PHDGD Quantic C3"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "PHDGD Solo 1.2.0 x86"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "PHDGD Solo 2 x64"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Professional HD Driver"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Q12U-1"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Quadro2 MXR/EX"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Quadro2 Pro"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Quadro4 380 XGL"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Quadro4 900 XGL"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Quadro4 980 XGL"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Qualcomm Adreno 540 GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Qualcomm Adreno 618 GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Qualcomm Adreno 630 GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Qualcomm Adreno 680 GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "QXL KMDOD"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT 540X"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT R5 430"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT R7 450"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT RX 5300"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT RX 5500M"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT RX 560X"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RadeonT RX 640"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Rage 128 Pro"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RAGE 128 PRO AGP 4X TMDS"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Rage Fury Pro/Xpert 2000 Pro"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Red Hat QXL controller"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RGH Drivers v3"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RIVA TNT2 Model 64/Model 64 Pro"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RIVA TNT2/TNT2 Pro"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "RV530 PRO"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Ryzen 7 Extreme Edition"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "S3 5400EW"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "S3 Chrome 430 ULP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "S3 Chrome S25 DDR2"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "S3 Inc. Savage4"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "S3 ProSavageDDR"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "S3 SuperSavage/IXC 1014"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "SUMO 9640"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "SUMO 9644"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "SUMO 964A"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "T1000"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "T1200 Laptop GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "T400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "T500"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "T600"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "T600 Laptop GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "TRINITY DEVASTATOR MOBILE"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "TRINITY SCRAPPER MOBILE"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "V9560XT V62.11"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Vanta/Vanta LT"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HC IGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HC IGP Family"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HC IGP Family WDDM"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HC IGP Prerelease WDDM 1.1"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HC IGP WDDM"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HC IGP WDDM 1.1"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HC3 IGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HCM IGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA Chrome9 HD IGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA/S3G C-645/640 GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA/S3G Chrome 645/640 GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA/S3G DeltaChrome IGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA/S3G KM400/KN400"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA/S3G UniChrome IGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA/S3G UniChrome Pro IGP"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "VIA/S3G UniChromeII"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "WinFast A250 LE"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "WinFast GT 610"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "Xabre"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "XGI Volari Family v1.13.23.D_V"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "ZX Chrome 645/640 GPU"
+      }
+    },
+    {
+      "source_file": "PC-Components-main/graphic_cards.json",
+      "data": {
+        "name": "zxcvIntel HD 620"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "PNY T-Series",
+        "price": "179",
+        "chipset": "T400 4GB",
+        "memory": "4",
+        "core_clock": "420",
+        "boost_clock": "1425",
+        "color": "Black / Gray",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "PNY T-Series",
+        "price": "459",
+        "chipset": "T1000 8GB",
+        "memory": "8",
+        "core_clock": "1065",
+        "boost_clock": "1395",
+        "color": "Black / Gray",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "PNY T-Series",
+        "price": "310.99",
+        "chipset": "T1000 4GB",
+        "memory": "4",
+        "core_clock": "1065",
+        "boost_clock": "1395",
+        "color": "Black / Gray",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "PNY T-Series",
+        "price": "299",
+        "chipset": "T600",
+        "memory": "4",
+        "core_clock": "735",
+        "boost_clock": "1335",
+        "color": "Black / Gray",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "Lenovo 4X61J52234",
+        "price": "178.86",
+        "chipset": "T400 4GB",
+        "memory": "4",
+        "core_clock": "420",
+        "boost_clock": "1425",
+        "color": "Black",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "PNY T-Series",
+        "price": "172",
+        "chipset": "T400  2GB",
+        "memory": "2",
+        "core_clock": "420",
+        "boost_clock": "1425",
+        "color": "Black / Gray",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "HP 5Z7D8AT",
+        "price": "499",
+        "chipset": "T1000 8GB",
+        "memory": "8",
+        "core_clock": "1065",
+        "boost_clock": "1395",
+        "color": "Black",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "Lenovo 4X61J52233",
+        "price": "542.79",
+        "chipset": "T1000 8GB",
+        "memory": "8",
+        "core_clock": "1065",
+        "boost_clock": "1395",
+        "color": "Black",
+        "length": "156"
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/csv/video-card.csv",
+      "data": {
+        "name": "ATI 100-505144",
+        "price": "",
+        "chipset": "FireGL V7300",
+        "memory": "0.5",
+        "core_clock": "",
+        "boost_clock": "",
+        "color": "Red / White",
+        "length": ""
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "PNY T-Series",
+        "price": 179,
+        "chipset": "T400 4GB",
+        "memory": 4,
+        "core_clock": 420,
+        "boost_clock": 1425,
+        "color": "Black / Gray",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "PNY T-Series",
+        "price": 459,
+        "chipset": "T1000 8GB",
+        "memory": 8,
+        "core_clock": 1065,
+        "boost_clock": 1395,
+        "color": "Black / Gray",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "PNY T-Series",
+        "price": 310.99,
+        "chipset": "T1000 4GB",
+        "memory": 4,
+        "core_clock": 1065,
+        "boost_clock": 1395,
+        "color": "Black / Gray",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "PNY T-Series",
+        "price": 299,
+        "chipset": "T600",
+        "memory": 4,
+        "core_clock": 735,
+        "boost_clock": 1335,
+        "color": "Black / Gray",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "Lenovo 4X61J52234",
+        "price": 178.86,
+        "chipset": "T400 4GB",
+        "memory": 4,
+        "core_clock": 420,
+        "boost_clock": 1425,
+        "color": "Black",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "PNY T-Series",
+        "price": 172,
+        "chipset": "T400  2GB",
+        "memory": 2,
+        "core_clock": 420,
+        "boost_clock": 1425,
+        "color": "Black / Gray",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "HP 5Z7D8AT",
+        "price": 499,
+        "chipset": "T1000 8GB",
+        "memory": 8,
+        "core_clock": 1065,
+        "boost_clock": 1395,
+        "color": "Black",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "Lenovo 4X61J52233",
+        "price": 542.79,
+        "chipset": "T1000 8GB",
+        "memory": 8,
+        "core_clock": 1065,
+        "boost_clock": 1395,
+        "color": "Black",
+        "length": 156
+      }
+    },
+    {
+      "source_file": "pc-part-dataset-main/data/json/video-card.json",
+      "data": {
+        "name": "ATI 100-505144",
+        "price": null,
+        "chipset": "FireGL V7300",
+        "memory": 0.5,
+        "core_clock": null,
+        "boost_clock": null,
+        "color": "Red / White",
+        "length": null
+      }
+    }
+  ]
+}

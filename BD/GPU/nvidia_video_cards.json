@@ -1,4 +1,5 @@
 {
+  "vendor": "nvidia",
   "sources": [
     "PC-Components-main/graphic_cards.json",
     "gpu.csv",
