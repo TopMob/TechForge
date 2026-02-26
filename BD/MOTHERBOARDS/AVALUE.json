@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Avalue",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Avalue ECM-ADLN",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "3.5-inch SBC",
+      "memory_type": "DDR5 SO-DIMM",
+      "memory_slots": 1,
+      "max_memory_gb": 32,
+      "pcie_x16_slots": [],
+      "m2_slots": 2,
+      "sata_ports": 1,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

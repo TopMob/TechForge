@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Supermicro",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Supermicro X13SAE-F",
+      "socket": "LGA1700",
+      "chipset": "Intel W680",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "memory_slots": 4,
+      "max_memory_gb": 128,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 4.0 x4"
+      ],
+      "m2_slots": 3,
+      "sata_ports": 8,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

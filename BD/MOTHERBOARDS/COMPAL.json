@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Compal",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Compal LA-9582P",
+      "socket": "BGA",
+      "chipset": "Intel HM86",
+      "form_factor": "Laptop Proprietary",
+      "memory_type": "DDR3L SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [],
+      "m2_slots": 0,
+      "sata_ports": 1,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Wi-Fi 4",
+        "bluetooth": "Bluetooth 4.0"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

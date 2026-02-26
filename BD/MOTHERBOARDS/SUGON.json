@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Sugon",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Sugon W780-G30 Mainboard",
+      "socket": "LGA4677",
+      "chipset": "Intel W790",
+      "form_factor": "SSI-EEB",
+      "memory_type": "DDR5 ECC",
+      "memory_slots": 8,
+      "max_memory_gb": 2048,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 6,
+      "networking": {
+        "ethernet": "10 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

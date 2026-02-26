@@ -1,0 +1,29 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ASRock Rack",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ASRock Rack ROMED8-2T",
+      "socket": "SP3",
+      "chipset": "SoC",
+      "form_factor": "ATX",
+      "memory_type": "DDR4 ECC",
+      "memory_slots": 8,
+      "max_memory_gb": 2048,
+      "pcie_x16_slots": [
+        "PCIe 4.0 x16",
+        "PCIe 4.0 x16",
+        "PCIe 4.0 x16"
+      ],
+      "m2_slots": 1,
+      "sata_ports": 0,
+      "networking": {
+        "ethernet": "10 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

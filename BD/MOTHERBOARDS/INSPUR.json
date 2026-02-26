@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Inspur",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Inspur NF5280M7 Mainboard",
+      "socket": "LGA4677",
+      "chipset": "Intel C741",
+      "form_factor": "Server Proprietary",
+      "memory_type": "DDR5 ECC",
+      "memory_slots": 16,
+      "max_memory_gb": 4096,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 8,
+      "networking": {
+        "ethernet": "10 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

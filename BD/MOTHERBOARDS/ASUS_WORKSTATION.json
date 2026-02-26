@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ASUS Workstation",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ASUS Pro WS W790-ACE",
+      "socket": "LGA4677",
+      "chipset": "Intel W790",
+      "form_factor": "ATX",
+      "memory_type": "DDR5 ECC",
+      "memory_slots": 8,
+      "max_memory_gb": 2048,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 3,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

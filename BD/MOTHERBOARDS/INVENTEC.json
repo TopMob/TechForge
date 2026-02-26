@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Inventec",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Inventec CML50 LA-K861P",
+      "socket": "BGA",
+      "chipset": "Intel HM470",
+      "form_factor": "Laptop Proprietary",
+      "memory_type": "DDR4 SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 64,
+      "pcie_x16_slots": [],
+      "m2_slots": 1,
+      "sata_ports": 1,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Wi-Fi 6",
+        "bluetooth": "Bluetooth 5.1"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

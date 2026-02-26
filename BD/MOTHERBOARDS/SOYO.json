@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Soyo",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "SOYO SY-P4I865PE Plus Dragon 2",
+      "socket": "LGA478",
+      "chipset": "Intel 865PE",
+      "form_factor": "ATX",
+      "memory_type": "DDR",
+      "memory_slots": 4,
+      "max_memory_gb": 4,
+      "pcie_x16_slots": [],
+      "m2_slots": 0,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

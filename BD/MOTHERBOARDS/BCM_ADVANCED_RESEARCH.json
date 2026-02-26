@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "BCM Advanced Research",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "BCM RX690E",
+      "socket": "AM5",
+      "chipset": "AMD X670E",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "memory_slots": 4,
+      "max_memory_gb": 192,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Hikvision",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Hikvision DS-MB1 Industrial Board",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "Industrial Proprietary",
+      "memory_type": "DDR4",
+      "memory_slots": 1,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [],
+      "m2_slots": 1,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

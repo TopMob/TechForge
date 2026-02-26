@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Arbor Technology",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Arbor EmQ-APL1",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "Mini-ITX",
+      "memory_type": "DDR3L SO-DIMM",
+      "memory_slots": 1,
+      "max_memory_gb": 8,
+      "pcie_x16_slots": [
+        "PCIe 2.0 x4"
+      ],
+      "m2_slots": 1,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

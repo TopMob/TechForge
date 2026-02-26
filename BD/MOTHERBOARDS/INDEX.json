@@ -1,0 +1,330 @@
+{
+  "component_type": "motherboard_catalog",
+  "updated_at": "2026-02-26",
+  "manufacturers": [
+    {
+      "manufacturer": "ASUS",
+      "file": "BD/MOTHERBOARDS/ASUS.json"
+    },
+    {
+      "manufacturer": "MSI",
+      "file": "BD/MOTHERBOARDS/MSI.json"
+    },
+    {
+      "manufacturer": "Gigabyte",
+      "file": "BD/MOTHERBOARDS/GIGABYTE.json"
+    },
+    {
+      "manufacturer": "ASRock",
+      "file": "BD/MOTHERBOARDS/ASROCK.json"
+    },
+    {
+      "manufacturer": "BIOSTAR",
+      "file": "BD/MOTHERBOARDS/BIOSTAR.json"
+    },
+    {
+      "manufacturer": "EVGA",
+      "file": "BD/MOTHERBOARDS/EVGA.json"
+    },
+    {
+      "manufacturer": "Intel",
+      "file": "BD/MOTHERBOARDS/INTEL.json"
+    },
+    {
+      "manufacturer": "Supermicro",
+      "file": "BD/MOTHERBOARDS/SUPERMICRO.json"
+    },
+    {
+      "manufacturer": "ASRock Rack",
+      "file": "BD/MOTHERBOARDS/ASROCK_RACK.json"
+    },
+    {
+      "manufacturer": "TYAN",
+      "file": "BD/MOTHERBOARDS/TYAN.json"
+    },
+    {
+      "manufacturer": "ECS (Elitegroup)",
+      "file": "BD/MOTHERBOARDS/ECS_ELITEGROUP.json"
+    },
+    {
+      "manufacturer": "DFI",
+      "file": "BD/MOTHERBOARDS/DFI.json"
+    },
+    {
+      "manufacturer": "ABIT",
+      "file": "BD/MOTHERBOARDS/ABIT.json"
+    },
+    {
+      "manufacturer": "EPoX",
+      "file": "BD/MOTHERBOARDS/EPOX.json"
+    },
+    {
+      "manufacturer": "Shuttle",
+      "file": "BD/MOTHERBOARDS/SHUTTLE.json"
+    },
+    {
+      "manufacturer": "Chaintech",
+      "file": "BD/MOTHERBOARDS/CHAINTECH.json"
+    },
+    {
+      "manufacturer": "Soyo",
+      "file": "BD/MOTHERBOARDS/SOYO.json"
+    },
+    {
+      "manufacturer": "PCChips",
+      "file": "BD/MOTHERBOARDS/PCCHIPS.json"
+    },
+    {
+      "manufacturer": "Jetway",
+      "file": "BD/MOTHERBOARDS/JETWAY.json"
+    },
+    {
+      "manufacturer": "Albatron",
+      "file": "BD/MOTHERBOARDS/ALBATRON.json"
+    },
+    {
+      "manufacturer": "FIC (First International Computer)",
+      "file": "BD/MOTHERBOARDS/FIC_FIRST_INTERNATIONAL_COMPUTER.json"
+    },
+    {
+      "manufacturer": "QDI",
+      "file": "BD/MOTHERBOARDS/QDI.json"
+    },
+    {
+      "manufacturer": "Soltek",
+      "file": "BD/MOTHERBOARDS/SOLTEK.json"
+    },
+    {
+      "manufacturer": "AOpen",
+      "file": "BD/MOTHERBOARDS/AOPEN.json"
+    },
+    {
+      "manufacturer": "Foxconn",
+      "file": "BD/MOTHERBOARDS/FOXCONN.json"
+    },
+    {
+      "manufacturer": "Pegatron",
+      "file": "BD/MOTHERBOARDS/PEGATRON.json"
+    },
+    {
+      "manufacturer": "Quanta",
+      "file": "BD/MOTHERBOARDS/QUANTA.json"
+    },
+    {
+      "manufacturer": "Compal",
+      "file": "BD/MOTHERBOARDS/COMPAL.json"
+    },
+    {
+      "manufacturer": "Wistron",
+      "file": "BD/MOTHERBOARDS/WISTRON.json"
+    },
+    {
+      "manufacturer": "Inventec",
+      "file": "BD/MOTHERBOARDS/INVENTEC.json"
+    },
+    {
+      "manufacturer": "Dell",
+      "file": "BD/MOTHERBOARDS/DELL.json"
+    },
+    {
+      "manufacturer": "HP",
+      "file": "BD/MOTHERBOARDS/HP.json"
+    },
+    {
+      "manufacturer": "Lenovo",
+      "file": "BD/MOTHERBOARDS/LENOVO.json"
+    },
+    {
+      "manufacturer": "Acer",
+      "file": "BD/MOTHERBOARDS/ACER.json"
+    },
+    {
+      "manufacturer": "Alienware",
+      "file": "BD/MOTHERBOARDS/ALIENWARE.json"
+    },
+    {
+      "manufacturer": "Fujitsu",
+      "file": "BD/MOTHERBOARDS/FUJITSU.json"
+    },
+    {
+      "manufacturer": "Huananzhi",
+      "file": "BD/MOTHERBOARDS/HUANANZHI.json"
+    },
+    {
+      "manufacturer": "Machinist",
+      "file": "BD/MOTHERBOARDS/MACHINIST.json"
+    },
+    {
+      "manufacturer": "Jingsha",
+      "file": "BD/MOTHERBOARDS/JINGSHA.json"
+    },
+    {
+      "manufacturer": "Kllisre",
+      "file": "BD/MOTHERBOARDS/KLLISRE.json"
+    },
+    {
+      "manufacturer": "Qiyida",
+      "file": "BD/MOTHERBOARDS/QIYIDA.json"
+    },
+    {
+      "manufacturer": "Maxsun",
+      "file": "BD/MOTHERBOARDS/MAXSUN.json"
+    },
+    {
+      "manufacturer": "Colorful",
+      "file": "BD/MOTHERBOARDS/COLORFUL.json"
+    },
+    {
+      "manufacturer": "ERYING",
+      "file": "BD/MOTHERBOARDS/ERYING.json"
+    },
+    {
+      "manufacturer": "JGINYUE",
+      "file": "BD/MOTHERBOARDS/JGINYUE.json"
+    },
+    {
+      "manufacturer": "ONDA",
+      "file": "BD/MOTHERBOARDS/ONDA.json"
+    },
+    {
+      "manufacturer": "Advantech",
+      "file": "BD/MOTHERBOARDS/ADVANTECH.json"
+    },
+    {
+      "manufacturer": "AAEON",
+      "file": "BD/MOTHERBOARDS/AAEON.json"
+    },
+    {
+      "manufacturer": "Axiomtek",
+      "file": "BD/MOTHERBOARDS/AXIOMTEK.json"
+    },
+    {
+      "manufacturer": "Kontron",
+      "file": "BD/MOTHERBOARDS/KONTRON.json"
+    },
+    {
+      "manufacturer": "ADLINK",
+      "file": "BD/MOTHERBOARDS/ADLINK.json"
+    },
+    {
+      "manufacturer": "IEI",
+      "file": "BD/MOTHERBOARDS/IEI.json"
+    },
+    {
+      "manufacturer": "Portwell",
+      "file": "BD/MOTHERBOARDS/PORTWELL.json"
+    },
+    {
+      "manufacturer": "NEXCOM",
+      "file": "BD/MOTHERBOARDS/NEXCOM.json"
+    },
+    {
+      "manufacturer": "iBASE",
+      "file": "BD/MOTHERBOARDS/IBASE.json"
+    },
+    {
+      "manufacturer": "ASUS IoT",
+      "file": "BD/MOTHERBOARDS/ASUS_IOT.json"
+    },
+    {
+      "manufacturer": "Gigabyte Server",
+      "file": "BD/MOTHERBOARDS/GIGABYTE_SERVER.json"
+    },
+    {
+      "manufacturer": "ASUS Server",
+      "file": "BD/MOTHERBOARDS/ASUS_SERVER.json"
+    },
+    {
+      "manufacturer": "ASUS Workstation",
+      "file": "BD/MOTHERBOARDS/ASUS_WORKSTATION.json"
+    },
+    {
+      "manufacturer": "ASRock Industrial",
+      "file": "BD/MOTHERBOARDS/ASROCK_INDUSTRIAL.json"
+    },
+    {
+      "manufacturer": "Supermicro Embedded",
+      "file": "BD/MOTHERBOARDS/SUPERMICRO_EMBEDDED.json"
+    },
+    {
+      "manufacturer": "Biostar Racing",
+      "file": "BD/MOTHERBOARDS/BIOSTAR_RACING.json"
+    },
+    {
+      "manufacturer": "NZXT",
+      "file": "BD/MOTHERBOARDS/NZXT.json"
+    },
+    {
+      "manufacturer": "VIA",
+      "file": "BD/MOTHERBOARDS/VIA.json"
+    },
+    {
+      "manufacturer": "Zotac",
+      "file": "BD/MOTHERBOARDS/ZOTAC.json"
+    },
+    {
+      "manufacturer": "Leadtek",
+      "file": "BD/MOTHERBOARDS/LEADTEK.json"
+    },
+    {
+      "manufacturer": "BCM Advanced Research",
+      "file": "BD/MOTHERBOARDS/BCM_ADVANCED_RESEARCH.json"
+    },
+    {
+      "manufacturer": "DFI Industrial",
+      "file": "BD/MOTHERBOARDS/DFI_INDUSTRIAL.json"
+    },
+    {
+      "manufacturer": "Avalue",
+      "file": "BD/MOTHERBOARDS/AVALUE.json"
+    },
+    {
+      "manufacturer": "Arbor Technology",
+      "file": "BD/MOTHERBOARDS/ARBOR_TECHNOLOGY.json"
+    },
+    {
+      "manufacturer": "Commell",
+      "file": "BD/MOTHERBOARDS/COMMELL.json"
+    },
+    {
+      "manufacturer": "EVOC",
+      "file": "BD/MOTHERBOARDS/EVOC.json"
+    },
+    {
+      "manufacturer": "Giada",
+      "file": "BD/MOTHERBOARDS/GIADA.json"
+    },
+    {
+      "manufacturer": "Topton",
+      "file": "BD/MOTHERBOARDS/TOPTON.json"
+    },
+    {
+      "manufacturer": "CWWK",
+      "file": "BD/MOTHERBOARDS/CWWK.json"
+    },
+    {
+      "manufacturer": "Minisforum",
+      "file": "BD/MOTHERBOARDS/MINISFORUM.json"
+    },
+    {
+      "manufacturer": "Radxa",
+      "file": "BD/MOTHERBOARDS/RADXA.json"
+    },
+    {
+      "manufacturer": "Inspur",
+      "file": "BD/MOTHERBOARDS/INSPUR.json"
+    },
+    {
+      "manufacturer": "Sugon",
+      "file": "BD/MOTHERBOARDS/SUGON.json"
+    },
+    {
+      "manufacturer": "Hikvision",
+      "file": "BD/MOTHERBOARDS/HIKVISION.json"
+    },
+    {
+      "manufacturer": "Feiying",
+      "file": "BD/MOTHERBOARDS/FEIYING.json"
+    }
+  ]
+}

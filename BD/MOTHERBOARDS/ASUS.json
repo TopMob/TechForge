@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ASUS",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ASUS ROG Strix X870E-E Gaming WiFi",
+      "socket": "AM5",
+      "chipset": "AMD X870E",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "memory_slots": 4,
+      "max_memory_gb": 192,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 4.0 x4"
+      ],
+      "m2_slots": 5,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "5 GbE",
+        "wireless": "Wi-Fi 7",
+        "bluetooth": "Bluetooth 5.4"
+      },
+      "usb4_ports": 2
+    }
+  ]
+}

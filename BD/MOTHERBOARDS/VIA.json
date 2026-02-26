@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "VIA",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "VIA EPIA-M910",
+      "socket": "BGA",
+      "chipset": "VIA VX11H",
+      "form_factor": "Mini-ITX",
+      "memory_type": "DDR3 SO-DIMM",
+      "memory_slots": 1,
+      "max_memory_gb": 8,
+      "pcie_x16_slots": [],
+      "m2_slots": 0,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

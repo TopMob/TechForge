@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Giada",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Giada DN74 Mainboard",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "Mini-PC Proprietary",
+      "memory_type": "DDR4 SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 64,
+      "pcie_x16_slots": [],
+      "m2_slots": 2,
+      "sata_ports": 0,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Wi-Fi 6",
+        "bluetooth": "Bluetooth 5.2"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

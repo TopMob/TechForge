@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Supermicro Embedded",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Supermicro X13SWA-TF",
+      "socket": "LGA4677",
+      "chipset": "Intel W790",
+      "form_factor": "E-ATX",
+      "memory_type": "DDR5 ECC",
+      "memory_slots": 8,
+      "max_memory_gb": 2048,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 8,
+      "networking": {
+        "ethernet": "10 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Lenovo",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Lenovo Legion T7 34IRZ8 Mainboard",
+      "socket": "LGA1700",
+      "chipset": "Intel Z790",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "memory_slots": 4,
+      "max_memory_gb": 128,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 3,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Wi-Fi 6E",
+        "bluetooth": "Bluetooth 5.2"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

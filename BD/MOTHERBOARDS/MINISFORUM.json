@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Minisforum",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Minisforum BD790i",
+      "socket": "BGA",
+      "chipset": "AMD SoC",
+      "form_factor": "Mini-ITX",
+      "memory_type": "DDR5 SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 96,
+      "pcie_x16_slots": [
+        "PCIe 4.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Wi-Fi 6E",
+        "bluetooth": "Bluetooth 5.2"
+      },
+      "usb4_ports": 1
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Pegatron",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Pegatron IPMIP-GS",
+      "socket": "LGA1155",
+      "chipset": "Intel H61",
+      "form_factor": "Micro-ATX",
+      "memory_type": "DDR3",
+      "memory_slots": 2,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [
+        "PCIe 2.0 x16"
+      ],
+      "m2_slots": 0,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

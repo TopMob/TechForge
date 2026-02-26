@@ -1,0 +1,29 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ASUS Server",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ASUS Pro WS WRX90E-SAGE SE",
+      "socket": "sTR5",
+      "chipset": "AMD WRX90",
+      "form_factor": "EEB",
+      "memory_type": "DDR5 ECC",
+      "memory_slots": 8,
+      "max_memory_gb": 2048,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 4,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "10 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

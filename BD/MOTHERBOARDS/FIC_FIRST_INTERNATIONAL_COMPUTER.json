@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "FIC (First International Computer)",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "FIC K8M-800M",
+      "socket": "Socket 754",
+      "chipset": "VIA K8M800",
+      "form_factor": "Micro-ATX",
+      "memory_type": "DDR",
+      "memory_slots": 2,
+      "max_memory_gb": 2,
+      "pcie_x16_slots": [],
+      "m2_slots": 0,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "100 Mbps",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

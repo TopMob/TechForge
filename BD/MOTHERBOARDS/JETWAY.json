@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Jetway",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Jetway JNF9HG-QM77",
+      "socket": "BGA1023",
+      "chipset": "Intel QM77",
+      "form_factor": "Mini-ITX",
+      "memory_type": "DDR3 SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [
+        "PCIe 3.0 x16"
+      ],
+      "m2_slots": 0,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

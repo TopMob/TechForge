@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "IEI",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "IEI IMBA-Q670",
+      "socket": "LGA1700",
+      "chipset": "Intel Q670E",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "memory_slots": 4,
+      "max_memory_gb": 128,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 3,
+      "sata_ports": 6,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

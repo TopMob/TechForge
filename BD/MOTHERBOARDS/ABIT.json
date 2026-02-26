@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ABIT",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ABIT IP35 Pro",
+      "socket": "LGA775",
+      "chipset": "Intel P35",
+      "form_factor": "ATX",
+      "memory_type": "DDR2",
+      "memory_slots": 4,
+      "max_memory_gb": 8,
+      "pcie_x16_slots": [
+        "PCIe 1.1 x16"
+      ],
+      "m2_slots": 0,
+      "sata_ports": 6,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

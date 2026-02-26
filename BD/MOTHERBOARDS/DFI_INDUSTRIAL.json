@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "DFI Industrial",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "DFI ADP-ALN",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "SBC",
+      "memory_type": "LPDDR5",
+      "memory_slots": 0,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [],
+      "m2_slots": 2,
+      "sata_ports": 0,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

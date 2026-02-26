@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Fujitsu",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Fujitsu D3644-B",
+      "socket": "LGA1151",
+      "chipset": "Intel Q370",
+      "form_factor": "Micro-ATX",
+      "memory_type": "DDR4",
+      "memory_slots": 4,
+      "max_memory_gb": 128,
+      "pcie_x16_slots": [
+        "PCIe 3.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 6,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

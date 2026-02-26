@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ONDA",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ONDA B760SD4-W",
+      "socket": "LGA1700",
+      "chipset": "Intel B760",
+      "form_factor": "Micro-ATX",
+      "memory_type": "DDR4",
+      "memory_slots": 2,
+      "max_memory_gb": 64,
+      "pcie_x16_slots": [
+        "PCIe 4.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

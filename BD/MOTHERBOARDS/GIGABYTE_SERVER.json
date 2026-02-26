@@ -1,0 +1,29 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Gigabyte Server",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Gigabyte MZ73-LM1",
+      "socket": "SP5",
+      "chipset": "SoC",
+      "form_factor": "E-ATX",
+      "memory_type": "DDR5 ECC",
+      "memory_slots": 24,
+      "max_memory_gb": 6144,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16",
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 8,
+      "networking": {
+        "ethernet": "10 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Intel",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Intel Desktop Board DZ77GA-70K",
+      "socket": "LGA1155",
+      "chipset": "Intel Z77",
+      "form_factor": "ATX",
+      "memory_type": "DDR3",
+      "memory_slots": 4,
+      "max_memory_gb": 32,
+      "pcie_x16_slots": [
+        "PCIe 3.0 x16",
+        "PCIe 3.0 x8"
+      ],
+      "m2_slots": 0,
+      "sata_ports": 6,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

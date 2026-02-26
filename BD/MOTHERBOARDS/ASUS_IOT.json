@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ASUS IoT",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ASUS IoT Q670EI-IM-A",
+      "socket": "LGA1700",
+      "chipset": "Intel Q670E",
+      "form_factor": "Mini-ITX",
+      "memory_type": "DDR5 SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 64,
+      "pcie_x16_slots": [
+        "PCIe 5.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

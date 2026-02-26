@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "ERYING",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "ERYING I9-12900H ITX",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "Mini-ITX",
+      "memory_type": "DDR4 SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 64,
+      "pcie_x16_slots": [
+        "PCIe 4.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

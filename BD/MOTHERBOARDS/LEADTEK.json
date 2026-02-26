@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Leadtek",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Leadtek NVCM-01",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "Industrial SBC",
+      "memory_type": "DDR4",
+      "memory_slots": 1,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [],
+      "m2_slots": 1,
+      "sata_ports": 1,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

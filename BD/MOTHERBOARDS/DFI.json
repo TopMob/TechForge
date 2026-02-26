@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "DFI",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "DFI GHF51",
+      "socket": "BGA",
+      "chipset": "AMD Ryzen Embedded",
+      "form_factor": "SBC",
+      "memory_type": "LPDDR4X",
+      "memory_slots": 0,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [],
+      "m2_slots": 2,
+      "sata_ports": 0,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

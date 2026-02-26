@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "AOpen",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "AOpen AX4C Max",
+      "socket": "Socket 478",
+      "chipset": "Intel 875P",
+      "form_factor": "ATX",
+      "memory_type": "DDR",
+      "memory_slots": 4,
+      "max_memory_gb": 4,
+      "pcie_x16_slots": [],
+      "m2_slots": 0,
+      "sata_ports": 2,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

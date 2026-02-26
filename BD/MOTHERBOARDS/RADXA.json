@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Radxa",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Radxa ROCK 5 ITX",
+      "socket": "BGA",
+      "chipset": "Rockchip RK3588",
+      "form_factor": "Mini-ITX",
+      "memory_type": "LPDDR4X",
+      "memory_slots": 0,
+      "max_memory_gb": 16,
+      "pcie_x16_slots": [
+        "PCIe 3.0 x4"
+      ],
+      "m2_slots": 1,
+      "sata_ports": 0,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

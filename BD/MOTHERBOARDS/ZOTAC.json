@@ -1,0 +1,25 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Zotac",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Zotac ZBOX Magnus EN Mainboard",
+      "socket": "BGA",
+      "chipset": "Intel SoC",
+      "form_factor": "Mini-PC Proprietary",
+      "memory_type": "DDR5 SO-DIMM",
+      "memory_slots": 2,
+      "max_memory_gb": 64,
+      "pcie_x16_slots": [],
+      "m2_slots": 2,
+      "sata_ports": 0,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Wi-Fi 6E",
+        "bluetooth": "Bluetooth 5.2"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

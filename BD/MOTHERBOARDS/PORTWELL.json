@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Portwell",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Portwell RUBY-D814-Q470",
+      "socket": "LGA1200",
+      "chipset": "Intel Q470E",
+      "form_factor": "ATX",
+      "memory_type": "DDR4",
+      "memory_slots": 4,
+      "max_memory_gb": 128,
+      "pcie_x16_slots": [
+        "PCIe 3.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 6,
+      "networking": {
+        "ethernet": "2.5 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

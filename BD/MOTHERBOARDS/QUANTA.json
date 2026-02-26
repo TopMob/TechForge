@@ -1,0 +1,28 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Quanta",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Quanta QSSC-S4R",
+      "socket": "LGA4189",
+      "chipset": "Intel C621A",
+      "form_factor": "SSI-EEB",
+      "memory_type": "DDR4 ECC",
+      "memory_slots": 16,
+      "max_memory_gb": 4096,
+      "pcie_x16_slots": [
+        "PCIe 4.0 x16",
+        "PCIe 4.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 8,
+      "networking": {
+        "ethernet": "10 GbE",
+        "wireless": "None",
+        "bluetooth": "None"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}

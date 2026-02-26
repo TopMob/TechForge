@@ -1,0 +1,27 @@
+{
+  "component_type": "motherboard",
+  "manufacturer": "Shuttle",
+  "updated_at": "2026-02-26",
+  "items": [
+    {
+      "name": "Shuttle XPC SZ270R9 Mainboard",
+      "socket": "LGA1151",
+      "chipset": "Intel Z270",
+      "form_factor": "Proprietary SFF",
+      "memory_type": "DDR4",
+      "memory_slots": 4,
+      "max_memory_gb": 64,
+      "pcie_x16_slots": [
+        "PCIe 3.0 x16"
+      ],
+      "m2_slots": 2,
+      "sata_ports": 4,
+      "networking": {
+        "ethernet": "1 GbE",
+        "wireless": "Optional",
+        "bluetooth": "Optional"
+      },
+      "usb4_ports": 0
+    }
+  ]
+}
