@@ -1,11 +1,12 @@
 :root {
   color-scheme: dark;
-  --background: #090c14;
-  --card: rgba(20, 26, 44, 0.92);
-  --text: #e8ecff;
-  --muted: #98a4cc;
-  --accent: #6f87ff;
-  --border: rgba(130, 150, 230, 0.24);
+  --background: #070a12;
+  --card: rgba(20, 27, 45, 0.92);
+  --text: #eef2ff;
+  --muted: #a6b2d9;
+  --accent: #6e8bff;
+  --border: rgba(138, 156, 230, 0.24);
+  --warning: #ff9f75;
 }
 
 * {
@@ -14,26 +15,25 @@
 
 body {
   margin: 0;
-  font-family: Inter, sans-serif;
-  background: radial-gradient(circle at top, #172247, var(--background));
-  color: var(--text);
   min-height: 100vh;
+  font-family: Inter, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top, #18264f, var(--background));
 }
 
 .application-shell {
-  width: min(1160px, 94vw);
+  width: min(1200px, 94vw);
   margin: 32px auto;
   display: grid;
   gap: 18px;
 }
 
 .application-header,
-.configuration-panel,
-.components-layout {
+.panel {
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--card);
-  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.36);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.35);
 }
 
 .application-header {
@@ -42,11 +42,11 @@ body {
 
 .application-label {
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
   color: var(--accent);
-  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
   font-size: 12px;
+  font-weight: 700;
 }
 
 .application-header h1 {
@@ -59,115 +59,105 @@ body {
   color: var(--muted);
 }
 
-.configuration-panel {
+.application-main {
   display: grid;
-  grid-template-columns: repeat(2, minmax(220px, 1fr)) auto;
-  gap: 14px;
-  padding: 18px;
-  align-items: end;
+  gap: 18px;
 }
 
-.field-group {
+.panel {
+  padding: 20px;
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.section-header p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.comparison-controls,
+.configurator-form {
+  margin-top: 16px;
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 label {
+  display: grid;
+  gap: 8px;
   color: var(--muted);
   font-size: 14px;
 }
 
-input,
-button {
+select {
   width: 100%;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: rgba(8, 12, 24, 0.85);
   color: var(--text);
-  padding: 12px;
   font: inherit;
 }
 
-button {
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), #8f77ff);
-  border: none;
-  font-weight: 600;
+.comparison-result {
+  margin-top: 16px;
+  overflow-x: auto;
 }
 
-.connection-status {
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.comparison-table th,
+.comparison-table td {
+  border: 1px solid var(--border);
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.comparison-table thead th {
+  background: rgba(110, 139, 255, 0.14);
+}
+
+.configuration-summary {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(8, 12, 24, 0.72);
+}
+
+.configuration-summary h3 {
+  margin: 0 0 12px;
+}
+
+.configuration-summary ul {
   margin: 0;
-  color: var(--muted);
-  grid-column: 1 / -1;
-}
-
-.components-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 18px;
-  padding: 18px;
-}
-
-.category-list,
-.component-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  padding-left: 18px;
   display: grid;
   gap: 8px;
 }
 
-.category-button {
-  text-align: left;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: rgba(11, 16, 30, 0.8);
-  color: var(--text);
-  padding: 10px;
+.configuration-total {
+  margin: 14px 0 0;
+  font-weight: 700;
 }
 
-.category-button.active {
-  background: rgba(111, 135, 255, 0.22);
-  border-color: rgba(145, 170, 255, 0.8);
+.configuration-warning {
+  margin: 8px 0 0;
+  color: var(--warning);
 }
 
-.components-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.data-source-tag {
+.guide-list {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
   color: var(--muted);
-  font-size: 13px;
-}
-
-.component-item {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  background: rgba(8, 12, 24, 0.85);
-}
-
-.component-name {
-  margin: 0 0 8px;
-  font-weight: 600;
-}
-
-.component-specs {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-@media (max-width: 900px) {
-  .configuration-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .components-layout {
-    grid-template-columns: 1fr;
-  }
 }
