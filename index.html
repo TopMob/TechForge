@@ -33,14 +33,20 @@
         <div id="comparison-category-tabs" class="category-tabs"></div>
 
         <div class="comparison-selectors">
-          <label>
+          <label class="selector-with-search">
             Первая модель
+            <input id="comparison-first-search" type="search" placeholder="Поиск прямо в списке выбора">
             <select id="comparison-first-select"></select>
           </label>
-          <label>
+          <label class="selector-with-search">
             Вторая модель
+            <input id="comparison-second-search" type="search" placeholder="Поиск прямо в списке выбора">
             <select id="comparison-second-select"></select>
           </label>
+        </div>
+
+        <div class="comparison-actions">
+          <p id="comparison-count" class="comparison-count"></p>
         </div>
 
         <div id="comparison-result" class="comparison-result"></div>
@@ -53,12 +59,33 @@
         </div>
 
         <div id="configurator-grid" class="configurator-grid"></div>
+        <button id="configurator-reset" class="secondary-action" type="button">Сбросить выбор</button>
 
         <div class="configuration-summary">
           <h3>Итог сборки</h3>
           <ul id="configuration-list"></ul>
           <p id="configuration-total" class="configuration-total"></p>
           <p id="configuration-warning" class="configuration-warning"></p>
+        </div>
+
+        <div class="firebase-box">
+          <h3>Добавление компонентов в Firebase</h3>
+          <p id="firebase-connection-info" class="firebase-connection-info">Firebase подключен: проверка...</p>
+          <p>Сохранение выполняется в структуру вида <strong>PC/CPU/Название компонента</strong> (и для других категорий).</p>
+          <form id="firebase-component-form" class="firebase-form">
+            <label>
+              Категория
+              <select name="firebaseCategory"></select>
+            </label>
+            <label>
+              Название компонента
+              <input name="firebaseComponentName" type="text" placeholder="Например, Ryzen 7 7800X3D">
+            </label>
+            <div id="firebase-specs-container" class="firebase-specs-container"></div>
+            <button id="add-firebase-spec" class="secondary-action" type="button">Добавить характеристику</button>
+            <button class="secondary-action" type="submit">Сохранить в Firebase</button>
+            <p id="firebase-status" class="comparison-count"></p>
+          </form>
         </div>
       </section>
 
