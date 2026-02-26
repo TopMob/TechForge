@@ -418,18 +418,21 @@ function renderComparisonTable() {
 function renderConfigurator() {
   interfaceElements.configuratorGrid.innerHTML = configuratorCategoryOrder
     .map((categoryKey) => {
-      const categoryRecords = getFilteredRecords(categoryKey, applicationState.configuratorSearchByCategory[categoryKey] || '')
-      const optionsMarkup = ['<option value="">Не выбрано</option>']
-      for (const categoryRecord of categoryRecords) {
-        const priceLabel = categoryRecord.price ? ` · ${formatPrice(categoryRecord.price)}` : ''
-        optionsMarkup.push(`<option value="${escapeHtml(categoryRecord.id)}">${escapeHtml(categoryRecord.name + priceLabel)}</option>`)
-      }
+      const searchValue = applicationState.configuratorSearchByCategory[categoryKey] || ''
+      const categoryRecords = getFilteredRecords(categoryKey, searchValue)
+      const datalistId = `configurator-options-${categoryKey}`
+      const optionsMarkup = categoryRecords
+        .map((categoryRecord) => {
+          const priceLabel = categoryRecord.price ? ` · ${formatPrice(categoryRecord.price)}` : ''
+          return `<option value="${escapeHtml(categoryRecord.name)}" label="${escapeHtml(categoryRecord.name + priceLabel)}"></option>`
+        })
+        .join('')
 
       return `
         <label class="configurator-field">
           ${escapeHtml(categorySettings[categoryKey].title)}
-          <input class="configurator-search" data-configurator-search="${escapeHtml(categoryKey)}" type="search" placeholder="Поиск компонента">
-          <select data-configurator-category="${escapeHtml(categoryKey)}">${optionsMarkup.join('')}</select>
+          <input class="configurator-search" data-configurator-search="${escapeHtml(categoryKey)}" list="${escapeHtml(datalistId)}" type="search" placeholder="Начните писать для выбора компонента" autocomplete="off">
+          <datalist id="${escapeHtml(datalistId)}">${optionsMarkup}</datalist>
         </label>
       `
     })
@@ -437,11 +440,11 @@ function renderConfigurator() {
 
   for (const categoryKey of configuratorCategoryOrder) {
     const selectedRecordId = applicationState.selectedConfigurationByCategory[categoryKey] || ''
+    const selectedRecord = getRecordById(categoryKey, selectedRecordId)
     const searchElement = interfaceElements.configuratorGrid.querySelector(`[data-configurator-search="${categoryKey}"]`)
-    if (searchElement) searchElement.value = applicationState.configuratorSearchByCategory[categoryKey] || ''
-
-    const selectElement = interfaceElements.configuratorGrid.querySelector(`[data-configurator-category="${categoryKey}"]`)
-    if (selectElement) selectElement.value = selectedRecordId
+    if (searchElement) {
+      searchElement.value = selectedRecord ? selectedRecord.name : (applicationState.configuratorSearchByCategory[categoryKey] || '')
+    }
   }
 }
 
@@ -579,15 +582,16 @@ function bindEvents() {
   interfaceElements.configuratorGrid.addEventListener('input', (event) => {
     const searchInput = event.target.closest('[data-configurator-search]')
     if (!searchInput) return
-    applicationState.configuratorSearchByCategory[searchInput.dataset.configuratorSearch] = searchInput.value
-    renderConfigurator()
-    renderConfigurationSummary()
-  })
 
-  interfaceElements.configuratorGrid.addEventListener('change', (event) => {
-    const categorySelect = event.target.closest('[data-configurator-category]')
-    if (!categorySelect) return
-    applicationState.selectedConfigurationByCategory[categorySelect.dataset.configuratorCategory] = categorySelect.value
+    const categoryKey = searchInput.dataset.configuratorSearch
+    const inputValue = normalizeText(searchInput.value)
+    applicationState.configuratorSearchByCategory[categoryKey] = inputValue
+
+    const categoryRecords = applicationState.componentsByCategory[categoryKey] || []
+    const matchedRecord = categoryRecords.find((record) => record.name.toLowerCase() === inputValue.toLowerCase())
+    applicationState.selectedConfigurationByCategory[categoryKey] = matchedRecord ? matchedRecord.id : ''
+
+    renderConfigurator()
     renderConfigurationSummary()
   })
 
