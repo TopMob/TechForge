@@ -146,6 +146,13 @@ label {
   font-size: 14px;
 }
 
+.selector-with-search {
+  background: rgba(8, 12, 24, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
 select {
   width: 100%;
   padding: 12px;
@@ -273,6 +280,19 @@ input[type='search'] {
 
 .firebase-box p {
   color: var(--muted);
+}
+
+.firebase-connection-info {
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+
+.firebase-connected {
+  color: #7df0af !important;
+}
+
+.firebase-disconnected {
+  color: #ff9f75 !important;
 }
 
 .firebase-form {

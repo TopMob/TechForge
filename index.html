@@ -33,20 +33,14 @@
         <div id="comparison-category-tabs" class="category-tabs"></div>
 
         <div class="comparison-selectors">
-          <label>
-            Поиск первой модели
-            <input id="comparison-first-search" type="search" placeholder="Введите модель или бренд">
-          </label>
-          <label>
+          <label class="selector-with-search">
             Первая модель
+            <input id="comparison-first-search" type="search" placeholder="Поиск прямо в списке выбора">
             <select id="comparison-first-select"></select>
           </label>
-          <label>
-            Поиск второй модели
-            <input id="comparison-second-search" type="search" placeholder="Введите модель или бренд">
-          </label>
-          <label>
+          <label class="selector-with-search">
             Вторая модель
+            <input id="comparison-second-search" type="search" placeholder="Поиск прямо в списке выбора">
             <select id="comparison-second-select"></select>
           </label>
         </div>
@@ -76,6 +70,7 @@
 
         <div class="firebase-box">
           <h3>Добавление компонентов в Firebase</h3>
+          <p id="firebase-connection-info" class="firebase-connection-info">Firebase подключен: проверка...</p>
           <p>Сохранение выполняется в структуру вида <strong>PC/CPU/Название компонента</strong> (и для других категорий).</p>
           <form id="firebase-component-form" class="firebase-form">
             <label>

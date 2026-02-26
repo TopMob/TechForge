@@ -58,7 +58,8 @@ const interfaceElements = {
   firebaseForm: document.getElementById('firebase-component-form'),
   firebaseSpecsContainer: document.getElementById('firebase-specs-container'),
   addFirebaseSpecButton: document.getElementById('add-firebase-spec'),
-  firebaseStatus: document.getElementById('firebase-status')
+  firebaseStatus: document.getElementById('firebase-status'),
+  firebaseConnectionInfo: document.getElementById('firebase-connection-info')
 }
 
 const applicationState = {
@@ -496,6 +497,20 @@ function collectFirebaseSpecs() {
   return specs
 }
 
+function renderFirebaseConnectionState() {
+  if (!interfaceElements.firebaseConnectionInfo) return
+  if (firebaseDatabase) {
+    interfaceElements.firebaseConnectionInfo.textContent = 'Firebase подключен: готово к сохранению в Realtime Database.'
+    interfaceElements.firebaseConnectionInfo.classList.remove('firebase-disconnected')
+    interfaceElements.firebaseConnectionInfo.classList.add('firebase-connected')
+    return
+  }
+
+  interfaceElements.firebaseConnectionInfo.textContent = 'Firebase не подключен: проверьте конфиг.'
+  interfaceElements.firebaseConnectionInfo.classList.remove('firebase-connected')
+  interfaceElements.firebaseConnectionInfo.classList.add('firebase-disconnected')
+}
+
 async function saveComponentToFirebase(event) {
   event.preventDefault()
   interfaceElements.firebaseStatus.textContent = ''
@@ -523,6 +538,8 @@ async function saveComponentToFirebase(event) {
     createFirebaseSpecRow()
   } catch (error) {
     interfaceElements.firebaseStatus.textContent = `Не удалось сохранить в Firebase: ${error.message}`
+    interfaceElements.firebaseConnectionInfo?.classList.remove('firebase-connected')
+    interfaceElements.firebaseConnectionInfo?.classList.add('firebase-disconnected')
   }
 }
 
@@ -612,6 +629,7 @@ async function initializeApplication() {
   renderConfigurator()
   renderConfigurationSummary()
   createFirebaseSpecRow('Производитель', '')
+  renderFirebaseConnectionState()
   bindEvents()
 }
 
