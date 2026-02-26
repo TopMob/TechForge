@@ -44,10 +44,10 @@ const interfaceElements = {
   mainTabsContainer: document.getElementById('main-tabs'),
   mainPanels: document.querySelectorAll('[data-main-panel]'),
   comparisonCategoryTabs: document.getElementById('comparison-category-tabs'),
-  comparisonFirstSearch: document.getElementById('comparison-first-search'),
-  comparisonSecondSearch: document.getElementById('comparison-second-search'),
-  comparisonFirstSelect: document.getElementById('comparison-first-select'),
-  comparisonSecondSelect: document.getElementById('comparison-second-select'),
+  comparisonFirstInput: document.getElementById('comparison-first-input'),
+  comparisonSecondInput: document.getElementById('comparison-second-input'),
+  comparisonFirstOptions: document.getElementById('comparison-first-options'),
+  comparisonSecondOptions: document.getElementById('comparison-second-options'),
   comparisonCount: document.getElementById('comparison-count'),
   comparisonResult: document.getElementById('comparison-result'),
   configuratorGrid: document.getElementById('configurator-grid'),
@@ -67,7 +67,11 @@ const applicationState = {
   activeComparisonCategory: 'gpu',
   componentsByCategory: {},
   selectedConfigurationByCategory: {},
-  comparisonSearch: {
+  comparisonInput: {
+    first: '',
+    second: ''
+  },
+  comparisonSelectionBySide: {
     first: '',
     second: ''
   },
@@ -349,36 +353,47 @@ function getFilteredRecords(categoryKey, searchValue) {
   })
 }
 
-function renderSelectOptions(selectElement, records, preferredRecordId) {
-  const optionsMarkup = records.map((record) => `<option value="${escapeHtml(record.id)}">${escapeHtml(record.name)}</option>`).join('')
-  selectElement.innerHTML = optionsMarkup
+const comparisonVisibleLimit = 25
 
-  if (!records.length) {
-    selectElement.value = ''
-    return null
-  }
+function findRecordIdByExactName(records, searchValue) {
+  const normalizedSearchValue = normalizeText(searchValue).toLowerCase()
+  if (!normalizedSearchValue) return ''
+  const matchedRecord = records.find((record) => record.name.toLowerCase() === normalizedSearchValue)
+  return matchedRecord ? matchedRecord.id : ''
+}
 
-  const preferredRecord = records.find((record) => record.id === preferredRecordId)
-  selectElement.value = preferredRecord ? preferredRecord.id : records[0].id
-  return selectElement.value
+function buildComparisonDatalist(records, side) {
+  const optionsElement = side === 'first' ? interfaceElements.comparisonFirstOptions : interfaceElements.comparisonSecondOptions
+  if (!optionsElement) return
+
+  optionsElement.innerHTML = records
+    .slice(0, comparisonVisibleLimit)
+    .map((record) => `<option value="${escapeHtml(record.name)}"></option>`)
+    .join('')
 }
 
 function renderComparisonSelectors() {
   const categoryKey = applicationState.activeComparisonCategory
-  const firstRecords = getFilteredRecords(categoryKey, applicationState.comparisonSearch.first)
-  const secondRecords = getFilteredRecords(categoryKey, applicationState.comparisonSearch.second)
+  const firstRecords = getFilteredRecords(categoryKey, applicationState.comparisonInput.first)
+  const secondRecords = getFilteredRecords(categoryKey, applicationState.comparisonInput.second)
 
-  const selectedFirstId = renderSelectOptions(interfaceElements.comparisonFirstSelect, firstRecords, interfaceElements.comparisonFirstSelect.value)
-  const selectedSecondId = renderSelectOptions(interfaceElements.comparisonSecondSelect, secondRecords, interfaceElements.comparisonSecondSelect.value)
+  const firstSelectedId = findRecordIdByExactName(firstRecords, applicationState.comparisonInput.first) || applicationState.comparisonSelectionBySide.first
+  const secondSelectedId = findRecordIdByExactName(secondRecords, applicationState.comparisonInput.second) || applicationState.comparisonSelectionBySide.second
 
-  interfaceElements.comparisonCount.textContent = `${firstRecords.length} результатов для первой модели · ${secondRecords.length} для второй`
+  applicationState.comparisonSelectionBySide.first = firstRecords.some((record) => record.id === firstSelectedId) ? firstSelectedId : ''
+  applicationState.comparisonSelectionBySide.second = secondRecords.some((record) => record.id === secondSelectedId) ? secondSelectedId : ''
 
-  if (selectedFirstId && selectedSecondId) {
+  buildComparisonDatalist(firstRecords, 'first')
+  buildComparisonDatalist(secondRecords, 'second')
+
+  interfaceElements.comparisonCount.textContent = `${Math.min(firstRecords.length, comparisonVisibleLimit)} из ${firstRecords.length} в первой модели · ${Math.min(secondRecords.length, comparisonVisibleLimit)} из ${secondRecords.length} во второй`
+
+  if (applicationState.comparisonSelectionBySide.first && applicationState.comparisonSelectionBySide.second) {
     renderComparisonTable()
     return
   }
 
-  interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">По вашему фильтру не найдено подходящих моделей.</p>'
+  interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Введите точное название из списка, чтобы сравнить модели.</p>'
 }
 
 function collectSpecNames(firstRecord, secondRecord) {
@@ -394,8 +409,8 @@ function collectSpecNames(firstRecord, secondRecord) {
 
 function renderComparisonTable() {
   const categoryKey = applicationState.activeComparisonCategory
-  const firstRecord = getRecordById(categoryKey, interfaceElements.comparisonFirstSelect.value)
-  const secondRecord = getRecordById(categoryKey, interfaceElements.comparisonSecondSelect.value)
+  const firstRecord = getRecordById(categoryKey, applicationState.comparisonSelectionBySide.first)
+  const secondRecord = getRecordById(categoryKey, applicationState.comparisonSelectionBySide.second)
 
   if (!firstRecord || !secondRecord) {
     interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Недостаточно данных для сравнения выбранной категории.</p>'
@@ -558,26 +573,33 @@ function bindEvents() {
     const tabButton = event.target.closest('[data-comparison-category]')
     if (!tabButton) return
     applicationState.activeComparisonCategory = tabButton.dataset.comparisonCategory
-    applicationState.comparisonSearch.first = ''
-    applicationState.comparisonSearch.second = ''
-    interfaceElements.comparisonFirstSearch.value = ''
-    interfaceElements.comparisonSecondSearch.value = ''
+    applicationState.comparisonInput.first = ''
+    applicationState.comparisonInput.second = ''
+    applicationState.comparisonSelectionBySide.first = ''
+    applicationState.comparisonSelectionBySide.second = ''
+    interfaceElements.comparisonFirstInput.value = ''
+    interfaceElements.comparisonSecondInput.value = ''
     renderComparisonCategoryTabs()
     renderComparisonSelectors()
   })
 
-  interfaceElements.comparisonFirstSearch.addEventListener('input', (event) => {
-    applicationState.comparisonSearch.first = event.target.value
+  interfaceElements.comparisonFirstInput.addEventListener('input', (event) => {
+    applicationState.comparisonInput.first = event.target.value
+    applicationState.comparisonSelectionBySide.first = findRecordIdByExactName(
+      getFilteredRecords(applicationState.activeComparisonCategory, event.target.value),
+      event.target.value
+    )
     renderComparisonSelectors()
   })
 
-  interfaceElements.comparisonSecondSearch.addEventListener('input', (event) => {
-    applicationState.comparisonSearch.second = event.target.value
+  interfaceElements.comparisonSecondInput.addEventListener('input', (event) => {
+    applicationState.comparisonInput.second = event.target.value
+    applicationState.comparisonSelectionBySide.second = findRecordIdByExactName(
+      getFilteredRecords(applicationState.activeComparisonCategory, event.target.value),
+      event.target.value
+    )
     renderComparisonSelectors()
   })
-
-  interfaceElements.comparisonFirstSelect.addEventListener('change', renderComparisonTable)
-  interfaceElements.comparisonSecondSelect.addEventListener('change', renderComparisonTable)
 
   interfaceElements.configuratorGrid.addEventListener('input', (event) => {
     const searchInput = event.target.closest('[data-configurator-search]')

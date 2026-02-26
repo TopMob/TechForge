@@ -35,13 +35,13 @@
         <div class="comparison-selectors">
           <label class="selector-with-search">
             Первая модель
-            <input id="comparison-first-search" type="search" placeholder="Поиск прямо в списке выбора">
-            <select id="comparison-first-select"></select>
+            <input id="comparison-first-input" data-comparison-side="first" list="comparison-first-options" type="search" placeholder="Введите модель, чтобы отфильтровать список" autocomplete="off">
+            <datalist id="comparison-first-options"></datalist>
           </label>
           <label class="selector-with-search">
             Вторая модель
-            <input id="comparison-second-search" type="search" placeholder="Поиск прямо в списке выбора">
-            <select id="comparison-second-select"></select>
+            <input id="comparison-second-input" data-comparison-side="second" list="comparison-second-options" type="search" placeholder="Введите модель, чтобы отфильтровать список" autocomplete="off">
+            <datalist id="comparison-second-options"></datalist>
           </label>
         </div>
 
