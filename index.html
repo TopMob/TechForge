@@ -34,13 +34,26 @@
 
         <div class="comparison-selectors">
           <label>
+            Поиск первой модели
+            <input id="comparison-first-search" type="search" placeholder="Введите модель или бренд">
+          </label>
+          <label>
             Первая модель
             <select id="comparison-first-select"></select>
+          </label>
+          <label>
+            Поиск второй модели
+            <input id="comparison-second-search" type="search" placeholder="Введите модель или бренд">
           </label>
           <label>
             Вторая модель
             <select id="comparison-second-select"></select>
           </label>
+        </div>
+
+        <div class="comparison-actions">
+          <button id="comparison-swap" type="button">Поменять модели местами</button>
+          <p id="comparison-count" class="comparison-count"></p>
         </div>
 
         <div id="comparison-result" class="comparison-result"></div>
@@ -53,6 +66,7 @@
         </div>
 
         <div id="configurator-grid" class="configurator-grid"></div>
+        <button id="configurator-reset" class="secondary-action" type="button">Сбросить выбор</button>
 
         <div class="configuration-summary">
           <h3>Итог сборки</h3>

@@ -15,10 +15,15 @@ const interfaceElements = {
   mainTabsContainer: document.getElementById('main-tabs'),
   mainPanels: document.querySelectorAll('[data-main-panel]'),
   comparisonCategoryTabs: document.getElementById('comparison-category-tabs'),
+  comparisonFirstSearch: document.getElementById('comparison-first-search'),
+  comparisonSecondSearch: document.getElementById('comparison-second-search'),
   comparisonFirstSelect: document.getElementById('comparison-first-select'),
   comparisonSecondSelect: document.getElementById('comparison-second-select'),
+  comparisonCount: document.getElementById('comparison-count'),
+  comparisonSwapButton: document.getElementById('comparison-swap'),
   comparisonResult: document.getElementById('comparison-result'),
   configuratorGrid: document.getElementById('configurator-grid'),
+  configuratorResetButton: document.getElementById('configurator-reset'),
   configurationList: document.getElementById('configuration-list'),
   configurationTotal: document.getElementById('configuration-total'),
   configurationWarning: document.getElementById('configuration-warning')
@@ -28,7 +33,11 @@ const applicationState = {
   activeMainTab: 'comparison',
   activeComparisonCategory: 'gpu',
   componentsByCategory: {},
-  selectedConfigurationByCategory: {}
+  selectedConfigurationByCategory: {},
+  comparisonSearch: {
+    first: '',
+    second: ''
+  }
 }
 
 function normalizeText(value) {
@@ -55,6 +64,11 @@ function createIdentifier(categoryKey, componentName) {
 
 function formatPrice(priceValue) {
   return `${Math.round(priceValue)} $`
+}
+
+function formatClockFrequency(value) {
+  const frequency = parseNumber(value)
+  return frequency ? `${frequency} ГГц` : ''
 }
 
 async function fetchJsonFile(filePath) {
@@ -105,7 +119,8 @@ function convertRecord(categoryKey, sourceRecord) {
       specs: {
         Производитель: normalizeText(baseRecord.manufacturer),
         Ядра: parseNumber(baseRecord.core_count) ? String(baseRecord.core_count) : '',
-        ЧастотаBoost: parseNumber(baseRecord.boost_clock_ghz) ? `${baseRecord.boost_clock_ghz} ГГц` : '',
+        'Базовая частота': formatClockFrequency(baseRecord.core_clock_ghz),
+        'Boost частота': formatClockFrequency(baseRecord.boost_clock_ghz),
         Сокет: normalizeText(baseRecord.socket),
         TDP: parseNumber(baseRecord.tdp_watts) ? `${baseRecord.tdp_watts} Вт` : ''
       }
@@ -218,11 +233,24 @@ function convertRecord(categoryKey, sourceRecord) {
   return null
 }
 
+function getRecordCompleteness(record) {
+  const specValues = Object.values(record.specs || {})
+  const nonEmptySpecs = specValues.filter((specValue) => normalizeText(specValue)).length
+  const hasPrice = record.price ? 1 : 0
+  return nonEmptySpecs + hasPrice
+}
+
 function buildUniqueList(records) {
   const recordsByName = new Map()
   for (const record of records) {
     const nameKey = record.name.toLowerCase()
     if (!recordsByName.has(nameKey)) {
+      recordsByName.set(nameKey, record)
+      continue
+    }
+
+    const existingRecord = recordsByName.get(nameKey)
+    if (getRecordCompleteness(record) > getRecordCompleteness(existingRecord)) {
       recordsByName.set(nameKey, record)
     }
   }
@@ -246,7 +274,7 @@ async function loadCategory(categoryKey) {
 
   const uniqueRecords = buildUniqueList(allRecords)
   uniqueRecords.sort((leftRecord, rightRecord) => leftRecord.name.localeCompare(rightRecord.name, 'ru'))
-  return uniqueRecords.slice(0, 500)
+  return uniqueRecords
 }
 
 function getRecordById(categoryKey, recordId) {
@@ -276,20 +304,54 @@ function renderComparisonCategoryTabs() {
     .join('')
 }
 
-function renderComparisonSelectors() {
-  const categoryKey = applicationState.activeComparisonCategory
+function getFilteredRecords(categoryKey, searchValue) {
   const categoryRecords = applicationState.componentsByCategory[categoryKey] || []
-  const optionsMarkup = categoryRecords.map((record) => `<option value="${escapeHtml(record.id)}">${escapeHtml(record.name)}</option>`).join('')
+  const normalizedSearchValue = normalizeText(searchValue).toLowerCase()
 
-  interfaceElements.comparisonFirstSelect.innerHTML = optionsMarkup
-  interfaceElements.comparisonSecondSelect.innerHTML = optionsMarkup
-
-  if (categoryRecords.length > 1) {
-    interfaceElements.comparisonFirstSelect.value = categoryRecords[0].id
-    interfaceElements.comparisonSecondSelect.value = categoryRecords[1].id
+  if (!normalizedSearchValue) {
+    return categoryRecords
   }
 
-  renderComparisonTable()
+  return categoryRecords.filter((record) => {
+    if (record.name.toLowerCase().includes(normalizedSearchValue)) {
+      return true
+    }
+
+    return Object.values(record.specs || {}).some((specValue) => normalizeText(specValue).toLowerCase().includes(normalizedSearchValue))
+  })
+}
+
+function renderSelectOptions(selectElement, records, preferredRecordId) {
+  const optionsMarkup = records.map((record) => `<option value="${escapeHtml(record.id)}">${escapeHtml(record.name)}</option>`).join('')
+  selectElement.innerHTML = optionsMarkup
+
+  if (!records.length) {
+    selectElement.value = ''
+    return null
+  }
+
+  const preferredRecord = records.find((record) => record.id === preferredRecordId)
+  selectElement.value = preferredRecord ? preferredRecord.id : records[0].id
+  return selectElement.value
+}
+
+function renderComparisonSelectors() {
+  const categoryKey = applicationState.activeComparisonCategory
+  const firstRecords = getFilteredRecords(categoryKey, applicationState.comparisonSearch.first)
+  const secondRecords = getFilteredRecords(categoryKey, applicationState.comparisonSearch.second)
+
+  const selectedFirstId = renderSelectOptions(interfaceElements.comparisonFirstSelect, firstRecords, interfaceElements.comparisonFirstSelect.value)
+  const selectedSecondId = renderSelectOptions(interfaceElements.comparisonSecondSelect, secondRecords, interfaceElements.comparisonSecondSelect.value)
+
+  const countDescription = `${firstRecords.length} результатов для первой модели · ${secondRecords.length} для второй`
+  interfaceElements.comparisonCount.textContent = countDescription
+
+  if (selectedFirstId && selectedSecondId) {
+    renderComparisonTable()
+    return
+  }
+
+  interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">По вашему фильтру не найдено подходящих моделей.</p>'
 }
 
 function collectSpecNames(firstRecord, secondRecord) {
@@ -426,8 +488,29 @@ function bindEvents() {
       return
     }
     applicationState.activeComparisonCategory = tabButton.dataset.comparisonCategory
+    applicationState.comparisonSearch.first = ''
+    applicationState.comparisonSearch.second = ''
+    interfaceElements.comparisonFirstSearch.value = ''
+    interfaceElements.comparisonSecondSearch.value = ''
     renderComparisonCategoryTabs()
     renderComparisonSelectors()
+  })
+
+  interfaceElements.comparisonFirstSearch.addEventListener('input', (event) => {
+    applicationState.comparisonSearch.first = event.target.value
+    renderComparisonSelectors()
+  })
+
+  interfaceElements.comparisonSecondSearch.addEventListener('input', (event) => {
+    applicationState.comparisonSearch.second = event.target.value
+    renderComparisonSelectors()
+  })
+
+  interfaceElements.comparisonSwapButton.addEventListener('click', () => {
+    const firstValue = interfaceElements.comparisonFirstSelect.value
+    interfaceElements.comparisonFirstSelect.value = interfaceElements.comparisonSecondSelect.value
+    interfaceElements.comparisonSecondSelect.value = firstValue
+    renderComparisonTable()
   })
 
   interfaceElements.comparisonFirstSelect.addEventListener('change', renderComparisonTable)
@@ -439,6 +522,12 @@ function bindEvents() {
       return
     }
     applicationState.selectedConfigurationByCategory[categorySelect.dataset.configuratorCategory] = categorySelect.value
+    renderConfigurationSummary()
+  })
+
+  interfaceElements.configuratorResetButton.addEventListener('click', () => {
+    applicationState.selectedConfigurationByCategory = {}
+    renderConfigurator()
     renderConfigurationSummary()
   })
 }
