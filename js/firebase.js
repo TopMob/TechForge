@@ -1,40 +1,29 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'
-import { getDatabase, ref, set, onValue, push } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
-
-const firebaseConfig = {
-  apiKey: 'AIzaSyCXpjYd9BKqAhD3ssCMVoIultLG-Dhqnb8',
-  authDomain: 'techforge-c4.firebaseapp.com',
-  projectId: 'techforge-c4',
-  storageBucket: 'techforge-c4.firebasestorage.app',
-  messagingSenderId: '13366452809',
-  appId: '1:13366452809:web:ef2f7af86cfcdaf3f5d598',
-  databaseURL: 'https://techforge-c4-default-rtdb.firebaseio.com'
-}
-
-const app = initializeApp(firebaseConfig)
-const database = getDatabase(app)
+import { ref, set, onValue, push } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
+import { firebaseDatabase } from './firebase-app.js'
 
 export function watchFirebaseConnection(onChange) {
-  const connectedRef = ref(database, '.info/connected')
+  const connectedRef = ref(firebaseDatabase, '.info/connected')
   return onValue(connectedRef, (snapshot) => {
-    const connected = Boolean(snapshot.val())
-    onChange(connected)
+    onChange(Boolean(snapshot.val()))
   })
 }
 
 export async function saveComponent(category, componentName, specs) {
-  const sanitizedCategory = String(category).trim()
-  const sanitizedName = String(componentName).trim()
+  const normalizedCategory = String(category).trim()
+  const normalizedName = String(componentName).trim()
+  const createdAt = new Date().toISOString()
   const payload = {
-    name: sanitizedName,
+    name: normalizedName,
     specs,
-    createdAt: new Date().toISOString()
+    createdAt
   }
-  await set(ref(database, `PC/${sanitizedCategory}/${sanitizedName}`), payload)
-  await push(ref(database, 'PC_ACTIVITY_LOGS'), {
-    category: sanitizedCategory,
-    componentName: sanitizedName,
-    createdAt: payload.createdAt
+
+  await set(ref(firebaseDatabase, `PC/${normalizedCategory}/${normalizedName}`), payload)
+  await push(ref(firebaseDatabase, 'PC_ACTIVITY_LOGS'), {
+    category: normalizedCategory,
+    componentName: normalizedName,
+    createdAt
   })
+
   return payload
 }
