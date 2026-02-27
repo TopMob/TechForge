@@ -21,6 +21,7 @@
       <button type="button" class="main-tab active" data-main-tab="comparison">Сравнение</button>
       <button type="button" class="main-tab" data-main-tab="configurator">Конфигуратор</button>
       <button type="button" class="main-tab" data-main-tab="guide">Инструкция</button>
+      <button type="button" class="main-tab" data-main-tab="firebase">Firebase</button>
     </nav>
 
     <main>
@@ -68,25 +69,7 @@
           <p id="configuration-warning" class="configuration-warning"></p>
         </div>
 
-        <div class="firebase-box">
-          <h3>Добавление компонентов в Firebase</h3>
-          <p id="firebase-connection-info" class="firebase-connection-info">Firebase подключен: проверка...</p>
-          <p>Сохранение выполняется в структуру вида <strong>PC/CPU/Название компонента</strong> (и для других категорий).</p>
-          <form id="firebase-component-form" class="firebase-form">
-            <label>
-              Категория
-              <select name="firebaseCategory"></select>
-            </label>
-            <label>
-              Название компонента
-              <input name="firebaseComponentName" type="text" placeholder="Например, Ryzen 7 7800X3D">
-            </label>
-            <div id="firebase-specs-container" class="firebase-specs-container"></div>
-            <button id="add-firebase-spec" class="secondary-action" type="button">Добавить характеристику</button>
-            <button class="secondary-action" type="submit">Сохранить в Firebase</button>
-            <p id="firebase-status" class="comparison-count"></p>
-          </form>
-        </div>
+
       </section>
 
       <section class="main-panel" data-main-panel="guide">
@@ -99,6 +82,32 @@
           <li>После установки платы подключите накопители, питание и фронтальную панель, затем аккуратно уложите кабели.</li>
           <li>Перед закрытием корпуса проверьте первый старт, температуру и включите профиль памяти в BIOS.</li>
         </ul>
+      </section>
+      <section class="main-panel" data-main-panel="firebase">
+        <div class="panel-header">
+          <h2>Добавление компонентов в Firebase</h2>
+          <p>Вносите новые компоненты в отдельной вкладке. Запись сохраняется в Realtime Database в структуру <strong>PC/Категория/Название</strong>.</p>
+        </div>
+
+        <div class="firebase-box firebase-panel-box">
+          <p id="firebase-connection-info" class="firebase-connection-info">Firebase подключен: проверка...</p>
+          <form id="firebase-component-form" class="firebase-form">
+            <label>
+              Категория
+              <select name="firebaseCategory"></select>
+            </label>
+            <label>
+              Название компонента
+              <input name="firebaseComponentName" type="text" placeholder="Например, Ryzen 7 7800X3D">
+            </label>
+            <div id="firebase-specs-container" class="firebase-specs-container"></div>
+            <div class="firebase-actions">
+              <button id="add-firebase-spec" class="secondary-action" type="button">Добавить характеристику</button>
+              <button class="secondary-action" type="submit">Сохранить в Firebase</button>
+            </div>
+            <p id="firebase-status" class="comparison-count"></p>
+          </form>
+        </div>
       </section>
     </main>
   </div>

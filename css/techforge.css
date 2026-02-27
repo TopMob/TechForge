@@ -63,7 +63,7 @@ body {
 .main-tabs {
   padding: 6px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -337,4 +337,35 @@ input[type='search'] {
   .firebase-spec-row {
     grid-template-columns: 1fr;
   }
+}
+
+.main-tab,
+.secondary-action,
+input,
+select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.main-tab:hover,
+.secondary-action:hover {
+  border-color: rgba(155, 173, 255, 0.9);
+}
+
+.main-tab:focus-visible,
+.secondary-action:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: rgba(155, 173, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(110, 139, 255, 0.25);
+}
+
+.firebase-panel-box {
+  max-width: 820px;
+}
+
+.firebase-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
