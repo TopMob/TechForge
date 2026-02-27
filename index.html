@@ -59,17 +59,19 @@
           <p>Подберите комплектующие по шагам и проверьте совместимость процессора с материнской платой.</p>
         </div>
 
-        <div id="configurator-grid" class="configurator-grid"></div>
-        <button id="configurator-reset" class="secondary-action" type="button">Сбросить выбор</button>
-
-        <div class="configuration-summary">
-          <h3>Итог сборки</h3>
-          <ul id="configuration-list"></ul>
-          <p id="configuration-total" class="configuration-total"></p>
-          <p id="configuration-warning" class="configuration-warning"></p>
+        <div class="configurator-layout">
+          <div class="configurator-main">
+            <div id="configurator-grid" class="configurator-grid"></div>
+            <button id="configurator-reset" class="secondary-action" type="button">Очистить конфигуратор</button>
+          </div>
+          <aside class="configuration-summary">
+            <img class="configuration-preview" src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=600&q=80" alt="Предпросмотр системного блока">
+            <h3>Итог сборки</h3>
+            <ul id="configuration-list"></ul>
+            <p id="configuration-total" class="configuration-total"></p>
+            <p id="configuration-warning" class="configuration-warning"></p>
+          </aside>
         </div>
-
-
       </section>
 
       <section class="main-panel" data-main-panel="guide">

@@ -12,7 +12,59 @@ const categorySettings = {
   cooler: { title: 'Охлаждение', files: ['BD/COMPONENTS/cooler.json'] }
 }
 
-const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
+const configuratorCategoryOrder = ['case', 'motherboard', 'cpu', 'cooler', 'ram', 'gpu', 'ssd', 'power_supply']
+
+
+const requiredConfiguratorCategories = new Set(['case', 'motherboard', 'cpu', 'ram', 'ssd', 'power_supply'])
+
+function getSelectedRecord(categoryKey) {
+  return getRecordById(categoryKey, applicationState.selectedConfigurationByCategory[categoryKey])
+}
+
+function getConfiguratorRowTitle(categoryKey) {
+  const baseTitle = categorySettings[categoryKey]?.title || categoryKey
+  return requiredConfiguratorCategories.has(categoryKey) ? `${baseTitle} *` : baseTitle
+}
+
+function renderSelectedComponentDetails(record) {
+  if (!record) return '<p class="configurator-row-hint">Выберите комплектующее через поле поиска.</p>'
+  const specs = Object.entries(record.specs || {})
+    .filter(([, value]) => normalizeText(value))
+    .slice(0, 2)
+    .map(([key, value]) => `<span>${escapeHtml(key)}: ${escapeHtml(value)}</span>`)
+    .join(' · ')
+  const specsLine = specs ? `<p class="configurator-row-specs">${specs}</p>` : ''
+  const priceLine = record.price ? `<p class="configurator-row-price">${escapeHtml(formatPrice(record.price))}</p>` : ''
+  return `<p class="configurator-row-name">${escapeHtml(record.name)}</p>${specsLine}${priceLine}`
+}
+
+function renderConfiguratorRow(categoryKey) {
+  const searchValue = applicationState.configuratorSearchByCategory[categoryKey] || ''
+  const categoryRecords = getFilteredRecords(categoryKey, searchValue)
+  const datalistId = `configurator-options-${categoryKey}`
+  const selectedRecord = getSelectedRecord(categoryKey)
+  const optionsMarkup = categoryRecords
+    .slice(0, 80)
+    .map((categoryRecord) => {
+      const priceLabel = categoryRecord.price ? ` · ${formatPrice(categoryRecord.price)}` : ''
+      return `<option value="${escapeHtml(categoryRecord.name)}" label="${escapeHtml(categoryRecord.name + priceLabel)}"></option>`
+    })
+    .join('')
+
+  return `
+    <article class="configurator-row" data-configurator-category="${escapeHtml(categoryKey)}">
+      <div class="configurator-row-top">
+        <p class="configurator-row-title">${escapeHtml(getConfiguratorRowTitle(categoryKey))}</p>
+        <button type="button" class="configurator-row-add" data-configurator-focus="${escapeHtml(categoryKey)}" aria-label="Выбрать ${escapeHtml(categorySettings[categoryKey].title)}">+</button>
+      </div>
+      <label class="configurator-row-control">
+        <input class="configurator-search" data-configurator-search="${escapeHtml(categoryKey)}" list="${escapeHtml(datalistId)}" type="search" placeholder="Введите модель" autocomplete="off">
+        <datalist id="${escapeHtml(datalistId)}">${optionsMarkup}</datalist>
+      </label>
+      <div class="configurator-row-selected">${renderSelectedComponentDetails(selectedRecord)}</div>
+    </article>
+  `
+}
 
 const firebaseCategoryOptions = [
   { key: 'CPU', label: 'Процессор (CPU)' },
@@ -419,30 +471,11 @@ function renderComparisonTable() {
 
 function renderConfigurator() {
   interfaceElements.configuratorGrid.innerHTML = configuratorCategoryOrder
-    .map((categoryKey) => {
-      const searchValue = applicationState.configuratorSearchByCategory[categoryKey] || ''
-      const categoryRecords = getFilteredRecords(categoryKey, searchValue)
-      const datalistId = `configurator-options-${categoryKey}`
-      const optionsMarkup = categoryRecords
-        .map((categoryRecord) => {
-          const priceLabel = categoryRecord.price ? ` · ${formatPrice(categoryRecord.price)}` : ''
-          return `<option value="${escapeHtml(categoryRecord.name)}" label="${escapeHtml(categoryRecord.name + priceLabel)}"></option>`
-        })
-        .join('')
-
-      return `
-        <label class="configurator-field">
-          ${escapeHtml(categorySettings[categoryKey].title)}
-          <input class="configurator-search" data-configurator-search="${escapeHtml(categoryKey)}" list="${escapeHtml(datalistId)}" type="search" placeholder="Начните писать для выбора компонента" autocomplete="off">
-          <datalist id="${escapeHtml(datalistId)}">${optionsMarkup}</datalist>
-        </label>
-      `
-    })
+    .map((categoryKey) => renderConfiguratorRow(categoryKey))
     .join('')
 
   for (const categoryKey of configuratorCategoryOrder) {
-    const selectedRecordId = applicationState.selectedConfigurationByCategory[categoryKey] || ''
-    const selectedRecord = getRecordById(categoryKey, selectedRecordId)
+    const selectedRecord = getSelectedRecord(categoryKey)
     const searchElement = interfaceElements.configuratorGrid.querySelector(`[data-configurator-search="${categoryKey}"]`)
     if (searchElement) {
       searchElement.value = selectedRecord ? selectedRecord.name : (applicationState.configuratorSearchByCategory[categoryKey] || '')
@@ -587,6 +620,16 @@ function bindEvents() {
 
     renderConfigurator()
     renderConfigurationSummary()
+  })
+
+  interfaceElements.configuratorGrid.addEventListener('click', (event) => {
+    const addButton = event.target.closest('[data-configurator-focus]')
+    if (!addButton) return
+    const categoryKey = addButton.dataset.configuratorFocus
+    const input = interfaceElements.configuratorGrid.querySelector(`[data-configurator-search="${categoryKey}"]`)
+    if (!input) return
+    input.focus()
+    input.showPicker?.()
   })
 
   interfaceElements.configuratorResetButton.addEventListener('click', () => {
