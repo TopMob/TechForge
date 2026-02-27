@@ -12,9 +12,13 @@
 <body>
   <div class="application-shell">
     <header class="application-header">
-      <p class="application-label">TechForge</p>
+      <div class="header-topline">
+        <p class="application-label">TechForge</p>
+        <p class="application-status">Ночной режим активен</p>
+      </div>
       <h1>Подбор комплектующих и сборка ПК</h1>
       <p class="application-description">Сравнивайте компоненты по категориям, собирайте конфигурацию и сверяйтесь с краткой инструкцией по сборке.</p>
+      <div class="dashboard-metrics" id="dashboard-metrics"></div>
     </header>
 
     <nav class="main-tabs" id="main-tabs">
@@ -68,8 +72,6 @@
           <p id="configuration-total" class="configuration-total"></p>
           <p id="configuration-warning" class="configuration-warning"></p>
         </div>
-
-
       </section>
 
       <section class="main-panel" data-main-panel="guide">

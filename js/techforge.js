@@ -1,4 +1,5 @@
 import { saveComponent, watchFirebaseConnection } from './firebase.js'
+import { renderDashboardMetrics } from './dashboard-metrics.js'
 
 
 const categorySettings = {
@@ -46,7 +47,8 @@ const interfaceElements = {
   firebaseSpecsContainer: document.getElementById('firebase-specs-container'),
   addFirebaseSpecButton: document.getElementById('add-firebase-spec'),
   firebaseStatus: document.getElementById('firebase-status'),
-  firebaseConnectionInfo: document.getElementById('firebase-connection-info')
+  firebaseConnectionInfo: document.getElementById('firebase-connection-info'),
+  dashboardMetrics: document.getElementById('dashboard-metrics')
 }
 
 const applicationState = {
@@ -478,6 +480,29 @@ function renderConfigurationSummary() {
   interfaceElements.configurationList.innerHTML = summaryItems.join('') || '<li>Выберите комплектующие в конфигураторе.</li>'
   interfaceElements.configurationTotal.textContent = totalPrice > 0 ? `Общая стоимость: ${formatPrice(totalPrice)}` : 'Общая стоимость: нет данных по ценам'
   interfaceElements.configurationWarning.textContent = validateSocketCompatibility()
+  updateDashboardMetrics()
+}
+
+
+function updateDashboardMetrics() {
+  const categories = Object.keys(categorySettings)
+  const categorySettingsWithCount = {}
+  for (const categoryKey of categories) {
+    categorySettingsWithCount[categoryKey] = {
+      ...categorySettings[categoryKey],
+      count: applicationState.componentsByCategory[categoryKey]?.length || 0
+    }
+  }
+
+  renderDashboardMetrics({
+    container: interfaceElements.dashboardMetrics,
+    categories,
+    categorySettings: categorySettingsWithCount,
+    selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory,
+    getRecordById,
+    formatPrice,
+    configuratorCategoryOrder
+  })
 }
 
 function createFirebaseSpecRow(key = '', value = '') {
@@ -626,6 +651,7 @@ async function initializeApplication() {
   renderComparisonSelectors()
   renderConfigurator()
   renderConfigurationSummary()
+  updateDashboardMetrics()
   createFirebaseSpecRow('Производитель', '')
   renderFirebaseConnectionState()
   await watchFirebaseConnection((connected) => {
