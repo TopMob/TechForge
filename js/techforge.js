@@ -1,18 +1,5 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'
-import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
+import { saveComponent, watchFirebaseConnection } from './firebase.js'
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyCXpjYd9BKqAhD3ssCMVoIultLG-Dhqnb8',
-  authDomain: 'techforge-c4.firebaseapp.com',
-  projectId: 'techforge-c4',
-  storageBucket: 'techforge-c4.firebasestorage.app',
-  messagingSenderId: '13366452809',
-  appId: '1:13366452809:web:ef2f7af86cfcdaf3f5d598',
-  databaseURL: 'https://techforge-c4-default-rtdb.firebaseio.com'
-}
-
-const firebaseApp = initializeApp(firebaseConfig)
-const firebaseDatabase = getDatabase(firebaseApp)
 
 const categorySettings = {
   gpu: { title: 'Видеокарты', files: ['BD/GPU/AMD.json', 'BD/GPU/INTEL.json', 'BD/GPU/NVIDIA.json', 'BD/GPU/OTHER.json'] },
@@ -517,16 +504,9 @@ function collectFirebaseSpecs() {
 
 function renderFirebaseConnectionState() {
   if (!interfaceElements.firebaseConnectionInfo) return
-  if (firebaseDatabase) {
-    interfaceElements.firebaseConnectionInfo.textContent = 'Firebase подключен: готово к сохранению в Realtime Database.'
-    interfaceElements.firebaseConnectionInfo.classList.remove('firebase-disconnected')
-    interfaceElements.firebaseConnectionInfo.classList.add('firebase-connected')
-    return
-  }
-
-  interfaceElements.firebaseConnectionInfo.textContent = 'Firebase не подключен: проверьте конфиг.'
-  interfaceElements.firebaseConnectionInfo.classList.remove('firebase-connected')
-  interfaceElements.firebaseConnectionInfo.classList.add('firebase-disconnected')
+  interfaceElements.firebaseConnectionInfo.textContent = 'Firebase подключен: выполняется проверка соединения...'
+  interfaceElements.firebaseConnectionInfo.classList.remove('firebase-disconnected')
+  interfaceElements.firebaseConnectionInfo.classList.add('firebase-connected')
 }
 
 async function saveComponentToFirebase(event) {
@@ -542,22 +522,14 @@ async function saveComponentToFirebase(event) {
   }
 
   const specs = collectFirebaseSpecs()
-  const payload = {
-    name: componentName,
-    specs,
-    createdAt: new Date().toISOString()
-  }
-
   try {
-    await set(ref(firebaseDatabase, `PC/${category}/${componentName}`), payload)
+    await saveComponent(category, componentName, specs)
     interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/${componentName}`
     interfaceElements.firebaseForm.reset()
     interfaceElements.firebaseSpecsContainer.innerHTML = ''
     createFirebaseSpecRow()
   } catch (error) {
     interfaceElements.firebaseStatus.textContent = `Не удалось сохранить в Firebase: ${error.message}`
-    interfaceElements.firebaseConnectionInfo?.classList.remove('firebase-connected')
-    interfaceElements.firebaseConnectionInfo?.classList.add('firebase-disconnected')
   }
 }
 
@@ -656,6 +628,14 @@ async function initializeApplication() {
   renderConfigurationSummary()
   createFirebaseSpecRow('Производитель', '')
   renderFirebaseConnectionState()
+  watchFirebaseConnection((connected) => {
+    if (!interfaceElements.firebaseConnectionInfo) return
+    interfaceElements.firebaseConnectionInfo.textContent = connected
+      ? 'Firebase подключен: соединение с Realtime Database активно.'
+      : 'Firebase недоступен: проверьте правила доступа и подключение к сети.'
+    interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-connected', connected)
+    interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-disconnected', !connected)
+  })
   bindEvents()
 }
 
