@@ -524,7 +524,7 @@ async function saveComponentToFirebase(event) {
   const specs = collectFirebaseSpecs()
   try {
     await saveComponent(category, componentName, specs)
-    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/${componentName}`
+    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/components/${componentName}`
     interfaceElements.firebaseForm.reset()
     interfaceElements.firebaseSpecsContainer.innerHTML = ''
     createFirebaseSpecRow()
