@@ -1,40 +1,57 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'
-import { getDatabase, ref, set, onValue, push } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
+import {
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  onSnapshot,
+  serverTimestamp,
+  limit,
+  query
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'
+import { firestoreDatabase } from './firebase-app.js'
+import { ensureFirebaseAuth } from './firebase-auth.js'
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyCXpjYd9BKqAhD3ssCMVoIultLG-Dhqnb8',
-  authDomain: 'techforge-c4.firebaseapp.com',
-  projectId: 'techforge-c4',
-  storageBucket: 'techforge-c4.firebasestorage.app',
-  messagingSenderId: '13366452809',
-  appId: '1:13366452809:web:ef2f7af86cfcdaf3f5d598',
-  databaseURL: 'https://techforge-c4-default-rtdb.firebaseio.com'
-}
+export async function watchFirebaseConnection(onChange) {
+  try {
+    await ensureFirebaseAuth()
+  } catch {
+    onChange(false)
+    return () => {}
+  }
 
-const app = initializeApp(firebaseConfig)
-const database = getDatabase(app)
-
-export function watchFirebaseConnection(onChange) {
-  const connectedRef = ref(database, '.info/connected')
-  return onValue(connectedRef, (snapshot) => {
-    const connected = Boolean(snapshot.val())
-    onChange(connected)
-  })
+  const statusQuery = query(collection(firestoreDatabase, 'PC_ACTIVITY_LOGS'), limit(1))
+  return onSnapshot(
+    statusQuery,
+    () => onChange(true),
+    () => onChange(false)
+  )
 }
 
 export async function saveComponent(category, componentName, specs) {
-  const sanitizedCategory = String(category).trim()
-  const sanitizedName = String(componentName).trim()
-  const payload = {
-    name: sanitizedName,
+  await ensureFirebaseAuth()
+
+  const normalizedCategory = String(category).trim()
+  const normalizedName = String(componentName).trim()
+  const createdAt = new Date().toISOString()
+
+  const componentRef = doc(firestoreDatabase, 'PC', normalizedCategory, 'components', normalizedName)
+  await setDoc(componentRef, {
+    name: normalizedName,
     specs,
-    createdAt: new Date().toISOString()
-  }
-  await set(ref(database, `PC/${sanitizedCategory}/${sanitizedName}`), payload)
-  await push(ref(database, 'PC_ACTIVITY_LOGS'), {
-    category: sanitizedCategory,
-    componentName: sanitizedName,
-    createdAt: payload.createdAt
+    createdAt,
+    updatedAt: serverTimestamp()
   })
-  return payload
+
+  await addDoc(collection(firestoreDatabase, 'PC_ACTIVITY_LOGS'), {
+    category: normalizedCategory,
+    componentName: normalizedName,
+    createdAt,
+    createdAtServer: serverTimestamp()
+  })
+
+  return {
+    name: normalizedName,
+    specs,
+    createdAt
+  }
 }

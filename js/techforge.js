@@ -524,7 +524,7 @@ async function saveComponentToFirebase(event) {
   const specs = collectFirebaseSpecs()
   try {
     await saveComponent(category, componentName, specs)
-    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/${componentName}`
+    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/components/${componentName}`
     interfaceElements.firebaseForm.reset()
     interfaceElements.firebaseSpecsContainer.innerHTML = ''
     createFirebaseSpecRow()
@@ -628,11 +628,11 @@ async function initializeApplication() {
   renderConfigurationSummary()
   createFirebaseSpecRow('Производитель', '')
   renderFirebaseConnectionState()
-  watchFirebaseConnection((connected) => {
+  await watchFirebaseConnection((connected) => {
     if (!interfaceElements.firebaseConnectionInfo) return
     interfaceElements.firebaseConnectionInfo.textContent = connected
-      ? 'Firebase подключен: соединение с Realtime Database активно.'
-      : 'Firebase недоступен: проверьте правила доступа и подключение к сети.'
+      ? 'Firebase подключен: соединение с Firestore активно.'
+      : 'Firebase недоступен: проверьте Firestore Rules и включение Anonymous Authentication.'
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-connected', connected)
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-disconnected', !connected)
   })
