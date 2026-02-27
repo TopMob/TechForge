@@ -55,6 +55,7 @@
         </div>
 
         <div id="comparison-result" class="comparison-result"></div>
+        <div id="comparison-insights" class="insights-box"></div>
       </section>
 
       <section class="main-panel" data-main-panel="configurator">
@@ -65,6 +66,40 @@
 
         <div id="configurator-grid" class="configurator-grid"></div>
         <button id="configurator-reset" class="secondary-action" type="button">Сбросить выбор</button>
+
+        
+
+        <div class="configurator-tools">
+          <div class="configuration-summary">
+            <h3>Планировщик бюджета</h3>
+            <label>
+              Бюджет ($)
+              <input id="budget-input" type="number" min="0" step="10" placeholder="Например, 1500">
+            </label>
+            <p id="budget-status" class="comparison-count"></p>
+          </div>
+          <div class="configuration-summary">
+            <h3>Сохранённые сборки</h3>
+            <label>
+              Слот сборки
+              <select id="build-slot-select"></select>
+            </label>
+            <div class="firebase-actions">
+              <button id="save-build" class="secondary-action" type="button">Сохранить</button>
+              <button id="load-build" class="secondary-action" type="button">Загрузить</button>
+              <button id="delete-build" class="secondary-action" type="button">Удалить</button>
+            </div>
+            <div class="firebase-actions">
+              <button id="export-build" class="secondary-action" type="button">Экспорт JSON</button>
+              <button id="import-build" class="secondary-action" type="button">Импорт JSON</button>
+            </div>
+            <p id="build-status" class="comparison-count"></p>
+          </div>
+          <div class="configuration-summary">
+            <h3>Рекомендации</h3>
+            <ul id="recommendations-list"></ul>
+          </div>
+        </div>
 
         <div class="configuration-summary">
           <h3>Итог сборки</h3>

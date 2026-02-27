@@ -1,5 +1,8 @@
 import { saveComponent, watchFirebaseConnection } from './firebase.js'
 import { renderDashboardMetrics } from './dashboard-metrics.js'
+import { saveBuild, loadBuild, deleteBuild, getSlotNames, exportBuildPayload, importBuildPayload } from './build-storage.js'
+import { evaluateCompatibility } from './compatibility.js'
+import { buildRecommendations, buildComparisonInsights } from './recommendations.js'
 
 
 const categorySettings = {
@@ -48,7 +51,18 @@ const interfaceElements = {
   addFirebaseSpecButton: document.getElementById('add-firebase-spec'),
   firebaseStatus: document.getElementById('firebase-status'),
   firebaseConnectionInfo: document.getElementById('firebase-connection-info'),
-  dashboardMetrics: document.getElementById('dashboard-metrics')
+  dashboardMetrics: document.getElementById('dashboard-metrics'),
+  comparisonInsights: document.getElementById('comparison-insights'),
+  budgetInput: document.getElementById('budget-input'),
+  budgetStatus: document.getElementById('budget-status'),
+  buildSlotSelect: document.getElementById('build-slot-select'),
+  saveBuildButton: document.getElementById('save-build'),
+  loadBuildButton: document.getElementById('load-build'),
+  deleteBuildButton: document.getElementById('delete-build'),
+  exportBuildButton: document.getElementById('export-build'),
+  importBuildButton: document.getElementById('import-build'),
+  buildStatus: document.getElementById('build-status'),
+  recommendationsList: document.getElementById('recommendations-list')
 }
 
 const applicationState = {
@@ -64,7 +78,8 @@ const applicationState = {
     first: '',
     second: ''
   },
-  configuratorSearchByCategory: {}
+  configuratorSearchByCategory: {},
+  budgetValue: ''
 }
 
 function normalizeText(value) {
@@ -383,6 +398,7 @@ function renderComparisonSelectors() {
   }
 
   interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Введите точное название из списка, чтобы сравнить модели.</p>'
+  renderComparisonInsights(null, null)
 }
 
 function collectSpecNames(firstRecord, secondRecord) {
@@ -403,6 +419,7 @@ function renderComparisonTable() {
 
   if (!firstRecord || !secondRecord) {
     interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Недостаточно данных для сравнения выбранной категории.</p>'
+    renderComparisonInsights(null, null)
     return
   }
 
@@ -417,6 +434,7 @@ function renderComparisonTable() {
   const priceRow = `<tr><th>Цена</th><td>${firstRecord.price ? escapeHtml(formatPrice(firstRecord.price)) : '—'}</td><td>${secondRecord.price ? escapeHtml(formatPrice(secondRecord.price)) : '—'}</td></tr>`
 
   interfaceElements.comparisonResult.innerHTML = `<table class="comparison-table"><thead><tr><th>Параметр</th><th>${escapeHtml(firstRecord.name)}</th><th>${escapeHtml(secondRecord.name)}</th></tr></thead><tbody>${priceRow}${specRows}</tbody></table>`
+  renderComparisonInsights(firstRecord, secondRecord)
 }
 
 function renderConfigurator() {
@@ -479,7 +497,13 @@ function renderConfigurationSummary() {
 
   interfaceElements.configurationList.innerHTML = summaryItems.join('') || '<li>Выберите комплектующие в конфигураторе.</li>'
   interfaceElements.configurationTotal.textContent = totalPrice > 0 ? `Общая стоимость: ${formatPrice(totalPrice)}` : 'Общая стоимость: нет данных по ценам'
-  interfaceElements.configurationWarning.textContent = validateSocketCompatibility()
+  const compatibility = evaluateCompatibility({
+    getRecordById,
+    selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory
+  })
+  interfaceElements.configurationWarning.textContent = compatibility.issues[0] || ''
+  renderBudgetState(totalPrice)
+  renderRecommendations(getSelectedRecords(), totalPrice, compatibility)
   updateDashboardMetrics()
 }
 
@@ -503,6 +527,121 @@ function updateDashboardMetrics() {
     formatPrice,
     configuratorCategoryOrder
   })
+}
+
+
+function renderComparisonInsights(firstRecord, secondRecord) {
+  if (!interfaceElements.comparisonInsights) return
+  const insights = buildComparisonInsights(firstRecord, secondRecord)
+  if (insights.length === 0) {
+    interfaceElements.comparisonInsights.innerHTML = '<p class="comparison-count">Инсайты появятся после выбора двух моделей с заполненными данными.</p>'
+    return
+  }
+  interfaceElements.comparisonInsights.innerHTML = `<ul>${insights.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+}
+
+function getSelectedRecords() {
+  return configuratorCategoryOrder
+    .map((categoryKey) => getRecordById(categoryKey, applicationState.selectedConfigurationByCategory[categoryKey]))
+    .filter(Boolean)
+}
+
+function getTotalPriceForSelectedRecords(records) {
+  return records.reduce((sum, record) => sum + (record.price || 0), 0)
+}
+
+function renderBudgetState(totalPrice) {
+  const budgetValue = parseNumber(applicationState.budgetValue)
+  if (!budgetValue) {
+    interfaceElements.budgetStatus.textContent = 'Укажите бюджет, чтобы увидеть отклонение.'
+    interfaceElements.budgetStatus.className = 'comparison-count'
+    return
+  }
+  const difference = totalPrice - budgetValue
+  if (difference > 0) {
+    interfaceElements.budgetStatus.textContent = `Перебор бюджета: +${Math.round(difference)} $`
+    interfaceElements.budgetStatus.className = 'comparison-count bad-state'
+    return
+  }
+  interfaceElements.budgetStatus.textContent = `Запас бюджета: ${Math.round(Math.abs(difference))} $`
+  interfaceElements.budgetStatus.className = 'comparison-count good-state'
+}
+
+function renderRecommendations(records, totalPrice, compatibility) {
+  const budgetValue = parseNumber(applicationState.budgetValue)
+  const recommendations = buildRecommendations({
+    selectedRecords: records,
+    totalPrice,
+    budgetValue,
+    compatibility
+  })
+  interfaceElements.recommendationsList.innerHTML = recommendations.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+}
+
+function populateBuildSlots() {
+  const slotNames = getSlotNames()
+  interfaceElements.buildSlotSelect.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
+}
+
+function handleSaveBuild() {
+  const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
+  if (!slotName) return
+  saveBuild(slotName, applicationState.selectedConfigurationByCategory, applicationState.budgetValue)
+  populateBuildSlots()
+  interfaceElements.buildStatus.textContent = `Сборка сохранена в слот: ${slotName}`
+}
+
+function handleLoadBuild() {
+  const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
+  const payload = loadBuild(slotName)
+  if (!payload) {
+    interfaceElements.buildStatus.textContent = 'В выбранном слоте нет сохранения.'
+    return
+  }
+  applicationState.selectedConfigurationByCategory = payload.selectedConfigurationByCategory || {}
+  applicationState.budgetValue = payload.budgetValue || ''
+  interfaceElements.budgetInput.value = applicationState.budgetValue
+  renderConfigurator()
+  renderConfigurationSummary()
+  interfaceElements.buildStatus.textContent = `Сборка загружена: ${slotName}`
+}
+
+function handleDeleteBuild() {
+  const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
+  const deleted = deleteBuild(slotName)
+  populateBuildSlots()
+  interfaceElements.buildStatus.textContent = deleted ? `Сборка удалена: ${slotName}` : 'Удалять нечего: слот пуст.'
+}
+
+function handleExportBuild() {
+  const payload = {
+    selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory,
+    budgetValue: applicationState.budgetValue
+  }
+  const exported = exportBuildPayload(payload)
+  navigator.clipboard.writeText(exported)
+    .then(() => {
+      interfaceElements.buildStatus.textContent = 'JSON сборки скопирован в буфер обмена.'
+    })
+    .catch(() => {
+      interfaceElements.buildStatus.textContent = exported
+    })
+}
+
+function handleImportBuild() {
+  const raw = prompt('Вставьте JSON сборки')
+  if (!raw) return
+  try {
+    const imported = importBuildPayload(raw)
+    applicationState.selectedConfigurationByCategory = imported.selectedConfigurationByCategory || {}
+    applicationState.budgetValue = imported.budgetValue || ''
+    interfaceElements.budgetInput.value = applicationState.budgetValue
+    renderConfigurator()
+    renderConfigurationSummary()
+    interfaceElements.buildStatus.textContent = 'Сборка импортирована из JSON.'
+  } catch (error) {
+    interfaceElements.buildStatus.textContent = `Ошибка импорта: ${error.message}`
+  }
 }
 
 function createFirebaseSpecRow(key = '', value = '') {
@@ -630,6 +769,16 @@ function bindEvents() {
   })
 
   interfaceElements.firebaseForm.addEventListener('submit', saveComponentToFirebase)
+  interfaceElements.budgetInput.addEventListener('input', () => {
+    applicationState.budgetValue = normalizeText(interfaceElements.budgetInput.value)
+    renderConfigurationSummary()
+  })
+
+  interfaceElements.saveBuildButton.addEventListener('click', handleSaveBuild)
+  interfaceElements.loadBuildButton.addEventListener('click', handleLoadBuild)
+  interfaceElements.deleteBuildButton.addEventListener('click', handleDeleteBuild)
+  interfaceElements.exportBuildButton.addEventListener('click', handleExportBuild)
+  interfaceElements.importBuildButton.addEventListener('click', handleImportBuild)
 }
 
 async function initializeApplication() {
@@ -650,6 +799,8 @@ async function initializeApplication() {
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  populateBuildSlots()
+  interfaceElements.budgetInput.value = applicationState.budgetValue
   renderConfigurationSummary()
   updateDashboardMetrics()
   createFirebaseSpecRow('Производитель', '')

@@ -395,3 +395,35 @@ select:focus-visible {
     align-items: flex-start;
   }
 }
+
+
+.configurator-tools {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.insights-box {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(165deg, rgba(25, 35, 65, 0.38), rgba(8, 12, 24, 0.76));
+}
+
+.insights-box ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.good-state {
+  color: var(--success);
+}
+
+.bad-state {
+  color: var(--warning);
+}
