@@ -628,11 +628,11 @@ async function initializeApplication() {
   renderConfigurationSummary()
   createFirebaseSpecRow('Производитель', '')
   renderFirebaseConnectionState()
-  watchFirebaseConnection((connected) => {
+  await watchFirebaseConnection((connected) => {
     if (!interfaceElements.firebaseConnectionInfo) return
     interfaceElements.firebaseConnectionInfo.textContent = connected
       ? 'Firebase подключен: соединение с Firestore активно.'
-      : 'Firebase недоступен: проверьте правила доступа и подключение к сети.'
+      : 'Firebase недоступен: проверьте Firestore Rules и включение Anonymous Authentication.'
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-connected', connected)
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-disconnected', !connected)
   })

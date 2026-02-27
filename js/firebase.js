@@ -9,9 +9,17 @@ import {
   query
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'
 import { firestoreDatabase } from './firebase-app.js'
+import { ensureFirebaseAuth } from './firebase-auth.js'
 
-export function watchFirebaseConnection(onChange) {
-  const statusQuery = query(collection(firestoreDatabase, 'PC'), limit(1))
+export async function watchFirebaseConnection(onChange) {
+  try {
+    await ensureFirebaseAuth()
+  } catch {
+    onChange(false)
+    return () => {}
+  }
+
+  const statusQuery = query(collection(firestoreDatabase, 'PC_ACTIVITY_LOGS'), limit(1))
   return onSnapshot(
     statusQuery,
     () => onChange(true),
@@ -20,6 +28,8 @@ export function watchFirebaseConnection(onChange) {
 }
 
 export async function saveComponent(category, componentName, specs) {
+  await ensureFirebaseAuth()
+
   const normalizedCategory = String(category).trim()
   const normalizedName = String(componentName).trim()
   const createdAt = new Date().toISOString()
