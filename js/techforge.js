@@ -41,6 +41,7 @@ const interfaceElements = {
   firebaseStatus: document.getElementById('firebase-status'),
   firebaseConnectionInfo: document.getElementById('firebase-connection-info'),
   firebaseRequiredHint: document.getElementById('firebase-required-hint'),
+  firebaseBuildNameButton: document.getElementById('firebase-build-name'),
   dashboardMetrics: document.getElementById('dashboard-metrics'),
   comparisonInsights: document.getElementById('comparison-insights'),
   budgetInput: document.getElementById('budget-input'),
@@ -650,6 +651,40 @@ function renderFirebaseFormByCategory() {
   renderFirebaseCategoryFields(interfaceElements.firebaseSpecsContainer, interfaceElements.firebaseRequiredHint, categoryKey)
 }
 
+
+function composeComponentNameFromFields() {
+  const vendorField = interfaceElements.firebaseForm.querySelector('[data-field-key="vendor"]')
+  const modelField = interfaceElements.firebaseForm.querySelector('[data-field-key="model"]')
+  const vendor = normalizeText(vendorField?.value)
+  const model = normalizeText(modelField?.value)
+  return [vendor, model].filter(Boolean).join(' ')
+}
+
+function syncComponentNameFromFields() {
+  const currentName = normalizeText(interfaceElements.firebaseForm.elements.firebaseComponentName.value)
+  const composedName = composeComponentNameFromFields()
+  if (!composedName) return
+  if (!currentName) {
+    interfaceElements.firebaseForm.elements.firebaseComponentName.value = composedName
+    return
+  }
+  const normalizedCurrent = currentName.toLowerCase()
+  const normalizedComposed = composedName.toLowerCase()
+  if (normalizedCurrent === normalizedComposed) {
+    interfaceElements.firebaseForm.elements.firebaseComponentName.value = composedName
+  }
+}
+
+function buildComponentNameFromFields() {
+  const composedName = composeComponentNameFromFields()
+  if (!composedName) {
+    interfaceElements.firebaseStatus.textContent = 'Сначала заполните бренд и модель.'
+    return
+  }
+  interfaceElements.firebaseForm.elements.firebaseComponentName.value = composedName
+  interfaceElements.firebaseStatus.textContent = ''
+}
+
 function prefillVendorAndModelFromName() {
   const value = normalizeText(interfaceElements.firebaseForm.elements.firebaseComponentName.value)
   if (!value) return
@@ -782,8 +817,19 @@ function bindEvents() {
     renderConfigurationSummary()
   })
 
-  interfaceElements.firebaseForm.elements.firebaseCategory.addEventListener('change', () => renderFirebaseFormByCategory())
+  interfaceElements.firebaseForm.elements.firebaseCategory.addEventListener('change', () => {
+    renderFirebaseFormByCategory()
+    interfaceElements.firebaseStatus.textContent = ''
+  })
   interfaceElements.firebaseForm.elements.firebaseComponentName.addEventListener('input', () => prefillVendorAndModelFromName())
+  interfaceElements.firebaseSpecsContainer.addEventListener('input', (event) => {
+    const field = event.target.closest('[data-field-key]')
+    if (!field) return
+    if (field.dataset.fieldKey === 'vendor' || field.dataset.fieldKey === 'model') {
+      syncComponentNameFromFields()
+    }
+  })
+  interfaceElements.firebaseBuildNameButton.addEventListener('click', () => buildComponentNameFromFields())
   interfaceElements.firebaseForm.addEventListener('submit', saveComponentToFirebase)
   interfaceElements.budgetInput.addEventListener('input', () => {
     applicationState.budgetValue = normalizeText(interfaceElements.budgetInput.value)

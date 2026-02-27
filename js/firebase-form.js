@@ -13,6 +13,37 @@ function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim()
 }
 
+function renderInputField(field) {
+  return `
+    <input
+      name="field_${escapeHtml(field.key)}"
+      data-field-key="${escapeHtml(field.key)}"
+      type="${escapeHtml(field.type || 'text')}"
+      placeholder="${escapeHtml(field.placeholder || '')}"
+      ${field.min !== undefined ? `min="${escapeHtml(field.min)}"` : ''}
+      ${field.step !== undefined ? `step="${escapeHtml(field.step)}"` : ''}
+      ${field.required ? 'required' : ''}
+    >
+  `
+}
+
+function renderSelectField(field) {
+  const optionsMarkup = (field.options || [])
+    .map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`)
+    .join('')
+
+  return `
+    <select
+      name="field_${escapeHtml(field.key)}"
+      data-field-key="${escapeHtml(field.key)}"
+      ${field.required ? 'required' : ''}
+    >
+      <option value="">Выберите значение</option>
+      ${optionsMarkup}
+    </select>
+  `
+}
+
 export function renderFirebaseCategoryFields(container, hintElement, categoryKey) {
   const config = categoryFormConfig[categoryKey]
   if (!config) {
@@ -25,18 +56,12 @@ export function renderFirebaseCategoryFields(container, hintElement, categoryKey
     .map((field) => `
       <label>
         ${escapeHtml(field.label)}${field.required ? ' *' : ''}
-        <input
-          name="field_${escapeHtml(field.key)}"
-          data-field-key="${escapeHtml(field.key)}"
-          type="${escapeHtml(field.type || 'text')}"
-          placeholder="${escapeHtml(field.placeholder || '')}"
-          ${field.required ? 'required' : ''}
-        >
+        ${field.control === 'select' ? renderSelectField(field) : renderInputField(field)}
       </label>
     `)
     .join('')
 
-  if (hintElement) hintElement.textContent = config.requiredHint
+  if (hintElement) hintElement.textContent = `${config.requiredHint} Поля со * обязательны.`
 }
 
 export function collectFirebasePayload(formElement, categoryKey) {
