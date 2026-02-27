@@ -3,13 +3,12 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /PC/{category}/components/{componentName} {
       allow read: if true;
-      allow create, update: if request.auth != null;
+      allow create, update: if true;
       allow delete: if false;
     }
 
     match /PC_ACTIVITY_LOGS/{logId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read, create: if true;
       allow update, delete: if false;
     }
 
