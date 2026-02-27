@@ -2,8 +2,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /PC/{category}/components/{componentName} {
-      allow read: if true;
-      allow create, update: if true;
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
+
+    match /PC/{category}/{componentName} {
+      allow read, create, update: if true;
+      allow delete: if false;
+    }
+
+    match /PC/{document=**} {
+      allow read, create, update: if true;
       allow delete: if false;
     }
 

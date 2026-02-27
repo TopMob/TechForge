@@ -11,13 +11,12 @@ import {
 import { firestoreDatabase } from './firebase-app.js'
 
 export function watchFirebaseConnection(onChange) {
-  const statusQuery = query(collection(firestoreDatabase, 'PC_ACTIVITY_LOGS'), limit(1))
-  const unsubscribe = onSnapshot(
+  const statusQuery = query(collection(firestoreDatabase, 'PC'), limit(1))
+  return onSnapshot(
     statusQuery,
     () => onChange(true),
     () => onChange(false)
   )
-  return unsubscribe
 }
 
 export async function saveComponent(category, componentName, specs) {

@@ -631,7 +631,7 @@ async function initializeApplication() {
   watchFirebaseConnection((connected) => {
     if (!interfaceElements.firebaseConnectionInfo) return
     interfaceElements.firebaseConnectionInfo.textContent = connected
-      ? 'Firebase подключен: соединение с Realtime Database активно.'
+      ? 'Firebase подключен: соединение с Firestore активно.'
       : 'Firebase недоступен: проверьте правила доступа и подключение к сети.'
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-connected', connected)
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-disconnected', !connected)
