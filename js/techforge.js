@@ -8,14 +8,14 @@ import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase
 
 
 const categorySettings = {
-  gpu: { title: 'Видеокарты', files: ['BD/GPU/AMD.json', 'BD/GPU/INTEL.json', 'BD/GPU/NVIDIA.json', 'BD/GPU/OTHER.json'] },
-  cpu: { title: 'Процессоры', files: ['BD/CPU/AMD.json', 'BD/CPU/INTEL.json'] },
-  ram: { title: 'Оперативная память', files: ['BD/RAM/ddr4.json', 'BD/RAM/ddr5.json'] },
-  ssd: { title: 'SSD', files: ['BD/COMPONENTS/ssd.json'] },
-  motherboard: { title: 'Материнские платы', files: ['BD/MOTHERBOARDS/motherboards.json'] },
-  power_supply: { title: 'Блоки питания', files: ['BD/POWER_SUPPLIES/power_supplies.json'] },
-  case: { title: 'Корпуса', files: ['BD/COMPONENTS/case.json'] },
-  cooler: { title: 'Охлаждение', files: ['BD/COMPONENTS/cooler.json'] }
+  gpu: { title: 'Видеокарты' },
+  cpu: { title: 'Процессоры' },
+  ram: { title: 'Оперативная память' },
+  ssd: { title: 'SSD' },
+  motherboard: { title: 'Материнские платы' },
+  power_supply: { title: 'Блоки питания' },
+  case: { title: 'Корпуса' },
+  cooler: { title: 'Охлаждение' }
 }
 
 const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
@@ -303,17 +303,7 @@ function convertFirebaseRecord(categoryKey, sourceRecord) {
 }
 
 async function loadCategory(categoryKey) {
-  const categoryFiles = categorySettings[categoryKey].files
   const allRecords = []
-
-  for (const categoryFile of categoryFiles) {
-    const payload = await fetchJsonFile(categoryFile)
-    const sourceRecords = collectRecords(payload)
-    for (const sourceRecord of sourceRecords) {
-      const convertedRecord = convertRecord(categoryKey, sourceRecord)
-      if (convertedRecord) allRecords.push(convertedRecord)
-    }
-  }
 
   try {
     const firebaseRecords = await loadComponentsFromFirebase(categoryKey)
