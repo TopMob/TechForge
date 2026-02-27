@@ -1,8 +1,10 @@
-import { saveComponent, watchFirebaseConnection } from './firebase.js'
+import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase } from './firebase.js'
 import { renderDashboardMetrics } from './dashboard-metrics.js'
 import { saveBuild, loadBuild, deleteBuild, getSlotNames, exportBuildPayload, importBuildPayload } from './build-storage.js'
 import { evaluateCompatibility } from './compatibility.js'
 import { buildRecommendations, buildComparisonInsights } from './recommendations.js'
+import { firebaseCategoryOptions } from './component-schema.js'
+import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase-form.js'
 
 
 const categorySettings = {
@@ -18,18 +20,6 @@ const categorySettings = {
 
 const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
 
-const firebaseCategoryOptions = [
-  { key: 'CPU', label: 'Процессор (CPU)' },
-  { key: 'GPU', label: 'Видеокарта (GPU)' },
-  { key: 'RAM', label: 'Оперативная память (RAM)' },
-  { key: 'PSU', label: 'Блок питания (PSU)' },
-  { key: 'MB', label: 'Материнская плата (MB)' },
-  { key: 'M2', label: 'M.2 накопитель (M2)' },
-  { key: 'SSD', label: 'SSD' },
-  { key: 'HDD', label: 'HDD' },
-  { key: 'CASE', label: 'Корпус (CASE)' },
-  { key: 'Case Fans', label: 'Вентиляторы корпуса (Case Fans)' }
-]
 
 const interfaceElements = {
   mainTabsContainer: document.getElementById('main-tabs'),
@@ -48,9 +38,9 @@ const interfaceElements = {
   configurationWarning: document.getElementById('configuration-warning'),
   firebaseForm: document.getElementById('firebase-component-form'),
   firebaseSpecsContainer: document.getElementById('firebase-specs-container'),
-  addFirebaseSpecButton: document.getElementById('add-firebase-spec'),
   firebaseStatus: document.getElementById('firebase-status'),
   firebaseConnectionInfo: document.getElementById('firebase-connection-info'),
+  firebaseRequiredHint: document.getElementById('firebase-required-hint'),
   dashboardMetrics: document.getElementById('dashboard-metrics'),
   comparisonInsights: document.getElementById('comparison-insights'),
   budgetInput: document.getElementById('budget-input'),
@@ -300,6 +290,18 @@ function buildUniqueList(records, categoryKey) {
   return Array.from(recordsByName.values())
 }
 
+function convertFirebaseRecord(categoryKey, sourceRecord) {
+  const componentName = normalizeText(sourceRecord?.name)
+  if (!componentName) return null
+  return {
+    id: createIdentifier(categoryKey, componentName),
+    name: componentName,
+    categoryKey,
+    price: parseNumber(sourceRecord?.price),
+    specs: sourceRecord?.specs || {}
+  }
+}
+
 async function loadCategory(categoryKey) {
   const categoryFiles = categorySettings[categoryKey].files
   const allRecords = []
@@ -311,6 +313,15 @@ async function loadCategory(categoryKey) {
       const convertedRecord = convertRecord(categoryKey, sourceRecord)
       if (convertedRecord) allRecords.push(convertedRecord)
     }
+  }
+
+  try {
+    const firebaseRecords = await loadComponentsFromFirebase(categoryKey)
+    for (const firebaseRecord of firebaseRecords) {
+      const convertedFirebaseRecord = convertFirebaseRecord(categoryKey, firebaseRecord)
+      if (convertedFirebaseRecord) allRecords.push(convertedFirebaseRecord)
+    }
+  } catch {
   }
 
   const uniqueRecords = buildUniqueList(allRecords, categoryKey)
@@ -644,26 +655,43 @@ function handleImportBuild() {
   }
 }
 
-function createFirebaseSpecRow(key = '', value = '') {
-  const row = document.createElement('div')
-  row.className = 'firebase-spec-row'
-  row.innerHTML = `
-    <input type="text" placeholder="Характеристика (например, Сокет)" value="${escapeHtml(key)}" data-spec-key>
-    <input type="text" placeholder="Значение (например, AM5)" value="${escapeHtml(value)}" data-spec-value>
-    <button type="button" class="secondary-action" data-remove-spec>Удалить</button>
-  `
-  interfaceElements.firebaseSpecsContainer.appendChild(row)
+function renderFirebaseFormByCategory() {
+  const categoryKey = normalizeText(interfaceElements.firebaseForm.elements.firebaseCategory.value)
+  renderFirebaseCategoryFields(interfaceElements.firebaseSpecsContainer, interfaceElements.firebaseRequiredHint, categoryKey)
 }
 
-function collectFirebaseSpecs() {
-  const specs = {}
-  const rows = interfaceElements.firebaseSpecsContainer.querySelectorAll('.firebase-spec-row')
-  for (const row of rows) {
-    const key = normalizeText(row.querySelector('[data-spec-key]')?.value)
-    const value = normalizeText(row.querySelector('[data-spec-value]')?.value)
-    if (key && value) specs[key] = value
-  }
-  return specs
+function prefillVendorAndModelFromName() {
+  const value = normalizeText(interfaceElements.firebaseForm.elements.firebaseComponentName.value)
+  if (!value) return
+  const parts = value.split(' ')
+  if (parts.length < 2) return
+
+  const vendorField = interfaceElements.firebaseForm.querySelector('[data-field-key="vendor"]')
+  const modelField = interfaceElements.firebaseForm.querySelector('[data-field-key="model"]')
+  if (vendorField && !normalizeText(vendorField.value)) vendorField.value = parts[0]
+  if (modelField && !normalizeText(modelField.value)) modelField.value = parts.slice(1).join(' ')
+}
+
+function mergeComponentIntoState(categoryKey, payload) {
+  const converted = convertFirebaseRecord(categoryKey, payload)
+  if (!converted) return
+  const current = applicationState.componentsByCategory[categoryKey] || []
+  const merged = current.filter((record) => record.id !== converted.id)
+  merged.push(converted)
+  merged.sort((leftRecord, rightRecord) => leftRecord.name.localeCompare(rightRecord.name, 'ru'))
+  applicationState.componentsByCategory[categoryKey] = merged
+}
+
+function refreshAfterComponentSave() {
+  renderComparisonCategoryTabs()
+  renderComparisonSelectors()
+  renderConfigurator()
+  renderConfigurationSummary()
+}
+
+function resetFirebaseDynamicFields() {
+  interfaceElements.firebaseForm.elements.firebaseComponentName.value = ''
+  renderFirebaseFormByCategory()
 }
 
 function renderFirebaseConnectionState() {
@@ -678,20 +706,24 @@ async function saveComponentToFirebase(event) {
   interfaceElements.firebaseStatus.textContent = ''
 
   const category = normalizeText(interfaceElements.firebaseForm.elements.firebaseCategory.value)
-  const componentName = normalizeText(interfaceElements.firebaseForm.elements.firebaseComponentName.value)
+  const { errors, payload } = collectFirebasePayload(interfaceElements.firebaseForm, category)
 
-  if (!category || !componentName) {
-    interfaceElements.firebaseStatus.textContent = 'Заполните категорию и название компонента.'
+  if (errors.length > 0) {
+    interfaceElements.firebaseStatus.textContent = errors[0]
     return
   }
 
-  const specs = collectFirebaseSpecs()
+  if (!payload?.name || !payload?.price) {
+    interfaceElements.firebaseStatus.textContent = 'Заполните название, модель и цену.'
+    return
+  }
+
   try {
-    await saveComponent(category, componentName, specs)
-    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/components/${componentName}`
-    interfaceElements.firebaseForm.reset()
-    interfaceElements.firebaseSpecsContainer.innerHTML = ''
-    createFirebaseSpecRow()
+    await saveComponent(category, payload)
+    mergeComponentIntoState(category, payload)
+    refreshAfterComponentSave()
+    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/components/${payload.name}`
+    resetFirebaseDynamicFields()
   } catch (error) {
     interfaceElements.firebaseStatus.textContent = `Не удалось сохранить в Firebase: ${error.message}`
   }
@@ -760,14 +792,8 @@ function bindEvents() {
     renderConfigurationSummary()
   })
 
-  interfaceElements.addFirebaseSpecButton.addEventListener('click', () => createFirebaseSpecRow())
-
-  interfaceElements.firebaseSpecsContainer.addEventListener('click', (event) => {
-    const removeButton = event.target.closest('[data-remove-spec]')
-    if (!removeButton) return
-    removeButton.closest('.firebase-spec-row')?.remove()
-  })
-
+  interfaceElements.firebaseForm.elements.firebaseCategory.addEventListener('change', () => renderFirebaseFormByCategory())
+  interfaceElements.firebaseForm.elements.firebaseComponentName.addEventListener('input', () => prefillVendorAndModelFromName())
   interfaceElements.firebaseForm.addEventListener('submit', saveComponentToFirebase)
   interfaceElements.budgetInput.addEventListener('input', () => {
     applicationState.budgetValue = normalizeText(interfaceElements.budgetInput.value)
@@ -785,6 +811,7 @@ async function initializeApplication() {
   interfaceElements.firebaseForm.elements.firebaseCategory.innerHTML = firebaseCategoryOptions
     .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
     .join('')
+  renderFirebaseFormByCategory()
 
   for (const categoryKey of Object.keys(categorySettings)) {
     applicationState.componentsByCategory[categoryKey] = await loadCategory(categoryKey)
@@ -803,7 +830,6 @@ async function initializeApplication() {
   interfaceElements.budgetInput.value = applicationState.budgetValue
   renderConfigurationSummary()
   updateDashboardMetrics()
-  createFirebaseSpecRow('Производитель', '')
   renderFirebaseConnectionState()
   await watchFirebaseConnection((connected) => {
     if (!interfaceElements.firebaseConnectionInfo) return
