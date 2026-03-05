@@ -12,9 +12,13 @@
 <body>
   <div class="application-shell">
     <header class="application-header">
-      <p class="application-label">TechForge</p>
+      <div class="header-topline">
+        <p class="application-label">TechForge</p>
+        <p class="application-status">Ночной режим активен</p>
+      </div>
       <h1>Подбор комплектующих и сборка ПК</h1>
       <p class="application-description">Сравнивайте компоненты по категориям, собирайте конфигурацию и сверяйтесь с краткой инструкцией по сборке.</p>
+      <div class="dashboard-metrics" id="dashboard-metrics"></div>
     </header>
 
     <nav class="main-tabs" id="main-tabs">
@@ -51,6 +55,7 @@
         </div>
 
         <div id="comparison-result" class="comparison-result"></div>
+        <div id="comparison-insights" class="insights-box"></div>
       </section>
 
       <section class="main-panel" data-main-panel="configurator">
@@ -62,14 +67,46 @@
         <div id="configurator-grid" class="configurator-grid"></div>
         <button id="configurator-reset" class="secondary-action" type="button">Сбросить выбор</button>
 
+        
+
+        <div class="configurator-tools">
+          <div class="configuration-summary">
+            <h3>Планировщик бюджета</h3>
+            <label>
+              Бюджет ($)
+              <input id="budget-input" type="number" min="0" step="10" placeholder="Например, 1500">
+            </label>
+            <p id="budget-status" class="comparison-count"></p>
+          </div>
+          <div class="configuration-summary">
+            <h3>Сохранённые сборки</h3>
+            <label>
+              Слот сборки
+              <select id="build-slot-select"></select>
+            </label>
+            <div class="firebase-actions">
+              <button id="save-build" class="secondary-action" type="button">Сохранить</button>
+              <button id="load-build" class="secondary-action" type="button">Загрузить</button>
+              <button id="delete-build" class="secondary-action" type="button">Удалить</button>
+            </div>
+            <div class="firebase-actions">
+              <button id="export-build" class="secondary-action" type="button">Экспорт JSON</button>
+              <button id="import-build" class="secondary-action" type="button">Импорт JSON</button>
+            </div>
+            <p id="build-status" class="comparison-count"></p>
+          </div>
+          <div class="configuration-summary">
+            <h3>Рекомендации</h3>
+            <ul id="recommendations-list"></ul>
+          </div>
+        </div>
+
         <div class="configuration-summary">
           <h3>Итог сборки</h3>
           <ul id="configuration-list"></ul>
           <p id="configuration-total" class="configuration-total"></p>
           <p id="configuration-warning" class="configuration-warning"></p>
         </div>
-
-
       </section>
 
       <section class="main-panel" data-main-panel="guide">
@@ -100,11 +137,14 @@
               Название компонента
               <input name="firebaseComponentName" type="text" placeholder="Например, Ryzen 7 7800X3D">
             </label>
+            <div class="firebase-actions">
+              <button id="firebase-build-name" class="secondary-action" type="button">Собрать имя из бренда и модели</button>
+            </div>
             <div id="firebase-specs-container" class="firebase-specs-container"></div>
             <div class="firebase-actions">
-              <button id="add-firebase-spec" class="secondary-action" type="button">Добавить характеристику</button>
               <button class="secondary-action" type="submit">Сохранить в Firebase</button>
             </div>
+            <p id="firebase-required-hint" class="comparison-count"></p>
             <p id="firebase-status" class="comparison-count"></p>
           </form>
         </div>

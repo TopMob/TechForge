@@ -6,7 +6,8 @@ import {
   onSnapshot,
   serverTimestamp,
   limit,
-  query
+  query,
+  getDocs
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'
 import { firestoreDatabase } from './firebase-app.js'
 import { ensureFirebaseAuth } from './firebase-auth.js'
@@ -27,17 +28,29 @@ export async function watchFirebaseConnection(onChange) {
   )
 }
 
-export async function saveComponent(category, componentName, specs) {
+export async function loadComponentsFromFirebase(category) {
+  await ensureFirebaseAuth()
+  const snapshot = await getDocs(collection(firestoreDatabase, 'PC', String(category).trim(), 'components'))
+  return snapshot.docs.map((item) => item.data())
+}
+
+export async function saveComponent(category, componentPayload) {
   await ensureFirebaseAuth()
 
   const normalizedCategory = String(category).trim()
-  const normalizedName = String(componentName).trim()
+  const normalizedName = String(componentPayload?.name || '').trim()
   const createdAt = new Date().toISOString()
 
   const componentRef = doc(firestoreDatabase, 'PC', normalizedCategory, 'components', normalizedName)
   await setDoc(componentRef, {
     name: normalizedName,
-    specs,
+    categoryKey: normalizedCategory,
+    price: componentPayload.price || null,
+    vendor: componentPayload.vendor || '',
+    model: componentPayload.model || '',
+    specs: componentPayload.specs || {},
+    raw: componentPayload.raw || {},
+    source: 'firebase',
     createdAt,
     updatedAt: serverTimestamp()
   })
@@ -51,7 +64,8 @@ export async function saveComponent(category, componentName, specs) {
 
   return {
     name: normalizedName,
-    specs,
+    categoryKey: normalizedCategory,
+    specs: componentPayload.specs || {},
     createdAt
   }
 }

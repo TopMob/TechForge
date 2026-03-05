@@ -1,31 +1,25 @@
-import { saveComponent, watchFirebaseConnection } from './firebase.js'
+import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase } from './firebase.js'
+import { renderDashboardMetrics } from './dashboard-metrics.js'
+import { saveBuild, loadBuild, deleteBuild, getSlotNames, exportBuildPayload, importBuildPayload } from './build-storage.js'
+import { evaluateCompatibility } from './compatibility.js'
+import { buildRecommendations, buildComparisonInsights } from './recommendations.js'
+import { firebaseCategoryOptions } from './component-schema.js'
+import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase-form.js'
 
 
 const categorySettings = {
-  gpu: { title: 'Видеокарты', files: ['BD/GPU/AMD.json', 'BD/GPU/INTEL.json', 'BD/GPU/NVIDIA.json', 'BD/GPU/OTHER.json'] },
-  cpu: { title: 'Процессоры', files: ['BD/CPU/AMD.json', 'BD/CPU/INTEL.json'] },
-  ram: { title: 'Оперативная память', files: ['BD/RAM/ddr4.json', 'BD/RAM/ddr5.json'] },
-  ssd: { title: 'SSD', files: ['BD/COMPONENTS/ssd.json'] },
-  motherboard: { title: 'Материнские платы', files: ['BD/MOTHERBOARDS/motherboards.json'] },
-  power_supply: { title: 'Блоки питания', files: ['BD/POWER_SUPPLIES/power_supplies.json'] },
-  case: { title: 'Корпуса', files: ['BD/COMPONENTS/case.json'] },
-  cooler: { title: 'Охлаждение', files: ['BD/COMPONENTS/cooler.json'] }
+  gpu: { title: 'Видеокарты' },
+  cpu: { title: 'Процессоры' },
+  ram: { title: 'Оперативная память' },
+  ssd: { title: 'SSD' },
+  motherboard: { title: 'Материнские платы' },
+  power_supply: { title: 'Блоки питания' },
+  case: { title: 'Корпуса' },
+  cooler: { title: 'Охлаждение' }
 }
 
 const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
 
-const firebaseCategoryOptions = [
-  { key: 'CPU', label: 'Процессор (CPU)' },
-  { key: 'GPU', label: 'Видеокарта (GPU)' },
-  { key: 'RAM', label: 'Оперативная память (RAM)' },
-  { key: 'PSU', label: 'Блок питания (PSU)' },
-  { key: 'MB', label: 'Материнская плата (MB)' },
-  { key: 'M2', label: 'M.2 накопитель (M2)' },
-  { key: 'SSD', label: 'SSD' },
-  { key: 'HDD', label: 'HDD' },
-  { key: 'CASE', label: 'Корпус (CASE)' },
-  { key: 'Case Fans', label: 'Вентиляторы корпуса (Case Fans)' }
-]
 
 const interfaceElements = {
   mainTabsContainer: document.getElementById('main-tabs'),
@@ -44,9 +38,22 @@ const interfaceElements = {
   configurationWarning: document.getElementById('configuration-warning'),
   firebaseForm: document.getElementById('firebase-component-form'),
   firebaseSpecsContainer: document.getElementById('firebase-specs-container'),
-  addFirebaseSpecButton: document.getElementById('add-firebase-spec'),
   firebaseStatus: document.getElementById('firebase-status'),
-  firebaseConnectionInfo: document.getElementById('firebase-connection-info')
+  firebaseConnectionInfo: document.getElementById('firebase-connection-info'),
+  firebaseRequiredHint: document.getElementById('firebase-required-hint'),
+  firebaseBuildNameButton: document.getElementById('firebase-build-name'),
+  dashboardMetrics: document.getElementById('dashboard-metrics'),
+  comparisonInsights: document.getElementById('comparison-insights'),
+  budgetInput: document.getElementById('budget-input'),
+  budgetStatus: document.getElementById('budget-status'),
+  buildSlotSelect: document.getElementById('build-slot-select'),
+  saveBuildButton: document.getElementById('save-build'),
+  loadBuildButton: document.getElementById('load-build'),
+  deleteBuildButton: document.getElementById('delete-build'),
+  exportBuildButton: document.getElementById('export-build'),
+  importBuildButton: document.getElementById('import-build'),
+  buildStatus: document.getElementById('build-status'),
+  recommendationsList: document.getElementById('recommendations-list')
 }
 
 const applicationState = {
@@ -62,7 +69,8 @@ const applicationState = {
     first: '',
     second: ''
   },
-  configuratorSearchByCategory: {}
+  configuratorSearchByCategory: {},
+  budgetValue: ''
 }
 
 function normalizeText(value) {
@@ -283,17 +291,28 @@ function buildUniqueList(records, categoryKey) {
   return Array.from(recordsByName.values())
 }
 
+function convertFirebaseRecord(categoryKey, sourceRecord) {
+  const componentName = normalizeText(sourceRecord?.name)
+  if (!componentName) return null
+  return {
+    id: createIdentifier(categoryKey, componentName),
+    name: componentName,
+    categoryKey,
+    price: parseNumber(sourceRecord?.price),
+    specs: sourceRecord?.specs || {}
+  }
+}
+
 async function loadCategory(categoryKey) {
-  const categoryFiles = categorySettings[categoryKey].files
   const allRecords = []
 
-  for (const categoryFile of categoryFiles) {
-    const payload = await fetchJsonFile(categoryFile)
-    const sourceRecords = collectRecords(payload)
-    for (const sourceRecord of sourceRecords) {
-      const convertedRecord = convertRecord(categoryKey, sourceRecord)
-      if (convertedRecord) allRecords.push(convertedRecord)
+  try {
+    const firebaseRecords = await loadComponentsFromFirebase(categoryKey)
+    for (const firebaseRecord of firebaseRecords) {
+      const convertedFirebaseRecord = convertFirebaseRecord(categoryKey, firebaseRecord)
+      if (convertedFirebaseRecord) allRecords.push(convertedFirebaseRecord)
     }
+  } catch {
   }
 
   const uniqueRecords = buildUniqueList(allRecords, categoryKey)
@@ -381,6 +400,7 @@ function renderComparisonSelectors() {
   }
 
   interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Введите точное название из списка, чтобы сравнить модели.</p>'
+  renderComparisonInsights(null, null)
 }
 
 function collectSpecNames(firstRecord, secondRecord) {
@@ -401,6 +421,7 @@ function renderComparisonTable() {
 
   if (!firstRecord || !secondRecord) {
     interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Недостаточно данных для сравнения выбранной категории.</p>'
+    renderComparisonInsights(null, null)
     return
   }
 
@@ -415,6 +436,7 @@ function renderComparisonTable() {
   const priceRow = `<tr><th>Цена</th><td>${firstRecord.price ? escapeHtml(formatPrice(firstRecord.price)) : '—'}</td><td>${secondRecord.price ? escapeHtml(formatPrice(secondRecord.price)) : '—'}</td></tr>`
 
   interfaceElements.comparisonResult.innerHTML = `<table class="comparison-table"><thead><tr><th>Параметр</th><th>${escapeHtml(firstRecord.name)}</th><th>${escapeHtml(secondRecord.name)}</th></tr></thead><tbody>${priceRow}${specRows}</tbody></table>`
+  renderComparisonInsights(firstRecord, secondRecord)
 }
 
 function renderConfigurator() {
@@ -477,29 +499,224 @@ function renderConfigurationSummary() {
 
   interfaceElements.configurationList.innerHTML = summaryItems.join('') || '<li>Выберите комплектующие в конфигураторе.</li>'
   interfaceElements.configurationTotal.textContent = totalPrice > 0 ? `Общая стоимость: ${formatPrice(totalPrice)}` : 'Общая стоимость: нет данных по ценам'
-  interfaceElements.configurationWarning.textContent = validateSocketCompatibility()
+  const compatibility = evaluateCompatibility({
+    getRecordById,
+    selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory
+  })
+  interfaceElements.configurationWarning.textContent = compatibility.issues[0] || ''
+  renderBudgetState(totalPrice)
+  renderRecommendations(getSelectedRecords(), totalPrice, compatibility)
+  updateDashboardMetrics()
 }
 
-function createFirebaseSpecRow(key = '', value = '') {
-  const row = document.createElement('div')
-  row.className = 'firebase-spec-row'
-  row.innerHTML = `
-    <input type="text" placeholder="Характеристика (например, Сокет)" value="${escapeHtml(key)}" data-spec-key>
-    <input type="text" placeholder="Значение (например, AM5)" value="${escapeHtml(value)}" data-spec-value>
-    <button type="button" class="secondary-action" data-remove-spec>Удалить</button>
-  `
-  interfaceElements.firebaseSpecsContainer.appendChild(row)
-}
 
-function collectFirebaseSpecs() {
-  const specs = {}
-  const rows = interfaceElements.firebaseSpecsContainer.querySelectorAll('.firebase-spec-row')
-  for (const row of rows) {
-    const key = normalizeText(row.querySelector('[data-spec-key]')?.value)
-    const value = normalizeText(row.querySelector('[data-spec-value]')?.value)
-    if (key && value) specs[key] = value
+function updateDashboardMetrics() {
+  const categories = Object.keys(categorySettings)
+  const categorySettingsWithCount = {}
+  for (const categoryKey of categories) {
+    categorySettingsWithCount[categoryKey] = {
+      ...categorySettings[categoryKey],
+      count: applicationState.componentsByCategory[categoryKey]?.length || 0
+    }
   }
-  return specs
+
+  renderDashboardMetrics({
+    container: interfaceElements.dashboardMetrics,
+    categories,
+    categorySettings: categorySettingsWithCount,
+    selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory,
+    getRecordById,
+    formatPrice,
+    configuratorCategoryOrder
+  })
+}
+
+
+function renderComparisonInsights(firstRecord, secondRecord) {
+  if (!interfaceElements.comparisonInsights) return
+  const insights = buildComparisonInsights(firstRecord, secondRecord)
+  if (insights.length === 0) {
+    interfaceElements.comparisonInsights.innerHTML = '<p class="comparison-count">Инсайты появятся после выбора двух моделей с заполненными данными.</p>'
+    return
+  }
+  interfaceElements.comparisonInsights.innerHTML = `<ul>${insights.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+}
+
+function getSelectedRecords() {
+  return configuratorCategoryOrder
+    .map((categoryKey) => getRecordById(categoryKey, applicationState.selectedConfigurationByCategory[categoryKey]))
+    .filter(Boolean)
+}
+
+function getTotalPriceForSelectedRecords(records) {
+  return records.reduce((sum, record) => sum + (record.price || 0), 0)
+}
+
+function renderBudgetState(totalPrice) {
+  const budgetValue = parseNumber(applicationState.budgetValue)
+  if (!budgetValue) {
+    interfaceElements.budgetStatus.textContent = 'Укажите бюджет, чтобы увидеть отклонение.'
+    interfaceElements.budgetStatus.className = 'comparison-count'
+    return
+  }
+  const difference = totalPrice - budgetValue
+  if (difference > 0) {
+    interfaceElements.budgetStatus.textContent = `Перебор бюджета: +${Math.round(difference)} $`
+    interfaceElements.budgetStatus.className = 'comparison-count bad-state'
+    return
+  }
+  interfaceElements.budgetStatus.textContent = `Запас бюджета: ${Math.round(Math.abs(difference))} $`
+  interfaceElements.budgetStatus.className = 'comparison-count good-state'
+}
+
+function renderRecommendations(records, totalPrice, compatibility) {
+  const budgetValue = parseNumber(applicationState.budgetValue)
+  const recommendations = buildRecommendations({
+    selectedRecords: records,
+    totalPrice,
+    budgetValue,
+    compatibility
+  })
+  interfaceElements.recommendationsList.innerHTML = recommendations.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+}
+
+function populateBuildSlots() {
+  const slotNames = getSlotNames()
+  interfaceElements.buildSlotSelect.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
+}
+
+function handleSaveBuild() {
+  const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
+  if (!slotName) return
+  saveBuild(slotName, applicationState.selectedConfigurationByCategory, applicationState.budgetValue)
+  populateBuildSlots()
+  interfaceElements.buildStatus.textContent = `Сборка сохранена в слот: ${slotName}`
+}
+
+function handleLoadBuild() {
+  const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
+  const payload = loadBuild(slotName)
+  if (!payload) {
+    interfaceElements.buildStatus.textContent = 'В выбранном слоте нет сохранения.'
+    return
+  }
+  applicationState.selectedConfigurationByCategory = payload.selectedConfigurationByCategory || {}
+  applicationState.budgetValue = payload.budgetValue || ''
+  interfaceElements.budgetInput.value = applicationState.budgetValue
+  renderConfigurator()
+  renderConfigurationSummary()
+  interfaceElements.buildStatus.textContent = `Сборка загружена: ${slotName}`
+}
+
+function handleDeleteBuild() {
+  const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
+  const deleted = deleteBuild(slotName)
+  populateBuildSlots()
+  interfaceElements.buildStatus.textContent = deleted ? `Сборка удалена: ${slotName}` : 'Удалять нечего: слот пуст.'
+}
+
+function handleExportBuild() {
+  const payload = {
+    selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory,
+    budgetValue: applicationState.budgetValue
+  }
+  const exported = exportBuildPayload(payload)
+  navigator.clipboard.writeText(exported)
+    .then(() => {
+      interfaceElements.buildStatus.textContent = 'JSON сборки скопирован в буфер обмена.'
+    })
+    .catch(() => {
+      interfaceElements.buildStatus.textContent = exported
+    })
+}
+
+function handleImportBuild() {
+  const raw = prompt('Вставьте JSON сборки')
+  if (!raw) return
+  try {
+    const imported = importBuildPayload(raw)
+    applicationState.selectedConfigurationByCategory = imported.selectedConfigurationByCategory || {}
+    applicationState.budgetValue = imported.budgetValue || ''
+    interfaceElements.budgetInput.value = applicationState.budgetValue
+    renderConfigurator()
+    renderConfigurationSummary()
+    interfaceElements.buildStatus.textContent = 'Сборка импортирована из JSON.'
+  } catch (error) {
+    interfaceElements.buildStatus.textContent = `Ошибка импорта: ${error.message}`
+  }
+}
+
+function renderFirebaseFormByCategory() {
+  const categoryKey = normalizeText(interfaceElements.firebaseForm.elements.firebaseCategory.value)
+  renderFirebaseCategoryFields(interfaceElements.firebaseSpecsContainer, interfaceElements.firebaseRequiredHint, categoryKey)
+}
+
+
+function composeComponentNameFromFields() {
+  const vendorField = interfaceElements.firebaseForm.querySelector('[data-field-key="vendor"]')
+  const modelField = interfaceElements.firebaseForm.querySelector('[data-field-key="model"]')
+  const vendor = normalizeText(vendorField?.value)
+  const model = normalizeText(modelField?.value)
+  return [vendor, model].filter(Boolean).join(' ')
+}
+
+function syncComponentNameFromFields() {
+  const currentName = normalizeText(interfaceElements.firebaseForm.elements.firebaseComponentName.value)
+  const composedName = composeComponentNameFromFields()
+  if (!composedName) return
+  if (!currentName) {
+    interfaceElements.firebaseForm.elements.firebaseComponentName.value = composedName
+    return
+  }
+  const normalizedCurrent = currentName.toLowerCase()
+  const normalizedComposed = composedName.toLowerCase()
+  if (normalizedCurrent === normalizedComposed) {
+    interfaceElements.firebaseForm.elements.firebaseComponentName.value = composedName
+  }
+}
+
+function buildComponentNameFromFields() {
+  const composedName = composeComponentNameFromFields()
+  if (!composedName) {
+    interfaceElements.firebaseStatus.textContent = 'Сначала заполните бренд и модель.'
+    return
+  }
+  interfaceElements.firebaseForm.elements.firebaseComponentName.value = composedName
+  interfaceElements.firebaseStatus.textContent = ''
+}
+
+function prefillVendorAndModelFromName() {
+  const value = normalizeText(interfaceElements.firebaseForm.elements.firebaseComponentName.value)
+  if (!value) return
+  const parts = value.split(' ')
+  if (parts.length < 2) return
+
+  const vendorField = interfaceElements.firebaseForm.querySelector('[data-field-key="vendor"]')
+  const modelField = interfaceElements.firebaseForm.querySelector('[data-field-key="model"]')
+  if (vendorField && !normalizeText(vendorField.value)) vendorField.value = parts[0]
+  if (modelField && !normalizeText(modelField.value)) modelField.value = parts.slice(1).join(' ')
+}
+
+function mergeComponentIntoState(categoryKey, payload) {
+  const converted = convertFirebaseRecord(categoryKey, payload)
+  if (!converted) return
+  const current = applicationState.componentsByCategory[categoryKey] || []
+  const merged = current.filter((record) => record.id !== converted.id)
+  merged.push(converted)
+  merged.sort((leftRecord, rightRecord) => leftRecord.name.localeCompare(rightRecord.name, 'ru'))
+  applicationState.componentsByCategory[categoryKey] = merged
+}
+
+function refreshAfterComponentSave() {
+  renderComparisonCategoryTabs()
+  renderComparisonSelectors()
+  renderConfigurator()
+  renderConfigurationSummary()
+}
+
+function resetFirebaseDynamicFields() {
+  interfaceElements.firebaseForm.elements.firebaseComponentName.value = ''
+  renderFirebaseFormByCategory()
 }
 
 function renderFirebaseConnectionState() {
@@ -514,20 +731,24 @@ async function saveComponentToFirebase(event) {
   interfaceElements.firebaseStatus.textContent = ''
 
   const category = normalizeText(interfaceElements.firebaseForm.elements.firebaseCategory.value)
-  const componentName = normalizeText(interfaceElements.firebaseForm.elements.firebaseComponentName.value)
+  const { errors, payload } = collectFirebasePayload(interfaceElements.firebaseForm, category)
 
-  if (!category || !componentName) {
-    interfaceElements.firebaseStatus.textContent = 'Заполните категорию и название компонента.'
+  if (errors.length > 0) {
+    interfaceElements.firebaseStatus.textContent = errors[0]
     return
   }
 
-  const specs = collectFirebaseSpecs()
+  if (!payload?.name || !payload?.price) {
+    interfaceElements.firebaseStatus.textContent = 'Заполните название, модель и цену.'
+    return
+  }
+
   try {
-    await saveComponent(category, componentName, specs)
-    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/components/${componentName}`
-    interfaceElements.firebaseForm.reset()
-    interfaceElements.firebaseSpecsContainer.innerHTML = ''
-    createFirebaseSpecRow()
+    await saveComponent(category, payload)
+    mergeComponentIntoState(category, payload)
+    refreshAfterComponentSave()
+    interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/components/${payload.name}`
+    resetFirebaseDynamicFields()
   } catch (error) {
     interfaceElements.firebaseStatus.textContent = `Не удалось сохранить в Firebase: ${error.message}`
   }
@@ -596,21 +817,37 @@ function bindEvents() {
     renderConfigurationSummary()
   })
 
-  interfaceElements.addFirebaseSpecButton.addEventListener('click', () => createFirebaseSpecRow())
-
-  interfaceElements.firebaseSpecsContainer.addEventListener('click', (event) => {
-    const removeButton = event.target.closest('[data-remove-spec]')
-    if (!removeButton) return
-    removeButton.closest('.firebase-spec-row')?.remove()
+  interfaceElements.firebaseForm.elements.firebaseCategory.addEventListener('change', () => {
+    renderFirebaseFormByCategory()
+    interfaceElements.firebaseStatus.textContent = ''
+  })
+  interfaceElements.firebaseForm.elements.firebaseComponentName.addEventListener('input', () => prefillVendorAndModelFromName())
+  interfaceElements.firebaseSpecsContainer.addEventListener('input', (event) => {
+    const field = event.target.closest('[data-field-key]')
+    if (!field) return
+    if (field.dataset.fieldKey === 'vendor' || field.dataset.fieldKey === 'model') {
+      syncComponentNameFromFields()
+    }
+  })
+  interfaceElements.firebaseBuildNameButton.addEventListener('click', () => buildComponentNameFromFields())
+  interfaceElements.firebaseForm.addEventListener('submit', saveComponentToFirebase)
+  interfaceElements.budgetInput.addEventListener('input', () => {
+    applicationState.budgetValue = normalizeText(interfaceElements.budgetInput.value)
+    renderConfigurationSummary()
   })
 
-  interfaceElements.firebaseForm.addEventListener('submit', saveComponentToFirebase)
+  interfaceElements.saveBuildButton.addEventListener('click', handleSaveBuild)
+  interfaceElements.loadBuildButton.addEventListener('click', handleLoadBuild)
+  interfaceElements.deleteBuildButton.addEventListener('click', handleDeleteBuild)
+  interfaceElements.exportBuildButton.addEventListener('click', handleExportBuild)
+  interfaceElements.importBuildButton.addEventListener('click', handleImportBuild)
 }
 
 async function initializeApplication() {
   interfaceElements.firebaseForm.elements.firebaseCategory.innerHTML = firebaseCategoryOptions
     .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
     .join('')
+  renderFirebaseFormByCategory()
 
   for (const categoryKey of Object.keys(categorySettings)) {
     applicationState.componentsByCategory[categoryKey] = await loadCategory(categoryKey)
@@ -625,8 +862,10 @@ async function initializeApplication() {
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  populateBuildSlots()
+  interfaceElements.budgetInput.value = applicationState.budgetValue
   renderConfigurationSummary()
-  createFirebaseSpecRow('Производитель', '')
+  updateDashboardMetrics()
   renderFirebaseConnectionState()
   await watchFirebaseConnection((connected) => {
     if (!interfaceElements.firebaseConnectionInfo) return
