@@ -206,3 +206,46 @@ function buildSpecsByCategory(categoryKey, values) {
 
   return {}
 }
+
+
+export function fillFirebaseFormByComponent(formElement, categoryKey, componentRecord) {
+  const config = categoryFormConfig[categoryKey]
+  if (!config || !componentRecord) return
+
+  const rawValues = componentRecord.raw || {}
+  const fallbackValues = {
+    vendor: normalizeText(componentRecord.vendor || componentRecord.specs?.Производитель),
+    model: normalizeText(componentRecord.model || componentRecord.specs?.Модель),
+    price: componentRecord.price
+  }
+
+  const vendorValue = normalizeText(rawValues.vendor || fallbackValues.vendor)
+  const modelValue = normalizeText(rawValues.model || fallbackValues.model)
+  const nameValue = normalizeText(componentRecord.name || [vendorValue, modelValue].filter(Boolean).join(' '))
+
+  if (formElement.elements.firebaseCategory) formElement.elements.firebaseCategory.value = categoryKey
+  if (formElement.elements.firebaseComponentName) formElement.elements.firebaseComponentName.value = nameValue
+
+  for (const field of config.fields) {
+    const input = formElement.querySelector(`[data-field-key="${field.key}"]`)
+    if (!input) continue
+    const rawValue = rawValues[field.key]
+    if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
+      input.value = String(rawValue)
+      continue
+    }
+    if (field.key === 'vendor') {
+      input.value = vendorValue
+      continue
+    }
+    if (field.key === 'model') {
+      input.value = modelValue
+      continue
+    }
+    if (field.key === 'price') {
+      input.value = fallbackValues.price || ''
+      continue
+    }
+    input.value = ''
+  }
+}

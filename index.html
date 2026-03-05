@@ -132,12 +132,30 @@
       <section class="main-panel" data-main-panel="firebase">
         <div class="panel-header">
           <h2>Добавление компонентов в Firebase</h2>
-          <p>Вносите новые компоненты в отдельной вкладке. Запись сохраняется в Realtime Database в структуру <strong>PC/Категория/Название</strong>.</p>
+          <p>Вносите и редактируйте компоненты во вкладке Firebase. Записи сохраняются в Firestore в структуру <strong>PC/Категория/components/Название</strong>.</p>
         </div>
 
         <div class="firebase-box firebase-panel-box">
           <p id="firebase-connection-info" class="firebase-connection-info">Firebase подключен: проверка...</p>
-          <form id="firebase-component-form" class="firebase-form">
+
+        <div class="firebase-box firebase-panel-box">
+          <h3>Редактор компонентов Firebase</h3>
+          <label>
+            Категория для редактирования
+            <select id="firebase-editor-category"></select>
+          </label>
+          <label>
+            Компонент
+            <select id="firebase-editor-component"></select>
+          </label>
+          <div class="firebase-actions">
+            <button id="firebase-editor-load" class="secondary-action" type="button">Загрузить в форму</button>
+            <button id="firebase-editor-update" class="secondary-action" type="button">Обновить из формы</button>
+            <button id="firebase-editor-delete" class="secondary-action" type="button">Удалить из Firebase</button>
+          </div>
+        </div>
+
+                    <form id="firebase-component-form" class="firebase-form">
             <label>
               Категория
               <select name="firebaseCategory"></select>
