@@ -118,7 +118,7 @@ body {
 .main-tabs {
   padding: 8px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -348,6 +348,7 @@ select {
 
 .main-tab,
 .secondary-action,
+.diagnostics-button,
 input,
 select,
 .category-tab {

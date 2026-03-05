@@ -754,6 +754,23 @@ async function saveComponentToFirebase(event) {
   }
 }
 
+
+function getConfigurationSnapshot() {
+  const snapshot = {}
+  for (const categoryKey of configuratorCategoryOrder) {
+    snapshot[categoryKey] = getRecordById(categoryKey, applicationState.selectedConfigurationByCategory[categoryKey])
+  }
+  return snapshot
+}
+
+function initializeDiagnosticsModule() {
+  if (!interfaceElements.diagnosticsRoot) return
+  applicationState.diagnosticsController = setupDiagnosticsModule({
+    rootElement: interfaceElements.diagnosticsRoot,
+    getConfigurationSnapshot
+  })
+}
+
 function bindEvents() {
   interfaceElements.mainTabsContainer.addEventListener('click', (event) => {
     const tabButton = event.target.closest('[data-main-tab]')
@@ -808,6 +825,7 @@ function bindEvents() {
 
     renderConfigurator()
     renderConfigurationSummary()
+    applicationState.diagnosticsController?.rerender()
   })
 
   interfaceElements.configuratorResetButton.addEventListener('click', () => {
@@ -815,6 +833,7 @@ function bindEvents() {
     applicationState.configuratorSearchByCategory = {}
     renderConfigurator()
     renderConfigurationSummary()
+    applicationState.diagnosticsController?.rerender()
   })
 
   interfaceElements.firebaseForm.elements.firebaseCategory.addEventListener('change', () => {
