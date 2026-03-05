@@ -5,6 +5,8 @@ import { evaluateCompatibility } from './compatibility.js'
 import { buildRecommendations, buildComparisonInsights } from './recommendations.js'
 import { firebaseCategoryOptions } from './component-schema.js'
 import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase-form.js'
+import { setupFirebaseEditor } from './firebase-editor.js'
+import { setupDiagnosticsModule } from './diagnostics.js'
 
 
 const categorySettings = {
@@ -19,6 +21,7 @@ const categorySettings = {
 }
 
 const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
+
 
 
 const interfaceElements = {
@@ -42,6 +45,11 @@ const interfaceElements = {
   firebaseConnectionInfo: document.getElementById('firebase-connection-info'),
   firebaseRequiredHint: document.getElementById('firebase-required-hint'),
   firebaseBuildNameButton: document.getElementById('firebase-build-name'),
+  firebaseEditorCategory: document.getElementById('firebase-editor-category'),
+  firebaseEditorComponent: document.getElementById('firebase-editor-component'),
+  firebaseEditorLoadButton: document.getElementById('firebase-editor-load'),
+  firebaseEditorUpdateButton: document.getElementById('firebase-editor-update'),
+  firebaseEditorDeleteButton: document.getElementById('firebase-editor-delete'),
   dashboardMetrics: document.getElementById('dashboard-metrics'),
   comparisonInsights: document.getElementById('comparison-insights'),
   budgetInput: document.getElementById('budget-input'),
@@ -53,7 +61,8 @@ const interfaceElements = {
   exportBuildButton: document.getElementById('export-build'),
   importBuildButton: document.getElementById('import-build'),
   buildStatus: document.getElementById('build-status'),
-  recommendationsList: document.getElementById('recommendations-list')
+  recommendationsList: document.getElementById('recommendations-list'),
+  diagnosticsRoot: document.getElementById('diagnostics-root')
 }
 
 const applicationState = {
@@ -70,7 +79,8 @@ const applicationState = {
     second: ''
   },
   configuratorSearchByCategory: {},
-  budgetValue: ''
+  budgetValue: '',
+  firebaseEditorController: null
 }
 
 function normalizeText(value) {
@@ -107,162 +117,6 @@ function createIdentifier(categoryKey, componentName) {
 
 function formatPrice(priceValue) {
   return `${Math.round(priceValue)} $`
-}
-
-function formatClockFrequency(value) {
-  const frequency = parseNumber(value)
-  return frequency ? `${frequency} ГГц` : ''
-}
-
-async function fetchJsonFile(filePath) {
-  const response = await fetch(filePath)
-  if (!response.ok) {
-    throw new Error(filePath)
-  }
-  return response.json()
-}
-
-function collectRecords(payload) {
-  if (Array.isArray(payload)) return payload
-  if (payload && Array.isArray(payload.items)) return payload.items
-  if (payload && Array.isArray(payload.records)) return payload.records
-  return []
-}
-
-function extractPriceFromRecord(baseRecord) {
-  const priceCandidates = [baseRecord.price, baseRecord.price_last_usd, baseRecord.price_max_usd, baseRecord.price_min_usd]
-  for (const priceCandidate of priceCandidates) {
-    const parsedPrice = parseNumber(priceCandidate)
-    if (parsedPrice !== null && parsedPrice > 0) return parsedPrice
-  }
-  return null
-}
-
-function convertRecord(categoryKey, sourceRecord) {
-  const baseRecord = sourceRecord && sourceRecord.data ? sourceRecord.data : sourceRecord
-  const componentName = normalizeText(baseRecord?.name)
-  if (!componentName) return null
-
-  if (categoryKey === 'cpu') {
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Производитель: normalizeText(baseRecord.manufacturer),
-        Ядра: parseNumber(baseRecord.core_count) ? String(baseRecord.core_count) : '',
-        'Базовая частота': formatClockFrequency(baseRecord.core_clock_ghz),
-        'Boost частота': formatClockFrequency(baseRecord.boost_clock_ghz),
-        Сокет: normalizeText(baseRecord.socket),
-        TDP: parseNumber(baseRecord.tdp_watts) ? `${baseRecord.tdp_watts} Вт` : ''
-      }
-    }
-  }
-
-  if (categoryKey === 'gpu') {
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Производитель: normalizeText(baseRecord.manufacturer || baseRecord.vendor),
-        Чип: normalizeText(baseRecord.chipset || baseRecord.gpu_chip),
-        Память: parseNumber(baseRecord.memory) ? `${baseRecord.memory} ГБ` : '',
-        Энергопотребление: parseNumber(baseRecord.power || baseRecord.tdp_watts) ? `${baseRecord.power || baseRecord.tdp_watts} Вт` : ''
-      }
-    }
-  }
-
-  if (categoryKey === 'ram') {
-    const memoryModules = Array.isArray(baseRecord.modules) ? baseRecord.modules : []
-    const memorySpeed = Array.isArray(baseRecord.speed) ? baseRecord.speed : []
-    const totalCapacity = memoryModules.length === 2 ? memoryModules[0] * memoryModules[1] : parseNumber(baseRecord.capacity)
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Объем: totalCapacity ? `${totalCapacity} ГБ` : '',
-        Частота: memorySpeed.length > 1 ? `${memorySpeed[memorySpeed.length - 1]} МГц` : '',
-        Тип: memorySpeed.length ? `DDR${memorySpeed[0]}` : ''
-      }
-    }
-  }
-
-  if (categoryKey === 'ssd') {
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Интерфейс: normalizeText(baseRecord.interface),
-        Формфактор: normalizeText(baseRecord.form_factor),
-        Характеристики: normalizeText(baseRecord.specs)
-      }
-    }
-  }
-
-  if (categoryKey === 'motherboard') {
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Сокет: normalizeText(baseRecord.socket),
-        Чипсет: normalizeText(baseRecord.chipset),
-        Формфактор: normalizeText(baseRecord.form_factor)
-      }
-    }
-  }
-
-  if (categoryKey === 'power_supply') {
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Мощность: parseNumber(baseRecord.wattage) ? `${baseRecord.wattage} Вт` : '',
-        Сертификат: normalizeText(baseRecord.efficiency_rating),
-        Модульность: normalizeText(baseRecord.modular)
-      }
-    }
-  }
-
-  if (categoryKey === 'case') {
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Тип: normalizeText(baseRecord.type),
-        Формфактор: normalizeText(baseRecord.form_factor),
-        Цвет: normalizeText(baseRecord.color)
-      }
-    }
-  }
-
-  if (categoryKey === 'cooler') {
-    return {
-      id: createIdentifier(categoryKey, componentName),
-      name: componentName,
-      categoryKey,
-      price: extractPriceFromRecord(baseRecord),
-      specs: {
-        Размер: normalizeText(baseRecord.size),
-        Совместимость: normalizeText(baseRecord.socket),
-        Характеристики: normalizeText(baseRecord.specs)
-      }
-    }
-  }
-
-  return null
 }
 
 function getRecordCompleteness(record) {
@@ -697,6 +551,14 @@ function prefillVendorAndModelFromName() {
   if (modelField && !normalizeText(modelField.value)) modelField.value = parts.slice(1).join(' ')
 }
 
+async function refreshCategoryFromFirebase(categoryKey) {
+  applicationState.componentsByCategory[categoryKey] = await loadCategory(categoryKey)
+  renderComparisonCategoryTabs()
+  renderComparisonSelectors()
+  renderConfigurator()
+  renderConfigurationSummary()
+}
+
 function mergeComponentIntoState(categoryKey, payload) {
   const converted = convertFirebaseRecord(categoryKey, payload)
   if (!converted) return
@@ -748,6 +610,7 @@ async function saveComponentToFirebase(event) {
     mergeComponentIntoState(category, payload)
     refreshAfterComponentSave()
     interfaceElements.firebaseStatus.textContent = `Компонент сохранён: PC/${category}/components/${payload.name}`
+    await applicationState.firebaseEditorController?.refresh()
     resetFirebaseDynamicFields()
   } catch (error) {
     interfaceElements.firebaseStatus.textContent = `Не удалось сохранить в Firebase: ${error.message}`
@@ -838,6 +701,8 @@ function bindEvents() {
 
   interfaceElements.firebaseForm.elements.firebaseCategory.addEventListener('change', () => {
     renderFirebaseFormByCategory()
+    interfaceElements.firebaseEditorCategory.value = interfaceElements.firebaseForm.elements.firebaseCategory.value
+    applicationState.firebaseEditorController?.refresh()
     interfaceElements.firebaseStatus.textContent = ''
   })
   interfaceElements.firebaseForm.elements.firebaseComponentName.addEventListener('input', () => prefillVendorAndModelFromName())
@@ -849,6 +714,9 @@ function bindEvents() {
     }
   })
   interfaceElements.firebaseBuildNameButton.addEventListener('click', () => buildComponentNameFromFields())
+  interfaceElements.firebaseEditorLoadButton.addEventListener('click', () => applicationState.firebaseEditorController?.loadToForm())
+  interfaceElements.firebaseEditorUpdateButton.addEventListener('click', () => applicationState.firebaseEditorController?.updateFromForm())
+  interfaceElements.firebaseEditorDeleteButton.addEventListener('click', () => applicationState.firebaseEditorController?.deleteFromFirebase())
   interfaceElements.firebaseForm.addEventListener('submit', saveComponentToFirebase)
   interfaceElements.budgetInput.addEventListener('input', () => {
     applicationState.budgetValue = normalizeText(interfaceElements.budgetInput.value)
@@ -866,6 +734,9 @@ async function initializeApplication() {
   interfaceElements.firebaseForm.elements.firebaseCategory.innerHTML = firebaseCategoryOptions
     .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
     .join('')
+  interfaceElements.firebaseEditorCategory.innerHTML = firebaseCategoryOptions
+    .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
+    .join('')
   renderFirebaseFormByCategory()
 
   for (const categoryKey of Object.keys(categorySettings)) {
@@ -878,6 +749,7 @@ async function initializeApplication() {
   if (firstMotherboard) applicationState.selectedConfigurationByCategory.motherboard = firstMotherboard.id
 
   renderMainTabs()
+  initializeDiagnosticsModule()
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
@@ -886,6 +758,29 @@ async function initializeApplication() {
   renderConfigurationSummary()
   updateDashboardMetrics()
   renderFirebaseConnectionState()
+  const firebaseEditor = setupFirebaseEditor({
+    formElement: interfaceElements.firebaseForm,
+    specsContainer: interfaceElements.firebaseSpecsContainer,
+    requiredHint: interfaceElements.firebaseRequiredHint,
+    statusElement: interfaceElements.firebaseStatus,
+    editorCategorySelect: interfaceElements.firebaseEditorCategory,
+    editorComponentSelect: interfaceElements.firebaseEditorComponent,
+    refreshAfterSave: () => {
+      renderComparisonCategoryTabs()
+      renderComparisonSelectors()
+      renderConfigurator()
+      renderConfigurationSummary()
+    },
+    refreshCatalog: async (categoryKey, payload) => {
+      if (payload) {
+        mergeComponentIntoState(categoryKey, payload)
+      } else {
+        await refreshCategoryFromFirebase(categoryKey)
+      }
+    }
+  })
+  applicationState.firebaseEditorController = await firebaseEditor.initialize(normalizeText(interfaceElements.firebaseForm.elements.firebaseCategory.value))
+
   await watchFirebaseConnection((connected) => {
     if (!interfaceElements.firebaseConnectionInfo) return
     interfaceElements.firebaseConnectionInfo.textContent = connected

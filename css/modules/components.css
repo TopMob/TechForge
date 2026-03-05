@@ -1,0 +1,229 @@
+.category-tabs {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-tab {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(8, 12, 24, 0.82);
+  color: var(--text);
+  padding: 8px 12px;
+  cursor: pointer;
+  font: inherit;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.category-tab span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.category-tab.active {
+  border-color: rgba(155, 173, 255, 0.9);
+  background: rgba(110, 139, 255, 0.24);
+}
+
+.comparison-selectors,
+.configurator-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.selector-with-search,
+.configurator-field,
+.firebase-box,
+.configuration-summary {
+  background: linear-gradient(165deg, rgba(25, 35, 65, 0.38), rgba(8, 12, 24, 0.76));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(8, 12, 24, 0.88);
+  color: var(--text);
+  font: inherit;
+}
+
+.configurator-search {
+  padding: 10px;
+}
+
+.comparison-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.comparison-count {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.secondary-action {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(9, 13, 24, 0.82);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.comparison-result {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.comparison-table th,
+.comparison-table td {
+  border: 1px solid var(--border);
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.comparison-table thead th {
+  background: rgba(110, 139, 255, 0.2);
+}
+
+.empty-state {
+  margin: 0;
+  color: var(--muted);
+}
+
+.configuration-summary {
+  margin-top: 16px;
+}
+
+.configuration-summary h3 {
+  margin: 0 0 12px;
+}
+
+.configuration-summary ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.configuration-total {
+  margin: 14px 0 0;
+  font-weight: 700;
+}
+
+.configuration-warning {
+  margin: 8px 0 0;
+  color: var(--warning);
+}
+
+.firebase-box {
+  margin-top: 16px;
+}
+
+.firebase-box p {
+  color: var(--muted);
+}
+
+.firebase-connection-info {
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+
+.firebase-connected {
+  color: var(--success) !important;
+}
+
+.firebase-disconnected {
+  color: var(--warning) !important;
+}
+
+.firebase-form,
+.firebase-specs-container {
+  display: grid;
+  gap: 10px;
+}
+
+.firebase-spec-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+}
+
+.guide-list {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+}
+
+.firebase-panel-box {
+  max-width: 820px;
+}
+
+.firebase-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.configurator-tools {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.insights-box {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(165deg, rgba(25, 35, 65, 0.38), rgba(8, 12, 24, 0.76));
+}
+
+.insights-box ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.good-state {
+  color: var(--success);
+}
+
+.bad-state {
+  color: var(--warning);
+}

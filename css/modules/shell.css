@@ -1,0 +1,127 @@
+.application-shell {
+  width: min(1240px, 94vw);
+  margin: 28px auto;
+  display: grid;
+  gap: 18px;
+}
+
+.application-header,
+.main-tabs,
+.main-panel {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(165deg, rgba(27, 39, 72, 0.66), var(--surface));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.application-header {
+  padding: 26px;
+}
+
+.header-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.application-label {
+  margin: 0;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.application-status {
+  margin: 0;
+  font-size: 12px;
+  color: #d4deff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(162, 184, 255, 0.4);
+  background: rgba(68, 90, 168, 0.35);
+}
+
+.application-header h1 {
+  margin: 14px 0 10px;
+  font-size: clamp(30px, 4.2vw, 42px);
+  line-height: 1.1;
+}
+
+.application-description {
+  margin: 0;
+  max-width: 840px;
+  color: var(--muted);
+}
+
+.dashboard-metrics {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.metric-card {
+  border: 1px solid rgba(158, 177, 245, 0.25);
+  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(160deg, rgba(29, 43, 81, 0.55), rgba(9, 14, 30, 0.76));
+}
+
+.metric-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.metric-value {
+  margin: 8px 0 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #f5f8ff;
+}
+
+.main-tabs {
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.main-tab {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: rgba(9, 13, 26, 0.9);
+  color: var(--text);
+  padding: 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.main-tab.active {
+  background: linear-gradient(135deg, rgba(121, 149, 255, 0.48), rgba(153, 118, 255, 0.35));
+  border-color: rgba(165, 183, 255, 0.95);
+}
+
+.main-panel {
+  display: none;
+  padding: 22px;
+}
+
+.main-panel.active {
+  display: block;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.panel-header p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
