@@ -5,6 +5,7 @@ import { evaluateCompatibility } from './compatibility.js'
 import { buildRecommendations, buildComparisonInsights } from './recommendations.js'
 import { firebaseCategoryOptions } from './component-schema.js'
 import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase-form.js'
+import { setupDiagnosticsModule } from './diagnostics.js'
 
 
 const categorySettings = {
@@ -19,6 +20,17 @@ const categorySettings = {
 }
 
 const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
+
+const localCategorySources = {
+  cpu: ['BD/CPU/AMD.json', 'BD/CPU/INTEL.json'],
+  gpu: ['BD/GPU/AMD.json', 'BD/GPU/INTEL.json', 'BD/GPU/NVIDIA.json', 'BD/GPU/OTHER.json'],
+  ram: ['BD/RAM/ddr4.json', 'BD/RAM/ddr5.json'],
+  ssd: ['BD/COMPONENTS/ssd.json', 'BD/COMPONENTS/m2.json'],
+  motherboard: ['BD/MOTHERBOARDS/motherboards.json'],
+  power_supply: ['BD/POWER_SUPPLIES/power_supplies.json'],
+  case: ['BD/COMPONENTS/case.json'],
+  cooler: ['BD/COMPONENTS/cooler.json']
+}
 
 
 const interfaceElements = {
@@ -53,7 +65,8 @@ const interfaceElements = {
   exportBuildButton: document.getElementById('export-build'),
   importBuildButton: document.getElementById('import-build'),
   buildStatus: document.getElementById('build-status'),
-  recommendationsList: document.getElementById('recommendations-list')
+  recommendationsList: document.getElementById('recommendations-list'),
+  diagnosticsRoot: document.getElementById('diagnostics-root')
 }
 
 const applicationState = {
@@ -130,7 +143,13 @@ function collectRecords(payload) {
 }
 
 function extractPriceFromRecord(baseRecord) {
-  const priceCandidates = [baseRecord.price, baseRecord.price_last_usd, baseRecord.price_max_usd, baseRecord.price_min_usd]
+  const priceCandidates = [
+    baseRecord.price,
+    baseRecord.price_usd,
+    baseRecord.price_last_usd,
+    baseRecord.price_max_usd,
+    baseRecord.price_min_usd
+  ]
   for (const priceCandidate of priceCandidates) {
     const parsedPrice = parseNumber(priceCandidate)
     if (parsedPrice !== null && parsedPrice > 0) return parsedPrice
@@ -305,6 +324,19 @@ function convertFirebaseRecord(categoryKey, sourceRecord) {
 
 async function loadCategory(categoryKey) {
   const allRecords = []
+
+  const localFiles = localCategorySources[categoryKey] || []
+  for (const localFile of localFiles) {
+    try {
+      const payload = await fetchJsonFile(localFile)
+      const localRecords = collectRecords(payload)
+      for (const localRecord of localRecords) {
+        const convertedLocalRecord = convertRecord(categoryKey, localRecord)
+        if (convertedLocalRecord) allRecords.push(convertedLocalRecord)
+      }
+    } catch {
+    }
+  }
 
   try {
     const firebaseRecords = await loadComponentsFromFirebase(categoryKey)
@@ -878,6 +910,7 @@ async function initializeApplication() {
   if (firstMotherboard) applicationState.selectedConfigurationByCategory.motherboard = firstMotherboard.id
 
   renderMainTabs()
+  initializeDiagnosticsModule()
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
