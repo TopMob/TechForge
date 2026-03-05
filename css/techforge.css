@@ -63,7 +63,7 @@ body {
 .main-tabs {
   padding: 6px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -337,22 +337,29 @@ input[type='search'] {
   .firebase-spec-row {
     grid-template-columns: 1fr;
   }
+
+  .diagnostics-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 .main-tab,
 .secondary-action,
+.diagnostics-button,
 input,
 select {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .main-tab:hover,
-.secondary-action:hover {
+.secondary-action:hover,
+.diagnostics-button:hover {
   border-color: rgba(155, 173, 255, 0.9);
 }
 
 .main-tab:focus-visible,
 .secondary-action:focus-visible,
+.diagnostics-button:focus-visible,
 input:focus-visible,
 select:focus-visible {
   outline: none;
@@ -368,4 +375,125 @@ select:focus-visible {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+
+.diagnostics-layout {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.diagnostics-nav {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(8, 12, 24, 0.72);
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.diagnostics-button {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(9, 13, 24, 0.82);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.diagnostics-button.active {
+  border-color: rgba(155, 173, 255, 0.9);
+  background: rgba(110, 139, 255, 0.24);
+}
+
+.diagnostics-content {
+  min-width: 0;
+}
+
+.diagnostic-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(8, 12, 24, 0.72);
+}
+
+.diagnostic-card h3 {
+  margin: 0 0 10px;
+}
+
+.keyboard-map {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.keyboard-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.keyboard-key {
+  min-width: 36px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(9, 13, 24, 0.82);
+  font-size: 12px;
+  text-align: center;
+}
+
+.keyboard-key.tested {
+  background: rgba(125, 240, 175, 0.25);
+  border-color: rgba(125, 240, 175, 0.7);
+}
+
+.mouse-zone {
+  margin-top: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  min-height: 94px;
+  padding: 12px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--muted);
+}
+
+.mouse-zone:focus-visible {
+  outline: none;
+  border-color: rgba(155, 173, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(110, 139, 255, 0.25);
+}
+
+.games-table {
+  min-width: 100%;
+}
+
+.diagnostic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.microphone-meter {
+  margin-top: 8px;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: rgba(9, 13, 24, 0.82);
+}
+
+.microphone-meter span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #6e8bff, #7df0af);
 }

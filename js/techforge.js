@@ -1,4 +1,5 @@
 import { saveComponent, watchFirebaseConnection } from './firebase.js'
+import { setupDiagnosticsModule } from './diagnostics.js'
 
 
 const categorySettings = {
@@ -46,7 +47,8 @@ const interfaceElements = {
   firebaseSpecsContainer: document.getElementById('firebase-specs-container'),
   addFirebaseSpecButton: document.getElementById('add-firebase-spec'),
   firebaseStatus: document.getElementById('firebase-status'),
-  firebaseConnectionInfo: document.getElementById('firebase-connection-info')
+  firebaseConnectionInfo: document.getElementById('firebase-connection-info'),
+  diagnosticsRoot: document.getElementById('diagnostics-root')
 }
 
 const applicationState = {
@@ -62,7 +64,8 @@ const applicationState = {
     first: '',
     second: ''
   },
-  configuratorSearchByCategory: {}
+  configuratorSearchByCategory: {},
+  diagnosticsController: null
 }
 
 function normalizeText(value) {
@@ -533,6 +536,23 @@ async function saveComponentToFirebase(event) {
   }
 }
 
+
+function getConfigurationSnapshot() {
+  const snapshot = {}
+  for (const categoryKey of configuratorCategoryOrder) {
+    snapshot[categoryKey] = getRecordById(categoryKey, applicationState.selectedConfigurationByCategory[categoryKey])
+  }
+  return snapshot
+}
+
+function initializeDiagnosticsModule() {
+  if (!interfaceElements.diagnosticsRoot) return
+  applicationState.diagnosticsController = setupDiagnosticsModule({
+    rootElement: interfaceElements.diagnosticsRoot,
+    getConfigurationSnapshot
+  })
+}
+
 function bindEvents() {
   interfaceElements.mainTabsContainer.addEventListener('click', (event) => {
     const tabButton = event.target.closest('[data-main-tab]')
@@ -587,6 +607,7 @@ function bindEvents() {
 
     renderConfigurator()
     renderConfigurationSummary()
+    applicationState.diagnosticsController?.rerender()
   })
 
   interfaceElements.configuratorResetButton.addEventListener('click', () => {
@@ -594,6 +615,7 @@ function bindEvents() {
     applicationState.configuratorSearchByCategory = {}
     renderConfigurator()
     renderConfigurationSummary()
+    applicationState.diagnosticsController?.rerender()
   })
 
   interfaceElements.addFirebaseSpecButton.addEventListener('click', () => createFirebaseSpecRow())
@@ -626,6 +648,7 @@ async function initializeApplication() {
   renderComparisonSelectors()
   renderConfigurator()
   renderConfigurationSummary()
+  initializeDiagnosticsModule()
   createFirebaseSpecRow('Производитель', '')
   renderFirebaseConnectionState()
   await watchFirebaseConnection((connected) => {
