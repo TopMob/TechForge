@@ -52,6 +52,8 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
     mouseDoubleClicks: 0,
     mouseWheelEvents: 0,
     mouseLastEvent: 'Ожидание действий',
+    keyPulseCodes: new Set(),
+    mousePulse: '',
     audioContext: null,
     analyser: null,
     microphoneStream: null,
@@ -120,7 +122,8 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
           .map((code) => {
             const label = keyLabels[code] || code.replace('Key', '').replace('Digit', '')
             const tested = state.pressedKeys.has(code) ? 'tested' : ''
-            return `<span class="keyboard-key ${tested}" data-key-code="${code}">${label}</span>`
+            const pressed = state.keyPulseCodes.has(code) ? 'pressed' : ''
+            return `<span class="keyboard-key ${tested} ${pressed}" data-key-code="${code}">${label}</span>`
           })
           .join('')}</div>`
       )
@@ -148,7 +151,7 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
         <h3>Тест всех кнопок мыши</h3>
         <p class="comparison-count">ЛКМ: ${state.mouseButtonCounts.left} · СКМ: ${state.mouseButtonCounts.middle} · ПКМ: ${state.mouseButtonCounts.right}</p>
         <p class="comparison-count">Даблклик: ${state.mouseDoubleClicks} · Колесо: ${state.mouseWheelEvents} · Клики/сек: ${getCps()}</p>
-        <div class="mouse-zone" id="mouse-test-zone" tabindex="0">Кликайте здесь всеми кнопками, делайте даблклик и прокрутку.</div>
+        <div class="mouse-zone ${state.mousePulse}" id="mouse-test-zone" tabindex="0">Кликайте здесь всеми кнопками, делайте даблклик и прокрутку.</div>
         <p class="comparison-count">Последнее событие: ${state.mouseLastEvent}</p>
         <button type="button" class="secondary-action" data-reset-mouse>Сбросить тест мыши</button>
       </article>
@@ -313,6 +316,26 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
     render()
   }
 
+
+  function pulseKey(code) {
+    state.keyPulseCodes.add(code)
+    if (state.activeSection === 'keyboard') render()
+    setTimeout(() => {
+      state.keyPulseCodes.delete(code)
+      if (state.activeSection === 'keyboard') render()
+    }, 220)
+  }
+
+  function pulseMouse(zoneClass) {
+    state.mousePulse = zoneClass
+    if (state.activeSection === 'mouse') render()
+    setTimeout(() => {
+      if (state.mousePulse !== zoneClass) return
+      state.mousePulse = ''
+      if (state.activeSection === 'mouse') render()
+    }, 260)
+  }
+
   function bindDomEvents() {
     rootElement.addEventListener('click', async (event) => {
       const sectionButton = event.target.closest('[data-diagnostics-section]')
@@ -323,6 +346,7 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
 
       if (event.target.closest('[data-reset-keys]')) {
         state.pressedKeys.clear()
+        state.keyPulseCodes.clear()
         render()
       }
 
@@ -332,6 +356,7 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
         state.mouseDoubleClicks = 0
         state.mouseWheelEvents = 0
         state.mouseLastEvent = 'Ожидание действий'
+        state.mousePulse = ''
         render()
       }
 
@@ -347,22 +372,23 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
       if (event.button === 1) state.mouseButtonCounts.middle += 1
       if (event.button === 2) state.mouseButtonCounts.right += 1
       state.mouseClicks.push(Date.now())
-      state.mouseLastEvent = `Нажата кнопка: ${event.button}`
-      render()
+      const buttonName = event.button === 0 ? 'ЛКМ' : event.button === 1 ? 'СКМ' : 'ПКМ'
+      state.mouseLastEvent = `Нажата кнопка: ${buttonName}`
+      pulseMouse(event.button === 0 ? 'pulse-left' : event.button === 1 ? 'pulse-middle' : 'pulse-right')
     })
 
     rootElement.addEventListener('dblclick', (event) => {
       if (!event.target.closest('#mouse-test-zone')) return
       state.mouseDoubleClicks += 1
       state.mouseLastEvent = 'Даблклик'
-      render()
+      pulseMouse('pulse-double')
     })
 
     rootElement.addEventListener('wheel', (event) => {
       if (!event.target.closest('#mouse-test-zone')) return
       state.mouseWheelEvents += 1
       state.mouseLastEvent = event.deltaY > 0 ? 'Прокрутка вниз' : 'Прокрутка вверх'
-      render()
+      pulseMouse('pulse-wheel')
     })
 
     rootElement.addEventListener('contextmenu', (event) => {
@@ -374,7 +400,7 @@ export function setupDiagnosticsModule({ rootElement, getConfigurationSnapshot }
       const code = event.code || event.key
       if (!keyboardGroups.flat().includes(code)) return
       state.pressedKeys.add(code)
-      if (state.activeSection === 'keyboard') render()
+      pulseKey(code)
     })
   }
 

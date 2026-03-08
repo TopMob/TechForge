@@ -1,8 +1,8 @@
 .application-shell {
-  width: min(1240px, 94vw);
-  margin: 28px auto;
+  width: min(1260px, 94vw);
+  margin: 22px auto 30px;
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .application-header,
@@ -10,13 +10,45 @@
 .main-panel {
   border: 1px solid var(--border);
   border-radius: 18px;
-  background: linear-gradient(165deg, rgba(27, 39, 72, 0.66), var(--surface));
+  background: linear-gradient(160deg, rgba(21, 30, 58, 0.84), rgba(8, 12, 24, 0.92));
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px);
 }
 
+.main-tabs {
+  position: sticky;
+  top: 10px;
+  z-index: 5;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.main-tab {
+  border: 1px solid rgba(145, 167, 243, 0.28);
+  border-radius: 12px;
+  background: rgba(4, 8, 19, 0.88);
+  color: var(--text);
+  padding: 12px 10px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.main-tab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(170, 190, 255, 0.72);
+}
+
+.main-tab.active {
+  background: linear-gradient(135deg, rgba(121, 149, 255, 0.56), rgba(153, 118, 255, 0.42));
+  border-color: rgba(183, 199, 255, 0.98);
+}
+
 .application-header {
-  padding: 26px;
+  padding: 30px;
 }
 
 .header-topline {
@@ -38,17 +70,17 @@
 .application-status {
   margin: 0;
   font-size: 12px;
-  color: #d4deff;
-  padding: 6px 10px;
+  color: #dbe4ff;
+  padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(162, 184, 255, 0.4);
-  background: rgba(68, 90, 168, 0.35);
+  border: 1px solid rgba(164, 186, 255, 0.4);
+  background: rgba(69, 95, 179, 0.3);
 }
 
 .application-header h1 {
-  margin: 14px 0 10px;
-  font-size: clamp(30px, 4.2vw, 42px);
-  line-height: 1.1;
+  margin: 16px 0 8px;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.07;
 }
 
 .application-description {
@@ -57,59 +89,9 @@
   color: var(--muted);
 }
 
-.dashboard-metrics {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 10px;
-}
-
-.metric-card {
-  border: 1px solid rgba(158, 177, 245, 0.25);
-  border-radius: 12px;
-  padding: 12px;
-  background: linear-gradient(160deg, rgba(29, 43, 81, 0.55), rgba(9, 14, 30, 0.76));
-}
-
-.metric-label {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.metric-value {
-  margin: 8px 0 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #f5f8ff;
-}
-
-.main-tabs {
-  padding: 8px;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.main-tab {
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: rgba(9, 13, 26, 0.9);
-  color: var(--text);
-  padding: 12px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.main-tab.active {
-  background: linear-gradient(135deg, rgba(121, 149, 255, 0.48), rgba(153, 118, 255, 0.35));
-  border-color: rgba(165, 183, 255, 0.95);
-}
-
 .main-panel {
   display: none;
-  padding: 22px;
+  padding: 24px;
 }
 
 .main-panel.active {
@@ -118,7 +100,7 @@
 
 .panel-header h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: 30px;
 }
 
 .panel-header p {

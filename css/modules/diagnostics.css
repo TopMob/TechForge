@@ -82,6 +82,13 @@
   background: rgba(79, 164, 124, 0.24);
 }
 
+.keyboard-key.pressed {
+  color: #f4f8ff;
+  border-color: rgba(168, 206, 255, 0.95);
+  background: linear-gradient(160deg, rgba(92, 129, 221, 0.45), rgba(62, 88, 162, 0.25));
+  animation: key-press-glow 0.28s ease-out;
+}
+
 .mouse-zone {
   margin-top: 10px;
   border: 1px dashed rgba(155, 173, 255, 0.86);
@@ -98,6 +105,31 @@
   outline: none;
   border-color: rgba(155, 173, 255, 1);
   box-shadow: 0 0 0 3px rgba(110, 139, 255, 0.26);
+}
+
+.mouse-zone.pulse-left {
+  border-color: rgba(126, 188, 255, 0.98);
+  animation: mouse-pulse 0.3s ease-out;
+}
+
+.mouse-zone.pulse-middle {
+  border-color: rgba(168, 214, 128, 0.98);
+  animation: mouse-pulse 0.3s ease-out;
+}
+
+.mouse-zone.pulse-right {
+  border-color: rgba(255, 168, 198, 0.98);
+  animation: mouse-pulse 0.3s ease-out;
+}
+
+.mouse-zone.pulse-double {
+  border-color: rgba(179, 156, 255, 0.98);
+  animation: mouse-pulse 0.34s ease-out;
+}
+
+.mouse-zone.pulse-wheel {
+  border-color: rgba(255, 195, 126, 0.98);
+  animation: mouse-pulse 0.3s ease-out;
 }
 
 .games-table td:nth-child(3) {

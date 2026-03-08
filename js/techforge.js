@@ -1,5 +1,4 @@
 import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase } from './firebase.js'
-import { renderDashboardMetrics } from './dashboard-metrics.js'
 import { saveBuild, loadBuild, deleteBuild, getSlotNames, exportBuildPayload, importBuildPayload } from './build-storage.js'
 import { evaluateCompatibility } from './compatibility.js'
 import { buildRecommendations, buildComparisonInsights } from './recommendations.js'
@@ -50,7 +49,6 @@ const interfaceElements = {
   firebaseEditorLoadButton: document.getElementById('firebase-editor-load'),
   firebaseEditorUpdateButton: document.getElementById('firebase-editor-update'),
   firebaseEditorDeleteButton: document.getElementById('firebase-editor-delete'),
-  dashboardMetrics: document.getElementById('dashboard-metrics'),
   comparisonInsights: document.getElementById('comparison-insights'),
   budgetInput: document.getElementById('budget-input'),
   budgetStatus: document.getElementById('budget-status'),
@@ -116,7 +114,7 @@ function createIdentifier(categoryKey, componentName) {
 }
 
 function formatPrice(priceValue) {
-  return `${Math.round(priceValue)} $`
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(Math.round(priceValue))
 }
 
 function getRecordCompleteness(record) {
@@ -360,29 +358,6 @@ function renderConfigurationSummary() {
   interfaceElements.configurationWarning.textContent = compatibility.issues[0] || ''
   renderBudgetState(totalPrice)
   renderRecommendations(getSelectedRecords(), totalPrice, compatibility)
-  updateDashboardMetrics()
-}
-
-
-function updateDashboardMetrics() {
-  const categories = Object.keys(categorySettings)
-  const categorySettingsWithCount = {}
-  for (const categoryKey of categories) {
-    categorySettingsWithCount[categoryKey] = {
-      ...categorySettings[categoryKey],
-      count: applicationState.componentsByCategory[categoryKey]?.length || 0
-    }
-  }
-
-  renderDashboardMetrics({
-    container: interfaceElements.dashboardMetrics,
-    categories,
-    categorySettings: categorySettingsWithCount,
-    selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory,
-    getRecordById,
-    formatPrice,
-    configuratorCategoryOrder
-  })
 }
 
 
@@ -415,11 +390,11 @@ function renderBudgetState(totalPrice) {
   }
   const difference = totalPrice - budgetValue
   if (difference > 0) {
-    interfaceElements.budgetStatus.textContent = `Перебор бюджета: +${Math.round(difference)} $`
+    interfaceElements.budgetStatus.textContent = `Перебор бюджета: +${formatPrice(difference)}`
     interfaceElements.budgetStatus.className = 'comparison-count bad-state'
     return
   }
-  interfaceElements.budgetStatus.textContent = `Запас бюджета: ${Math.round(Math.abs(difference))} $`
+  interfaceElements.budgetStatus.textContent = `Запас бюджета: ${formatPrice(Math.abs(difference))}`
   interfaceElements.budgetStatus.className = 'comparison-count good-state'
 }
 
@@ -756,7 +731,6 @@ async function initializeApplication() {
   populateBuildSlots()
   interfaceElements.budgetInput.value = applicationState.budgetValue
   renderConfigurationSummary()
-  updateDashboardMetrics()
   renderFirebaseConnectionState()
   const firebaseEditor = setupFirebaseEditor({
     formElement: interfaceElements.firebaseForm,

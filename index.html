@@ -11,16 +11,6 @@
 </head>
 <body>
   <div class="application-shell">
-    <header class="application-header">
-      <div class="header-topline">
-        <p class="application-label">TechForge</p>
-        <p class="application-status">Ночной режим активен</p>
-      </div>
-      <h1>Подбор комплектующих и сборка ПК</h1>
-      <p class="application-description">Сравнивайте компоненты по категориям, собирайте конфигурацию и сверяйтесь с краткой инструкцией по сборке.</p>
-      <div class="dashboard-metrics" id="dashboard-metrics"></div>
-    </header>
-
     <nav class="main-tabs" id="main-tabs">
       <button type="button" class="main-tab active" data-main-tab="comparison">Сравнение</button>
       <button type="button" class="main-tab" data-main-tab="configurator">Конфигуратор</button>
@@ -29,11 +19,18 @@
       <button type="button" class="main-tab" data-main-tab="firebase">Firebase</button>
     </nav>
 
+    <header class="application-header">
+      <div class="header-topline">
+        <p class="application-label">TechForge</p>
+        <p class="application-status">Современный подбор и сравнение комплектующих</p>
+      </div>
+    </header>
+
     <main>
       <section class="main-panel active" data-main-panel="comparison">
         <div class="panel-header">
           <h2>Сравнение компонентов</h2>
-          <p>Переключайтесь между вкладками категорий и сравнивайте две модели в таблице.</p>
+          <p>Выберите категорию и сравните две модели по цене и характеристикам.</p>
         </div>
 
         <div id="comparison-category-tabs" class="category-tabs"></div>
@@ -41,12 +38,12 @@
         <div class="comparison-selectors">
           <label class="selector-with-search">
             Первая модель
-            <input id="comparison-first-input" data-comparison-side="first" list="comparison-first-options" type="search" placeholder="Введите модель, чтобы отфильтровать список" autocomplete="off">
+            <input id="comparison-first-input" data-comparison-side="first" list="comparison-first-options" type="search" placeholder="Введите модель" autocomplete="off">
             <datalist id="comparison-first-options"></datalist>
           </label>
           <label class="selector-with-search">
             Вторая модель
-            <input id="comparison-second-input" data-comparison-side="second" list="comparison-second-options" type="search" placeholder="Введите модель, чтобы отфильтровать список" autocomplete="off">
+            <input id="comparison-second-input" data-comparison-side="second" list="comparison-second-options" type="search" placeholder="Введите модель" autocomplete="off">
             <datalist id="comparison-second-options"></datalist>
           </label>
         </div>
@@ -62,20 +59,25 @@
       <section class="main-panel" data-main-panel="configurator">
         <div class="panel-header">
           <h2>Конфигуратор ПК</h2>
-          <p>Подберите комплектующие по шагам и проверьте совместимость процессора с материнской платой.</p>
+          <p>Подберите комплектующие, сохраните сборку и сразу увидите итоговую стоимость.</p>
+        </div>
+
+        <div class="configurator-top-actions">
+          <button id="configurator-reset" class="secondary-action" type="button">Сбросить выбор</button>
+          <div class="firebase-actions">
+            <button id="export-build" class="secondary-action" type="button">Экспорт JSON</button>
+            <button id="import-build" class="secondary-action" type="button">Импорт JSON</button>
+          </div>
         </div>
 
         <div id="configurator-grid" class="configurator-grid"></div>
-        <button id="configurator-reset" class="secondary-action" type="button">Сбросить выбор</button>
-
-        
 
         <div class="configurator-tools">
           <div class="configuration-summary">
-            <h3>Планировщик бюджета</h3>
+            <h3>Бюджет</h3>
             <label>
-              Бюджет ($)
-              <input id="budget-input" type="number" min="0" step="10" placeholder="Например, 1500">
+              Бюджет (₽)
+              <input id="budget-input" type="number" min="0" step="1000" placeholder="Например, 120000">
             </label>
             <p id="budget-status" class="comparison-count"></p>
           </div>
@@ -89,10 +91,6 @@
               <button id="save-build" class="secondary-action" type="button">Сохранить</button>
               <button id="load-build" class="secondary-action" type="button">Загрузить</button>
               <button id="delete-build" class="secondary-action" type="button">Удалить</button>
-            </div>
-            <div class="firebase-actions">
-              <button id="export-build" class="secondary-action" type="button">Экспорт JSON</button>
-              <button id="import-build" class="secondary-action" type="button">Импорт JSON</button>
             </div>
             <p id="build-status" class="comparison-count"></p>
           </div>
@@ -129,6 +127,7 @@
           <li>Перед закрытием корпуса проверьте первый старт, температуру и включите профиль памяти в BIOS.</li>
         </ul>
       </section>
+
       <section class="main-panel" data-main-panel="firebase">
         <div class="panel-header">
           <h2>Добавление компонентов в Firebase</h2>
@@ -137,6 +136,7 @@
 
         <div class="firebase-box firebase-panel-box">
           <p id="firebase-connection-info" class="firebase-connection-info">Firebase подключен: проверка...</p>
+        </div>
 
         <div class="firebase-box firebase-panel-box">
           <h3>Редактор компонентов Firebase</h3>
@@ -155,7 +155,8 @@
           </div>
         </div>
 
-                    <form id="firebase-component-form" class="firebase-form">
+        <div class="firebase-box firebase-panel-box">
+          <form id="firebase-component-form" class="firebase-form">
             <label>
               Категория
               <select name="firebaseCategory"></select>
