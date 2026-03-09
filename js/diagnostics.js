@@ -12,6 +12,11 @@ export function setupDiagnosticsModule({ rootElement }) {
     mousePulse: '',
     microphoneStatus: 'Микрофон не запущен',
     microphoneLevel: 0,
+    monitoringEnabled: false,
+    recordingActive: false,
+    recordingChunks: [],
+    mediaRecorder: null,
+    lastRecordingUrl: '',
     webcamStatus: 'Камера не запущена',
     webcamActive: false,
     headphonesStatus: 'Тест не запускался',
@@ -19,16 +24,17 @@ export function setupDiagnosticsModule({ rootElement }) {
     webcamStream: null,
     audioContext: null,
     analyser: null,
-    micTimer: null
+    micTimer: null,
+    micSourceNode: null,
+    monitorSource: null,
+    monitorGain: null
   }
 
   function render() {
     renderDiagnostics(rootElement, state)
     if (state.webcamActive && state.webcamStream) {
       const video = rootElement.querySelector('#diag-webcam-video')
-      if (video && video.srcObject !== state.webcamStream) {
-        video.srcObject = state.webcamStream
-      }
+      if (video && video.srcObject !== state.webcamStream) video.srcObject = state.webcamStream
     }
   }
 
@@ -67,14 +73,12 @@ export function setupDiagnosticsModule({ rootElement }) {
       render()
     }
 
-    if (event.target.closest('[data-diag-start-microphone]')) {
-      media.startMicrophone()
-    }
-
-    if (event.target.closest('[data-diag-stop-microphone]')) {
-      media.stopMicrophone()
-      render()
-    }
+    if (event.target.closest('[data-diag-start-microphone]')) media.startMicrophone()
+    if (event.target.closest('[data-diag-stop-microphone]')) media.stopMicrophone()
+    if (event.target.closest('[data-diag-start-monitor]')) media.startMonitoring()
+    if (event.target.closest('[data-diag-stop-monitor]')) media.stopMonitoring()
+    if (event.target.closest('[data-diag-start-record]')) media.startRecording()
+    if (event.target.closest('[data-diag-stop-record]')) media.stopRecording()
 
     if (event.target.closest('[data-diag-start-webcam]')) {
       const video = rootElement.querySelector('#diag-webcam-video')
@@ -88,9 +92,7 @@ export function setupDiagnosticsModule({ rootElement }) {
     }
 
     const toneButton = event.target.closest('[data-diag-tone]')
-    if (toneButton) {
-      media.playTone(toneButton.dataset.diagTone)
-    }
+    if (toneButton) media.playTone(toneButton.dataset.diagTone)
 
     if (event.target.closest('[data-diag-reset-mouse]')) {
       state.mouseStats = { left: 0, right: 0, middle: 0, wheel: 0 }
@@ -119,6 +121,7 @@ export function setupDiagnosticsModule({ rootElement }) {
 
   function onRootWheel(event) {
     if (!event.target.closest('#diag-mouse-zone')) return
+    event.preventDefault()
     state.mouseStats.wheel += 1
     state.mouseStatus = event.deltaY > 0 ? 'Прокрутка вниз' : 'Прокрутка вверх'
     pulseMouse('wheel')
@@ -137,7 +140,7 @@ export function setupDiagnosticsModule({ rootElement }) {
 
   rootElement.addEventListener('click', onRootClick)
   rootElement.addEventListener('mousedown', onRootMouseDown)
-  rootElement.addEventListener('wheel', onRootWheel)
+  rootElement.addEventListener('wheel', onRootWheel, { passive: false })
   rootElement.addEventListener('contextmenu', onRootContextMenu)
   window.addEventListener('keydown', onWindowKeyDown)
 

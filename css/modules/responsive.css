@@ -42,6 +42,10 @@
   .diag-mouse-layout {
     grid-template-columns: 1fr;
   }
+
+  .diag-keyboard-shell {
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 680px) {

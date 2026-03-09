@@ -9,16 +9,16 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 10px;
-  border: 1px solid #2e3552;
+  border: 1px solid var(--border);
   border-radius: 14px;
-  background: #181d2f;
+  background: rgba(9, 13, 24, 0.9);
 }
 
 .diag-top-tab {
-  border: 1px solid #3d4669;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #202840;
-  color: #cad3f3;
+  background: rgba(18, 25, 45, 0.95);
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   padding: 9px 12px;
@@ -26,15 +26,15 @@
 }
 
 .diag-top-tab.active {
-  background: linear-gradient(180deg, #3478ff, #1f4dc9);
+  background: linear-gradient(180deg, rgba(77, 124, 255, 0.95), rgba(43, 80, 186, 0.95));
   color: #fff;
-  border-color: #3f78ff;
+  border-color: rgba(99, 145, 255, 0.95);
 }
 
 .diag-site-content {
   border-radius: 16px;
-  border: 1px solid #d8def2;
-  background: #f4f7ff;
+  border: 1px solid var(--border);
+  background: linear-gradient(165deg, rgba(25, 35, 65, 0.38), rgba(8, 12, 24, 0.76));
   padding: 16px;
 }
 
@@ -52,18 +52,18 @@
 
 .diag-panel-header h3 {
   margin: 0;
-  color: #0f1e4a;
+  color: #f4f7ff;
 }
 
 .diag-panel-header p {
   margin: 6px 0 0;
-  color: #5d6d99;
+  color: var(--muted);
 }
 
 .diag-badge {
-  border: 1px solid #b8caff;
-  background: #e8f0ff;
-  color: #2b4cad;
+  border: 1px solid rgba(123, 151, 245, 0.8);
+  background: rgba(64, 95, 198, 0.24);
+  color: #d8e4ff;
   border-radius: 999px;
   padding: 4px 10px;
   font-size: 12px;
@@ -76,50 +76,54 @@
   gap: 8px;
 }
 
+.diag-stat-strip.one-col {
+  grid-template-columns: 1fr;
+}
+
 .diag-stat-strip div {
-  border: 1px solid #d9e2fa;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: rgba(9, 13, 24, 0.82);
   padding: 10px;
 }
 
 .diag-stat-strip span {
   display: block;
-  color: #7381ab;
+  color: #9fb0de;
   font-size: 12px;
 }
 
 .diag-stat-strip strong {
-  color: #1a2856;
+  color: #eef3ff;
   font-size: 14px;
 }
 
 .diag-keyboard-shell {
   border-radius: 12px;
-  border: 1px solid #2c3040;
-  background: #151922;
-  padding: 12px;
+  border: 1px solid #323f63;
+  background: #0f1423;
+  padding: 18px;
 }
 
 .diag-keyboard {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .diag-keyboard-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .diag-key {
-  min-width: 36px;
-  border: 1px solid #3d4659;
-  background: #202736;
-  color: #adb9d9;
-  border-radius: 7px;
-  padding: 7px 9px;
-  font-size: 12px;
+  min-width: 44px;
+  border: 1px solid #3d4d76;
+  background: #1b243a;
+  color: #c1cdee;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -131,7 +135,7 @@
 
 .diag-key.active {
   border-color: #66a1ff;
-  background: #284991;
+  background: #2b4f9c;
   color: #fff;
 }
 
@@ -142,17 +146,17 @@
 }
 
 .diag-meter-card {
-  border: 1px solid #d9e2fa;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: rgba(9, 13, 24, 0.82);
   padding: 10px;
 }
 
 .diag-meter-shell {
   height: 22px;
   border-radius: 999px;
-  border: 1px solid #ccd8ff;
-  background: #f5f8ff;
+  border: 1px solid #3a4e7f;
+  background: #0f1529;
   overflow: hidden;
   margin-bottom: 8px;
 }
@@ -165,8 +169,22 @@
 .diag-meter-scale {
   display: flex;
   justify-content: space-between;
-  color: #7485b1;
+  color: #8fa2d2;
   font-size: 12px;
+}
+
+.diag-record-box {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(9, 13, 24, 0.82);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  color: #cdd8f6;
+}
+
+.diag-record-box audio {
+  width: 100%;
 }
 
 .diag-camera-shell {
@@ -207,9 +225,9 @@
 }
 
 .diag-audio-btn {
-  border: 1px solid #313f73;
+  border: 1px solid #3a4b7d;
   border-radius: 10px;
-  background: #1a244a;
+  background: #17213f;
   padding: 14px;
   color: #edf2ff;
   font: inherit;
@@ -232,9 +250,9 @@
 .diag-mouse-visual {
   width: 94px;
   height: 138px;
-  border: 2px solid #c4d0f3;
+  border: 2px solid #566998;
   border-radius: 46px;
-  background: #fff;
+  background: #121a32;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -248,13 +266,13 @@
 }
 
 .diag-mouse-visual .left {
-  border-right: 1px solid #d4ddfb;
-  border-bottom: 1px solid #d4ddfb;
+  border-right: 1px solid #4d6196;
+  border-bottom: 1px solid #4d6196;
 }
 
 .diag-mouse-visual .right {
-  border-left: 1px solid #d4ddfb;
-  border-bottom: 1px solid #d4ddfb;
+  border-left: 1px solid #4d6196;
+  border-bottom: 1px solid #4d6196;
 }
 
 .diag-mouse-visual .wheel {
@@ -265,24 +283,24 @@
   width: 12px;
   height: 24px;
   border-radius: 999px;
-  background: #dbe5ff;
-  border: 1px solid #c6d5ff;
+  background: #2b3d69;
+  border: 1px solid #5d77b8;
 }
 
 .diag-mouse-visual.left .left,
 .diag-mouse-visual.right .right,
 .diag-mouse-visual.wheel .wheel {
-  background: #dce8ff;
+  background: #2f4a8c;
 }
 
 .diag-mouse-zone {
-  border: 2px dashed #8ea7eb;
+  border: 2px dashed #7f9be0;
   border-radius: 12px;
-  background: #fff;
+  background: rgba(9, 13, 24, 0.82);
   min-height: 130px;
   display: grid;
   place-items: center;
-  color: #465b9a;
+  color: #c3d2f9;
   font-weight: 600;
 }
 
@@ -298,9 +316,9 @@
 }
 
 .diag-stats-grid div {
-  border: 1px solid #d8e0fa;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: rgba(9, 13, 24, 0.82);
   padding: 8px;
   text-align: center;
 }
@@ -308,11 +326,11 @@
 .diag-stats-grid span {
   display: block;
   font-size: 12px;
-  color: #6b7ca9;
+  color: #9fb1df;
 }
 
 .diag-stats-grid strong {
-  color: #1d2c5d;
+  color: #edf2ff;
   font-size: 18px;
 }
 
@@ -321,8 +339,8 @@
 .diag-webcam-theme,
 .diag-headphones-theme,
 .diag-mouse-theme {
-  border: 1px solid #d8e0f7;
+  border: 1px solid var(--border);
   border-radius: 14px;
-  background: linear-gradient(180deg, #f8faff, #eef3ff);
+  background: linear-gradient(165deg, rgba(25, 35, 65, 0.38), rgba(8, 12, 24, 0.76));
   padding: 14px;
 }

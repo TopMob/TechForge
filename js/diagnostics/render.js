@@ -58,7 +58,7 @@ function renderKeyboard(state) {
 function renderMicrophone(state) {
   return `
     <section class="diag-panel diag-mic-theme">
-      ${renderPanelHeader('Тест микрофона', 'Визуальный тест в стиле webcammictest: уровень сигнала и live-статус.', 'webcammictest')}
+      ${renderPanelHeader('Тест микрофона', 'Добавлен live-мониторинг, запись голоса и быстрый старт/стоп.', 'webcammictest+')}
       <div class="diag-meter-card">
         <div class="diag-meter-shell">
           <div class="diag-meter-fill" style="width:${state.microphoneLevel}%"></div>
@@ -73,11 +73,22 @@ function renderMicrophone(state) {
       </div>
       <div class="diag-stat-strip">
         <div><span>Уровень сигнала</span><strong>${state.microphoneLevel}%</strong></div>
+        <div><span>Мониторинг</span><strong>${state.monitoringEnabled ? 'Включён' : 'Выключен'}</strong></div>
+      </div>
+      <div class="diag-stat-strip one-col">
         <div><span>Состояние</span><strong>${state.microphoneStatus}</strong></div>
       </div>
       <div class="diag-actions">
-        <button type="button" class="secondary-action" data-diag-start-microphone>Начать проверку</button>
-        <button type="button" class="secondary-action" data-diag-stop-microphone>Остановить</button>
+        <button type="button" class="secondary-action" data-diag-start-microphone>Запустить микрофон</button>
+        <button type="button" class="secondary-action" data-diag-stop-microphone>Полностью остановить</button>
+        <button type="button" class="secondary-action" data-diag-start-monitor>Услышать себя</button>
+        <button type="button" class="secondary-action" data-diag-stop-monitor>Выключить прослушку</button>
+        <button type="button" class="secondary-action" data-diag-start-record>Записать</button>
+        <button type="button" class="secondary-action" data-diag-stop-record>Остановить запись</button>
+      </div>
+      <div class="diag-record-box">
+        <span>Последняя запись:</span>
+        ${state.lastRecordingUrl ? `<audio controls src="${state.lastRecordingUrl}"></audio>` : '<strong>пока нет</strong>'}
       </div>
     </section>
   `
@@ -91,7 +102,7 @@ function renderWebcam(state) {
         <video id="diag-webcam-video" autoplay playsinline muted></video>
         <span class="diag-camera-overlay">${state.webcamActive ? 'LIVE CAMERA' : 'CAMERA OFF'}</span>
       </div>
-      <div class="diag-stat-strip">
+      <div class="diag-stat-strip one-col">
         <div><span>Состояние камеры</span><strong>${state.webcamStatus}</strong></div>
       </div>
       <div class="diag-actions">
@@ -105,13 +116,13 @@ function renderWebcam(state) {
 function renderHeadphones(state) {
   return `
     <section class="diag-panel diag-headphones-theme">
-      ${renderPanelHeader('Тест наушников', 'Повтор логики headphone test: отдельные каналы и стерео-сигнал.', 'webcammictest')}
+      ${renderPanelHeader('Тест наушников', 'Можно оставить как есть: каналы и стерео-сигнал для быстрой проверки.', 'webcammictest')}
       <div class="diag-grid-2">
         <button type="button" class="diag-audio-btn" data-diag-tone="left">LEFT</button>
         <button type="button" class="diag-audio-btn" data-diag-tone="right">RIGHT</button>
         <button type="button" class="diag-audio-btn wide" data-diag-tone="stereo">STEREO</button>
       </div>
-      <div class="diag-stat-strip">
+      <div class="diag-stat-strip one-col">
         <div><span>Статус</span><strong>${state.headphonesStatus}</strong></div>
       </div>
     </section>
@@ -121,7 +132,7 @@ function renderHeadphones(state) {
 function renderMouse(state) {
   return `
     <section class="diag-panel diag-mouse-theme">
-      ${renderPanelHeader('Тест мыши', 'Блок похож на checkdevice/klik-test: схема мыши + активная зона кликов.', 'checkdevice + klik-test')}
+      ${renderPanelHeader('Тест мыши', 'Колесо фиксируется внутри зоны и не прокручивает страницу.', 'checkdevice + klik-test')}
       <div class="diag-mouse-layout">
         <div class="diag-mouse-visual ${state.mousePulse}">
           <span class="left"></span>
@@ -136,7 +147,7 @@ function renderMouse(state) {
         <div><span>Middle</span><strong>${state.mouseStats.middle}</strong></div>
         <div><span>Wheel</span><strong>${state.mouseStats.wheel}</strong></div>
       </div>
-      <div class="diag-stat-strip">
+      <div class="diag-stat-strip one-col">
         <div><span>Последнее действие</span><strong>${state.mouseStatus}</strong></div>
       </div>
       <div class="diag-actions">
