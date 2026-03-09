@@ -1,14 +1,6 @@
 @media (max-width: 980px) {
-  .diag-site-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .diag-site-sidebar {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  }
-
-  .diag-tab {
-    text-align: center;
+  .diag-top-nav {
+    justify-content: center;
   }
 
   .main-tabs {
@@ -38,8 +30,19 @@
   .configurator-top-actions .firebase-actions {
     width: 100%;
   }
-}
 
+  .diag-panel-header {
+    flex-direction: column;
+  }
+
+  .diag-stat-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .diag-mouse-layout {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 680px) {
   .diag-grid-2 {
