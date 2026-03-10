@@ -179,6 +179,8 @@ function getRecordById(categoryKey, recordId) {
 }
 
 function renderMainTabs() {
+  const diagnosticsIsActive = applicationState.activeMainTab === 'diagnostics'
+  if (!diagnosticsIsActive) applicationState.diagnosticsController?.stopActiveMedia()
   const allMainTabs = interfaceElements.mainTabsContainer.querySelectorAll('[data-main-tab]')
   for (const mainTabButton of allMainTabs) {
     const isActive = mainTabButton.dataset.mainTab === applicationState.activeMainTab
@@ -614,11 +616,7 @@ function bindEvents() {
   interfaceElements.mainTabsContainer.addEventListener('click', (event) => {
     const tabButton = event.target.closest('[data-main-tab]')
     if (!tabButton) return
-    const nextTab = tabButton.dataset.mainTab
-    if (applicationState.activeMainTab === 'diagnostics' && nextTab !== 'diagnostics') {
-      applicationState.diagnosticsController?.stopActiveMedia()
-    }
-    applicationState.activeMainTab = nextTab
+    applicationState.activeMainTab = tabButton.dataset.mainTab
     renderMainTabs()
   })
 

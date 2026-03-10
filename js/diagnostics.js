@@ -40,6 +40,19 @@ export function setupDiagnosticsModule({ rootElement }) {
 
   const media = createMediaController(state, render)
 
+  function stopActiveMedia() {
+    const video = rootElement.querySelector('#diag-webcam-video')
+    media.stopAllMedia(video)
+  }
+
+  function onDocumentVisibilityChange() {
+    if (document.hidden) stopActiveMedia()
+  }
+
+  function onWindowPageHide() {
+    stopActiveMedia()
+  }
+
   function pulseKey(code) {
     state.pulseKeys.add(code)
     render()
@@ -143,6 +156,8 @@ export function setupDiagnosticsModule({ rootElement }) {
   rootElement.addEventListener('wheel', onRootWheel, { passive: false })
   rootElement.addEventListener('contextmenu', onRootContextMenu)
   window.addEventListener('keydown', onWindowKeyDown)
+  document.addEventListener('visibilitychange', onDocumentVisibilityChange)
+  window.addEventListener('pagehide', onWindowPageHide)
 
   render()
 
@@ -150,17 +165,15 @@ export function setupDiagnosticsModule({ rootElement }) {
     rerender() {
       render()
     },
-    stopActiveMedia() {
-      const video = rootElement.querySelector('#diag-webcam-video')
-      media.stopWebcam(video)
-      media.stopMicrophone()
-    },
+    stopActiveMedia,
     destroy() {
       rootElement.removeEventListener('click', onRootClick)
       rootElement.removeEventListener('mousedown', onRootMouseDown)
       rootElement.removeEventListener('wheel', onRootWheel)
       rootElement.removeEventListener('contextmenu', onRootContextMenu)
       window.removeEventListener('keydown', onWindowKeyDown)
+      document.removeEventListener('visibilitychange', onDocumentVisibilityChange)
+      window.removeEventListener('pagehide', onWindowPageHide)
       media.destroy()
     }
   }
