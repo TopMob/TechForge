@@ -78,7 +78,8 @@ const applicationState = {
   },
   configuratorSearchByCategory: {},
   budgetValue: '',
-  firebaseEditorController: null
+  firebaseEditorController: null,
+  diagnosticsController: null
 }
 
 function normalizeText(value) {
@@ -613,7 +614,11 @@ function bindEvents() {
   interfaceElements.mainTabsContainer.addEventListener('click', (event) => {
     const tabButton = event.target.closest('[data-main-tab]')
     if (!tabButton) return
-    applicationState.activeMainTab = tabButton.dataset.mainTab
+    const nextTab = tabButton.dataset.mainTab
+    if (applicationState.activeMainTab === 'diagnostics' && nextTab !== 'diagnostics') {
+      applicationState.diagnosticsController?.stopActiveMedia()
+    }
+    applicationState.activeMainTab = nextTab
     renderMainTabs()
   })
 

@@ -150,6 +150,11 @@ export function setupDiagnosticsModule({ rootElement }) {
     rerender() {
       render()
     },
+    stopActiveMedia() {
+      const video = rootElement.querySelector('#diag-webcam-video')
+      media.stopWebcam(video)
+      media.stopMicrophone()
+    },
     destroy() {
       rootElement.removeEventListener('click', onRootClick)
       rootElement.removeEventListener('mousedown', onRootMouseDown)
