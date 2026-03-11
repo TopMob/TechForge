@@ -17,6 +17,9 @@ export function parseUrlState() {
     budget: normalizeText(params.get('budget')),
     compareMode: normalizeText(params.get('compareMode')),
     bestProfile: normalizeText(params.get('bestProfile')),
+    wizardBudget: normalizeText(params.get('wBudget')),
+    wizardScenario: normalizeText(params.get('wScenario')),
+    wizardPriority: normalizeText(params.get('wPriority')),
     selectedConfigurationByCategory: selected
   }
 }
@@ -30,6 +33,9 @@ export function pushUrlState(state) {
   if (state.budgetValue) params.set('budget', state.budgetValue)
   if (state.comparisonMode) params.set('compareMode', state.comparisonMode)
   if (state.bestChoiceProfile) params.set('bestProfile', state.bestChoiceProfile)
+  if (state.wizard?.budgetValue) params.set('wBudget', state.wizard.budgetValue)
+  if (state.wizard?.scenario) params.set('wScenario', state.wizard.scenario)
+  if (state.wizard?.priority) params.set('wPriority', state.wizard.priority)
 
   for (const [category, id] of Object.entries(state.selectedConfigurationByCategory || {})) {
     if (id) params.set(`cfg_${category}`, id)

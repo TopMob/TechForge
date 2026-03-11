@@ -10,6 +10,8 @@ import { createTechnicalImportController, technicalImportOptions } from './techn
 import { buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles } from './comparison-engine.js'
 import { parseUrlState, pushUrlState } from './url-state.js'
 import { buildRelatedComponents, renderComponentCard } from './component-card.js'
+import { getWizardDefaults, buildWizardPlan, buildWizardSummary } from './build-wizard.js'
+import { auditBuild } from './build-audit.js'
 
 
 const categorySettings = {
@@ -40,6 +42,15 @@ const interfaceElements = {
   bestChoiceProfile: document.getElementById('best-choice-profile'),
   shareStateButton: document.getElementById('share-state'),
   comparisonResult: document.getElementById('comparison-result'),
+  wizardBudgetInput: document.getElementById('wizard-budget'),
+  wizardScenarioSelect: document.getElementById('wizard-scenario'),
+  wizardPrioritySelect: document.getElementById('wizard-priority'),
+  wizardApplyButton: document.getElementById('wizard-apply'),
+  wizardResult: document.getElementById('wizard-result'),
+  buildAuditIssues: document.getElementById('build-audit-issues'),
+  buildFixMinimal: document.getElementById('build-fix-minimal'),
+  buildFixOptimal: document.getElementById('build-fix-optimal'),
+  buildFixBudget: document.getElementById('build-fix-budget'),
   bestChoiceResult: document.getElementById('best-choice-result'),
   componentCard: document.getElementById('component-card'),
   configuratorGrid: document.getElementById('configurator-grid'),
@@ -94,6 +105,7 @@ const applicationState = {
   },
   comparisonMode: 'all',
   bestChoiceProfile: 'balanced',
+  wizard: getWizardDefaults(),
   configuratorSearchByCategory: {},
   budgetValue: '',
   firebaseEditorController: null,
@@ -215,6 +227,60 @@ async function loadCategory(categoryKey) {
 function getRecordById(categoryKey, recordId) {
   const records = applicationState.componentsByCategory[categoryKey] || []
   return records.find((record) => record.id === recordId) || null
+}
+
+function getCategoryRecords(categoryKey) {
+  return applicationState.componentsByCategory[categoryKey] || []
+}
+
+function renderWizardPlan() {
+  if (!interfaceElements.wizardResult) return
+  const plan = buildWizardPlan({
+    componentsByCategory: applicationState.componentsByCategory,
+    wizardState: applicationState.wizard
+  })
+  const summary = buildWizardSummary(plan)
+  interfaceElements.wizardResult.innerHTML = summary.rows.length === 0
+    ? '<p class="comparison-count">Недостаточно данных для автоматического подбора.</p>'
+    : `<p class="comparison-count">Черновой план мастера: ${summary.rows.length} позиций · ${summary.total > 0 ? formatPrice(summary.total) : 'без цены'}</p><ul>${summary.rows.map((row) => `<li><strong>${escapeHtml(categorySettings[row.category]?.title || row.category)}:</strong> ${escapeHtml(row.name)}${row.price ? ` · ${escapeHtml(formatPrice(row.price))}` : ''}</li>`).join('')}</ul>`
+  return plan
+}
+
+function applyWizardPlan() {
+  const plan = buildWizardPlan({
+    componentsByCategory: applicationState.componentsByCategory,
+    wizardState: applicationState.wizard
+  })
+  const updates = {}
+  for (const [categoryKey, record] of Object.entries(plan)) {
+    if (!record?.id) continue
+    updates[categoryKey] = record.id
+  }
+  applicationState.selectedConfigurationByCategory = {
+    ...applicationState.selectedConfigurationByCategory,
+    ...updates
+  }
+  renderConfigurator()
+  renderConfigurationSummary()
+  renderWizardPlan()
+  syncUrlState()
+}
+
+function renderBuildAudit(recordsByCategory, totalPrice) {
+  if (!interfaceElements.buildAuditIssues) return
+  const audit = auditBuild({
+    selectedRecordsByCategory: recordsByCategory,
+    budgetValue: applicationState.budgetValue,
+    getCategoryRecords
+  })
+  const issueRows = audit.issues.length > 0
+    ? audit.issues
+    : ['Критичных проблем не выявлено.']
+
+  interfaceElements.buildAuditIssues.innerHTML = issueRows.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+  interfaceElements.buildFixMinimal.innerHTML = audit.fixes.minimal.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+  interfaceElements.buildFixOptimal.innerHTML = audit.fixes.optimal.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+  interfaceElements.buildFixBudget.innerHTML = audit.fixes.noBudgetIncrease.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
 }
 
 function renderMainTabs() {
@@ -387,11 +453,13 @@ function validateSocketCompatibility() {
 
 function renderConfigurationSummary() {
   const summaryItems = []
+  const selectedByCategory = {}
   let totalPrice = 0
 
   for (const categoryKey of configuratorCategoryOrder) {
     const selectedRecord = getRecordById(categoryKey, applicationState.selectedConfigurationByCategory[categoryKey])
     if (!selectedRecord) continue
+    selectedByCategory[categoryKey] = selectedRecord
     if (selectedRecord.price) totalPrice += selectedRecord.price
     const priceLabel = selectedRecord.price ? ` · ${formatPrice(selectedRecord.price)}` : ''
     summaryItems.push(`<li><strong>${escapeHtml(categorySettings[categoryKey].title)}:</strong> ${escapeHtml(selectedRecord.name)}${escapeHtml(priceLabel)}</li>`)
@@ -406,7 +474,9 @@ function renderConfigurationSummary() {
   interfaceElements.configurationWarning.textContent = compatibility.issues[0] || compatibility.warnings?.[0] || `Совместимость: ${compatibility.quality}`
   renderBudgetState(totalPrice)
   renderRecommendations(getSelectedRecords(), totalPrice, compatibility)
+  renderBuildAudit(selectedByCategory, totalPrice)
 }
+
 
 
 function renderComparisonInsights(firstRecord, secondRecord, semantic = null) {
@@ -601,6 +671,7 @@ async function refreshCategoryFromFirebase(categoryKey) {
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  renderWizardPlan()
   renderConfigurationSummary()
 }
 
@@ -618,6 +689,7 @@ function refreshAfterComponentSave() {
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  renderWizardPlan()
   renderConfigurationSummary()
 }
 
@@ -926,6 +998,23 @@ function bindEvents() {
     syncUrlState()
   })
 
+  interfaceElements.wizardBudgetInput.addEventListener('input', () => {
+    applicationState.wizard.budgetValue = normalizeText(interfaceElements.wizardBudgetInput.value)
+    renderWizardPlan()
+  })
+
+  interfaceElements.wizardScenarioSelect.addEventListener('change', () => {
+    applicationState.wizard.scenario = normalizeText(interfaceElements.wizardScenarioSelect.value) || 'balanced'
+    renderWizardPlan()
+  })
+
+  interfaceElements.wizardPrioritySelect.addEventListener('change', () => {
+    applicationState.wizard.priority = normalizeText(interfaceElements.wizardPrioritySelect.value) || 'minimal_price'
+    renderWizardPlan()
+  })
+
+  interfaceElements.wizardApplyButton.addEventListener('click', () => applyWizardPlan())
+
   interfaceElements.saveBuildButton.addEventListener('click', handleSaveBuild)
   interfaceElements.loadBuildButton.addEventListener('click', handleLoadBuild)
   interfaceElements.deleteBuildButton.addEventListener('click', handleDeleteBuild)
@@ -942,6 +1031,9 @@ async function initializeApplication() {
   if (urlState.budget) applicationState.budgetValue = urlState.budget
   if (urlState.compareMode) applicationState.comparisonMode = urlState.compareMode
   if (urlState.bestProfile) applicationState.bestChoiceProfile = urlState.bestProfile
+  if (urlState.wizardBudget) applicationState.wizard.budgetValue = urlState.wizardBudget
+  if (urlState.wizardScenario) applicationState.wizard.scenario = urlState.wizardScenario
+  if (urlState.wizardPriority) applicationState.wizard.priority = urlState.wizardPriority
 
   interfaceElements.firebaseForm.elements.firebaseCategory.innerHTML = firebaseCategoryOptions
     .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
@@ -963,6 +1055,9 @@ async function initializeApplication() {
   interfaceElements.comparisonMode.value = applicationState.comparisonMode
   interfaceElements.comparisonFirstInput.value = applicationState.comparisonInput.first
   interfaceElements.comparisonSecondInput.value = applicationState.comparisonInput.second
+  interfaceElements.wizardBudgetInput.value = applicationState.wizard.budgetValue
+  interfaceElements.wizardScenarioSelect.value = applicationState.wizard.scenario
+  interfaceElements.wizardPrioritySelect.value = applicationState.wizard.priority
   await reloadTechnicalImportRecords()
 
   for (const categoryKey of Object.keys(categorySettings)) {
@@ -984,6 +1079,7 @@ async function initializeApplication() {
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  renderWizardPlan()
   populateBuildSlots()
   interfaceElements.budgetInput.value = applicationState.budgetValue
   renderConfigurationSummary()

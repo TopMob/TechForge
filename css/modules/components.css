@@ -260,3 +260,14 @@ select {
 .component-related-grid h4 {
   margin: 0 0 8px;
 }
+
+.wizard-grid,
+.build-audit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.build-audit-grid h4 {
+  margin: 0 0 8px;
+}
