@@ -37,16 +37,24 @@ function renderKeyboard(state) {
     .join('')
 
   const percent = total ? Math.round((tested / total) * 100) : 0
+  const hottest = Object.entries(state.keyPressCount || {}).sort((a, b) => b[1] - a[1]).slice(0, 8)
 
   return `
     <section class="diag-panel diag-keyboard-theme">
-      ${renderPanelHeader('Тест клавиатуры', 'Интерфейс в стиле key-test: нажимайте клавиши и проверяйте подсветку.', 'key-test')}
+      ${renderPanelHeader('Тест клавиатуры', 'Ghosting/MKRO, удержание клавиш и heatmap нажатий.', 'key-test+')}
       <div class="diag-stat-strip">
         <div><span>Проверено</span><strong>${tested} / ${total}</strong></div>
         <div><span>Готовность</span><strong>${percent}%</strong></div>
       </div>
+      <div class="diag-stat-strip">
+        <div><span>Одновременных клавиш (max)</span><strong>${state.maxSimultaneousKeys}</strong></div>
+        <div><span>Текущая комбинация</span><strong>${state.keyComboLabel}</strong></div>
+      </div>
       <div class="diag-keyboard-shell">
         <div class="diag-keyboard">${rows}</div>
+      </div>
+      <div class="diag-stat-strip one-col">
+        <div><span>Heatmap (топ нажатий)</span><strong>${hottest.map(([code, count]) => `${keyboardLabels[code] || code}:${count}`).join(' · ') || 'пока нет данных'}</strong></div>
       </div>
       <div class="diag-actions">
         <button type="button" class="secondary-action" data-diag-reset-keys>Сбросить клавиши</button>
@@ -58,7 +66,7 @@ function renderKeyboard(state) {
 function renderMicrophone(state) {
   return `
     <section class="diag-panel diag-mic-theme">
-      ${renderPanelHeader('Тест микрофона', 'Добавлен live-мониторинг, запись голоса и быстрый старт/стоп.', 'webcammictest+')}
+      ${renderPanelHeader('Тест микрофона', 'Live-мониторинг, запись голоса и быстрый старт/стоп.', 'webcammictest+')}
       <div class="diag-meter-card">
         <div class="diag-meter-shell">
           <div class="diag-meter-fill" style="width:${state.microphoneLevel}%"></div>
@@ -97,7 +105,7 @@ function renderMicrophone(state) {
 function renderWebcam(state) {
   return `
     <section class="diag-panel diag-webcam-theme">
-      ${renderPanelHeader('Тест веб-камеры', 'Макет повторяет страницу теста веб-камеры: крупный предпросмотр и индикация эфира.', 'webcammictest')}
+      ${renderPanelHeader('Тест веб-камеры', 'Крупный предпросмотр и индикация эфира.', 'webcammictest')}
       <div class="diag-camera-shell ${state.webcamActive ? 'live' : ''}">
         <video id="diag-webcam-video" autoplay playsinline muted></video>
         <span class="diag-camera-overlay">${state.webcamActive ? 'КАМЕРА В ЭФИРЕ' : 'КАМЕРА ВЫКЛ.'}</span>
@@ -116,11 +124,14 @@ function renderWebcam(state) {
 function renderHeadphones(state) {
   return `
     <section class="diag-panel diag-headphones-theme">
-      ${renderPanelHeader('Тест наушников', 'Можно оставить как есть: каналы и стерео-сигнал для быстрой проверки.', 'webcammictest')}
+      ${renderPanelHeader('Тест наушников', 'Левый/правый/стерео, alternating, phase и volume sweep.', 'audio-lab')}
       <div class="diag-grid-2">
         <button type="button" class="diag-audio-btn" data-diag-tone="left">ЛЕВЫЙ</button>
         <button type="button" class="diag-audio-btn" data-diag-tone="right">ПРАВЫЙ</button>
         <button type="button" class="diag-audio-btn wide" data-diag-tone="stereo">СТЕРЕО</button>
+        <button type="button" class="diag-audio-btn" data-diag-tone="alternating">ALT L/R</button>
+        <button type="button" class="diag-audio-btn" data-diag-tone="phase">PHASE</button>
+        <button type="button" class="diag-audio-btn wide" data-diag-tone="sweep">VOLUME SWEEP</button>
       </div>
       <div class="diag-stat-strip one-col">
         <div><span>Статус</span><strong>${state.headphonesStatus}</strong></div>
@@ -130,16 +141,24 @@ function renderHeadphones(state) {
 }
 
 function renderMouse(state) {
+  const pollingHz = state.mouseMoveSamples.length > 3
+    ? Math.round((state.mouseMoveSamples.length - 1) / ((state.mouseMoveSamples[state.mouseMoveSamples.length - 1] - state.mouseMoveSamples[0]) / 1000 || 1))
+    : 0
+
+  const trace = state.mouseTrace.length > 1
+    ? `<svg viewBox="0 0 100 100" class="diag-trace-svg"><polyline points="${state.mouseTrace.map((point) => `${(point.x * 100).toFixed(1)},${(point.y * 100).toFixed(1)}`).join(' ')}"/></svg>`
+    : '<div class="diag-trace-empty">Перемещайте мышь в зоне, чтобы увидеть траекторию.</div>'
+
   return `
     <section class="diag-panel diag-mouse-theme">
-      ${renderPanelHeader('Тест мыши', 'Колесо фиксируется внутри зоны и не прокручивает страницу.', 'checkdevice + klik-test')}
+      ${renderPanelHeader('Тест мыши', 'Latency, double-click, wheel, drag и polling approximation.', 'checkdevice+')}
       <div class="diag-mouse-layout">
         <div class="diag-mouse-visual ${state.mousePulse}">
           <span class="left"></span>
           <span class="right"></span>
           <span class="wheel"></span>
         </div>
-        <div id="diag-mouse-zone" class="diag-mouse-zone" tabindex="0">Кликайте и крутите колесо здесь</div>
+        <div id="diag-mouse-zone" class="diag-mouse-zone" tabindex="0">Кликайте, водите и крутите колесо здесь</div>
       </div>
       <div class="diag-stats-grid">
         <div><span>Левая</span><strong>${state.mouseStats.left}</strong></div>
@@ -147,9 +166,19 @@ function renderMouse(state) {
         <div><span>Средняя</span><strong>${state.mouseStats.middle}</strong></div>
         <div><span>Колесо</span><strong>${state.mouseStats.wheel}</strong></div>
       </div>
-      <div class="diag-stat-strip one-col">
+      <div class="diag-stat-strip">
+        <div><span>Latency rough</span><strong>${state.mouseLatencyMs} мс</strong></div>
+        <div><span>Double-click</span><strong>${state.mouseDoubleClickMs || '—'} мс</strong></div>
+      </div>
+      <div class="diag-stat-strip">
+        <div><span>Wheel up/down</span><strong>${state.mouseStats.wheelUp}/${state.mouseStats.wheelDown}</strong></div>
+        <div><span>Polling approx</span><strong>${pollingHz || '—'} Hz</strong></div>
+      </div>
+      <div class="diag-stat-strip">
+        <div><span>Drag distance</span><strong>${state.mouseDragDistance.toFixed(2)}</strong></div>
         <div><span>Последнее действие</span><strong>${state.mouseStatus}</strong></div>
       </div>
+      <div class="diag-trace-box">${trace}</div>
       <div class="diag-actions">
         <button type="button" class="secondary-action" data-diag-reset-mouse>Сбросить счётчики</button>
       </div>

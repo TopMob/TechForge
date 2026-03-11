@@ -50,10 +50,26 @@
 
         <div class="comparison-actions">
           <p id="comparison-count" class="comparison-count"></p>
+          <label>
+            Режим сравнения
+            <select id="comparison-mode">
+              <option value="all">Все параметры</option>
+              <option value="differences">Только различия</option>
+              <option value="first_advantages">Преимущества первой</option>
+              <option value="second_advantages">Преимущества второй</option>
+            </select>
+          </label>
+          <label>
+            Профиль лучшего выбора
+            <select id="best-choice-profile"></select>
+          </label>
+          <button id="share-state" class="secondary-action" type="button">Поделиться ссылкой</button>
         </div>
 
         <div id="comparison-result" class="comparison-result"></div>
         <div id="comparison-insights" class="insights-box"></div>
+        <div id="best-choice-result" class="insights-box"></div>
+        <div id="component-card" class="insights-box"></div>
       </section>
 
       <section class="main-panel" data-main-panel="configurator">
@@ -71,6 +87,38 @@
         </div>
 
         <div id="configurator-grid" class="configurator-grid"></div>
+        <div class="configuration-summary">
+          <h3>Мастер подбора</h3>
+          <div class="wizard-grid">
+            <label>
+              Бюджет мастера (₽)
+              <input id="wizard-budget" type="number" min="0" step="1000" placeholder="Например, 120000">
+            </label>
+            <label>
+              Сценарий
+              <select id="wizard-scenario">
+                <option value="gaming">Игры</option>
+                <option value="office">Офис</option>
+                <option value="editing">Монтаж</option>
+                <option value="balanced">Универсальный</option>
+              </select>
+            </label>
+            <label>
+              Приоритет
+              <select id="wizard-priority">
+                <option value="fps">FPS</option>
+                <option value="quiet">Тишина</option>
+                <option value="minimal_price">Минимальная цена</option>
+                <option value="upgrade">Апгрейд</option>
+              </select>
+            </label>
+          </div>
+          <div class="firebase-actions">
+            <button id="wizard-apply" class="secondary-action" type="button">Применить мастер</button>
+          </div>
+          <div id="wizard-result" class="insights-box"></div>
+        </div>
+
 
         <div class="configurator-tools">
           <div class="configuration-summary">
@@ -105,6 +153,52 @@
           <ul id="configuration-list"></ul>
           <p id="configuration-total" class="configuration-total"></p>
           <p id="configuration-warning" class="configuration-warning"></p>
+        </div>
+
+        <div class="configuration-summary">
+          <h3>Сравнение сборок A/B</h3>
+          <div class="build-compare-grid">
+            <label>
+              Слот A
+              <select id="build-compare-slot-a"></select>
+            </label>
+            <label>
+              Слот B
+              <select id="build-compare-slot-b"></select>
+            </label>
+            <label>
+              Режим изменения
+              <select id="build-transform-mode">
+                <option value="cheaper">Сделать дешевле</option>
+                <option value="quieter">Сделать тише</option>
+                <option value="stronger">Сделать мощнее на +10к</option>
+              </select>
+            </label>
+          </div>
+          <div class="firebase-actions">
+            <button id="build-compare-run" class="secondary-action" type="button">Сравнить A/B</button>
+            <button id="build-transform-run" class="secondary-action" type="button">Применить режим</button>
+          </div>
+          <div id="build-compare-result" class="insights-box"></div>
+        </div>
+
+        <div class="configuration-summary">
+          <h3>Почему сборка может быть плохой</h3>
+          <ul id="build-audit-issues"></ul>
+          <div class="build-audit-grid">
+            <div>
+              <h4>Как исправить минимально</h4>
+              <ul id="build-fix-minimal"></ul>
+            </div>
+            <div>
+              <h4>Как исправить оптимально</h4>
+              <ul id="build-fix-optimal"></ul>
+            </div>
+            <div>
+              <h4>Как исправить без увеличения бюджета</h4>
+              <ul id="build-fix-budget"></ul>
+            </div>
+          </div>
         </div>
       </section>
 

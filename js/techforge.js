@@ -1,12 +1,19 @@
 import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase } from './firebase.js'
-import { saveBuild, loadBuild, deleteBuild, getSlotNames, exportBuildPayload, importBuildPayload } from './build-storage.js'
+import { saveBuild, loadBuild, deleteBuild, getSlotNames, getAllBuilds, exportBuildPayload, importBuildPayload } from './build-storage.js'
 import { evaluateCompatibility } from './compatibility.js'
-import { buildRecommendations, buildComparisonInsights } from './recommendations.js'
+import { buildRecommendations } from './recommendations.js'
 import { firebaseCategoryOptions } from './component-schema.js'
 import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase-form.js'
 import { setupFirebaseEditor } from './firebase-editor.js'
 import { setupDiagnosticsModule } from './diagnostics.js'
 import { createTechnicalImportController, technicalImportOptions } from './technical-city-import.js'
+import { buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles } from './comparison-engine.js'
+import { parseUrlState, pushUrlState } from './url-state.js'
+import { buildRelatedComponents, renderComponentCard } from './component-card.js'
+import { getWizardDefaults, buildWizardPlan, buildWizardSummary } from './build-wizard.js'
+import { auditBuild } from './build-audit.js'
+import { compareBuilds } from './build-compare.js'
+import { withViewTransition } from './view-transitions.js'
 
 
 const categorySettings = {
@@ -33,7 +40,27 @@ const interfaceElements = {
   comparisonFirstOptions: document.getElementById('comparison-first-options'),
   comparisonSecondOptions: document.getElementById('comparison-second-options'),
   comparisonCount: document.getElementById('comparison-count'),
+  comparisonMode: document.getElementById('comparison-mode'),
+  bestChoiceProfile: document.getElementById('best-choice-profile'),
+  shareStateButton: document.getElementById('share-state'),
   comparisonResult: document.getElementById('comparison-result'),
+  wizardBudgetInput: document.getElementById('wizard-budget'),
+  wizardScenarioSelect: document.getElementById('wizard-scenario'),
+  wizardPrioritySelect: document.getElementById('wizard-priority'),
+  wizardApplyButton: document.getElementById('wizard-apply'),
+  wizardResult: document.getElementById('wizard-result'),
+  buildAuditIssues: document.getElementById('build-audit-issues'),
+  buildFixMinimal: document.getElementById('build-fix-minimal'),
+  buildFixOptimal: document.getElementById('build-fix-optimal'),
+  buildFixBudget: document.getElementById('build-fix-budget'),
+  buildCompareSlotA: document.getElementById('build-compare-slot-a'),
+  buildCompareSlotB: document.getElementById('build-compare-slot-b'),
+  buildCompareRunButton: document.getElementById('build-compare-run'),
+  buildCompareResult: document.getElementById('build-compare-result'),
+  buildTransformMode: document.getElementById('build-transform-mode'),
+  buildTransformRunButton: document.getElementById('build-transform-run'),
+  bestChoiceResult: document.getElementById('best-choice-result'),
+  componentCard: document.getElementById('component-card'),
   configuratorGrid: document.getElementById('configurator-grid'),
   configuratorResetButton: document.getElementById('configurator-reset'),
   configurationList: document.getElementById('configuration-list'),
@@ -84,6 +111,10 @@ const applicationState = {
     first: '',
     second: ''
   },
+  comparisonMode: 'all',
+  bestChoiceProfile: 'balanced',
+  wizard: getWizardDefaults(),
+  buildCompare: { slotA: '', slotB: '', transformMode: 'cheaper' },
   configuratorSearchByCategory: {},
   budgetValue: '',
   firebaseEditorController: null,
@@ -128,6 +159,23 @@ function createIdentifier(categoryKey, componentName) {
 
 function formatPrice(priceValue) {
   return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(Math.round(priceValue))
+}
+
+function syncUrlState() {
+  pushUrlState(applicationState)
+}
+
+async function shareCurrentState() {
+  const url = pushUrlState(applicationState)
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'TechForge', text: 'Состояние сравнения и сборки', url })
+      return
+    } catch {
+    }
+  }
+  await navigator.clipboard.writeText(url)
+  interfaceElements.buildStatus.textContent = 'Ссылка на текущее состояние скопирована в буфер обмена.'
 }
 
 function getRecordCompleteness(record) {
@@ -190,18 +238,74 @@ function getRecordById(categoryKey, recordId) {
   return records.find((record) => record.id === recordId) || null
 }
 
+function getCategoryRecords(categoryKey) {
+  return applicationState.componentsByCategory[categoryKey] || []
+}
+
+function renderWizardPlan() {
+  if (!interfaceElements.wizardResult) return
+  const plan = buildWizardPlan({
+    componentsByCategory: applicationState.componentsByCategory,
+    wizardState: applicationState.wizard
+  })
+  const summary = buildWizardSummary(plan)
+  interfaceElements.wizardResult.innerHTML = summary.rows.length === 0
+    ? '<p class="comparison-count">Недостаточно данных для автоматического подбора.</p>'
+    : `<p class="comparison-count">Черновой план мастера: ${summary.rows.length} позиций · ${summary.total > 0 ? formatPrice(summary.total) : 'без цены'}</p><ul>${summary.rows.map((row) => `<li><strong>${escapeHtml(categorySettings[row.category]?.title || row.category)}:</strong> ${escapeHtml(row.name)}${row.price ? ` · ${escapeHtml(formatPrice(row.price))}` : ''}</li>`).join('')}</ul>`
+  return plan
+}
+
+function applyWizardPlan() {
+  const plan = buildWizardPlan({
+    componentsByCategory: applicationState.componentsByCategory,
+    wizardState: applicationState.wizard
+  })
+  const updates = {}
+  for (const [categoryKey, record] of Object.entries(plan)) {
+    if (!record?.id) continue
+    updates[categoryKey] = record.id
+  }
+  applicationState.selectedConfigurationByCategory = {
+    ...applicationState.selectedConfigurationByCategory,
+    ...updates
+  }
+  renderConfigurator()
+  renderConfigurationSummary()
+  renderWizardPlan()
+  syncUrlState()
+}
+
+function renderBuildAudit(recordsByCategory, totalPrice) {
+  if (!interfaceElements.buildAuditIssues) return
+  const audit = auditBuild({
+    selectedRecordsByCategory: recordsByCategory,
+    budgetValue: applicationState.budgetValue,
+    getCategoryRecords
+  })
+  const issueRows = audit.issues.length > 0
+    ? audit.issues
+    : ['Критичных проблем не выявлено.']
+
+  interfaceElements.buildAuditIssues.innerHTML = issueRows.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+  interfaceElements.buildFixMinimal.innerHTML = audit.fixes.minimal.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+  interfaceElements.buildFixOptimal.innerHTML = audit.fixes.optimal.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+  interfaceElements.buildFixBudget.innerHTML = audit.fixes.noBudgetIncrease.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+}
+
 function renderMainTabs() {
   const diagnosticsIsActive = applicationState.activeMainTab === 'diagnostics'
   if (!diagnosticsIsActive) applicationState.diagnosticsController?.stopActiveMedia()
-  const allMainTabs = interfaceElements.mainTabsContainer.querySelectorAll('[data-main-tab]')
-  for (const mainTabButton of allMainTabs) {
-    const isActive = mainTabButton.dataset.mainTab === applicationState.activeMainTab
-    mainTabButton.classList.toggle('active', isActive)
-  }
-  for (const mainPanel of interfaceElements.mainPanels) {
-    const isActive = mainPanel.dataset.mainPanel === applicationState.activeMainTab
-    mainPanel.classList.toggle('active', isActive)
-  }
+  withViewTransition(() => {
+    const allMainTabs = interfaceElements.mainTabsContainer.querySelectorAll('[data-main-tab]')
+    for (const mainTabButton of allMainTabs) {
+      const isActive = mainTabButton.dataset.mainTab === applicationState.activeMainTab
+      mainTabButton.classList.toggle('active', isActive)
+    }
+    for (const mainPanel of interfaceElements.mainPanels) {
+      const isActive = mainPanel.dataset.mainPanel === applicationState.activeMainTab
+      mainPanel.classList.toggle('active', isActive)
+    }
+  })
 }
 
 function renderComparisonCategoryTabs() {
@@ -260,25 +364,18 @@ function renderComparisonSelectors() {
   buildComparisonDatalist(secondRecords, 'second')
 
   interfaceElements.comparisonCount.textContent = `${Math.min(firstRecords.length, comparisonVisibleLimit)} из ${firstRecords.length} в первой модели · ${Math.min(secondRecords.length, comparisonVisibleLimit)} из ${secondRecords.length} во второй`
+  renderBestChoice()
 
   if (applicationState.comparisonSelectionBySide.first && applicationState.comparisonSelectionBySide.second) {
     renderComparisonTable()
+    syncUrlState()
     return
   }
 
   interfaceElements.comparisonResult.innerHTML = '<p class="empty-state">Введите точное название из списка, чтобы сравнить модели.</p>'
   renderComparisonInsights(null, null)
-}
-
-function collectSpecNames(firstRecord, secondRecord) {
-  const specificationSet = new Set()
-  for (const specName of Object.keys(firstRecord.specs || {})) {
-    if (normalizeText(firstRecord.specs[specName])) specificationSet.add(specName)
-  }
-  for (const specName of Object.keys(secondRecord.specs || {})) {
-    if (normalizeText(secondRecord.specs[specName])) specificationSet.add(specName)
-  }
-  return Array.from(specificationSet)
+  renderComponentDetails(null)
+  syncUrlState()
 }
 
 function renderComparisonTable() {
@@ -292,18 +389,16 @@ function renderComparisonTable() {
     return
   }
 
-  const specRows = collectSpecNames(firstRecord, secondRecord)
-    .map((specName) => {
-      const firstValue = normalizeText(firstRecord.specs[specName]) || '—'
-      const secondValue = normalizeText(secondRecord.specs[specName]) || '—'
-      return `<tr><th>${escapeHtml(specName)}</th><td>${escapeHtml(firstValue)}</td><td>${escapeHtml(secondValue)}</td></tr>`
-    })
+  const semantic = buildSemanticComparison(firstRecord, secondRecord, applicationState.comparisonMode)
+  const specRows = semantic.rows
+    .map((row) => `<tr><th>${escapeHtml(row.name)}</th><td>${escapeHtml(row.firstValue)}</td><td>${escapeHtml(row.secondValue)}</td></tr>`)
     .join('')
 
   const priceRow = `<tr><th>Цена</th><td>${firstRecord.price ? escapeHtml(formatPrice(firstRecord.price)) : '—'}</td><td>${secondRecord.price ? escapeHtml(formatPrice(secondRecord.price)) : '—'}</td></tr>`
 
-  interfaceElements.comparisonResult.innerHTML = `<table class="comparison-table"><thead><tr><th>Параметр</th><th>${escapeHtml(firstRecord.name)}</th><th>${escapeHtml(secondRecord.name)}</th></tr></thead><tbody>${priceRow}${specRows}</tbody></table>`
-  renderComparisonInsights(firstRecord, secondRecord)
+  interfaceElements.comparisonResult.innerHTML = `<table class="comparison-table"><thead><tr><th>Параметр</th><th>${escapeHtml(firstRecord.name)}</th><th>${escapeHtml(secondRecord.name)}</th></tr></thead><tbody>${priceRow}${specRows || '<tr><th>Результат</th><td colspan="2">В выбранном режиме нет строк для отображения.</td></tr>'}</tbody></table>`
+  renderComparisonInsights(firstRecord, secondRecord, semantic)
+  renderComponentDetails(firstRecord)
 }
 
 function renderConfigurator() {
@@ -369,11 +464,13 @@ function validateSocketCompatibility() {
 
 function renderConfigurationSummary() {
   const summaryItems = []
+  const selectedByCategory = {}
   let totalPrice = 0
 
   for (const categoryKey of configuratorCategoryOrder) {
     const selectedRecord = getRecordById(categoryKey, applicationState.selectedConfigurationByCategory[categoryKey])
     if (!selectedRecord) continue
+    selectedByCategory[categoryKey] = selectedRecord
     if (selectedRecord.price) totalPrice += selectedRecord.price
     const priceLabel = selectedRecord.price ? ` · ${formatPrice(selectedRecord.price)}` : ''
     summaryItems.push(`<li><strong>${escapeHtml(categorySettings[categoryKey].title)}:</strong> ${escapeHtml(selectedRecord.name)}${escapeHtml(priceLabel)}</li>`)
@@ -385,20 +482,40 @@ function renderConfigurationSummary() {
     getRecordById,
     selectedConfigurationByCategory: applicationState.selectedConfigurationByCategory
   })
-  interfaceElements.configurationWarning.textContent = compatibility.issues[0] || ''
+  interfaceElements.configurationWarning.textContent = compatibility.issues[0] || compatibility.warnings?.[0] || `Совместимость: ${compatibility.quality}`
   renderBudgetState(totalPrice)
   renderRecommendations(getSelectedRecords(), totalPrice, compatibility)
+  renderBuildAudit(selectedByCategory, totalPrice)
 }
 
 
-function renderComparisonInsights(firstRecord, secondRecord) {
+
+function renderComparisonInsights(firstRecord, secondRecord, semantic = null) {
   if (!interfaceElements.comparisonInsights) return
-  const insights = buildComparisonInsights(firstRecord, secondRecord)
+  const fallbackSemantic = semantic || buildSemanticComparison(firstRecord, secondRecord, applicationState.comparisonMode)
+  const insights = buildComparisonNarrative(firstRecord, secondRecord, fallbackSemantic)
   if (insights.length === 0) {
     interfaceElements.comparisonInsights.innerHTML = '<p class="comparison-count">Инсайты появятся после выбора двух моделей с заполненными данными.</p>'
     return
   }
   interfaceElements.comparisonInsights.innerHTML = `<ul>${insights.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+}
+
+function renderBestChoice() {
+  const records = applicationState.componentsByCategory[applicationState.activeComparisonCategory] || []
+  const budgetLimit = parseNumber(applicationState.budgetValue) || 0
+  const ranked = rankBestChoices(records, applicationState.bestChoiceProfile, budgetLimit, 5)
+  if (ranked.length === 0) {
+    interfaceElements.bestChoiceResult.innerHTML = '<p class="comparison-count">Нет данных для ранжирования по текущим условиям.</p>'
+    return
+  }
+  interfaceElements.bestChoiceResult.innerHTML = `<h3>Лучший выбор (${escapeHtml(applicationState.bestChoiceProfile)})</h3><ol>${ranked.map((entry) => `<li>${escapeHtml(entry.record.name)} · score ${entry.score.toFixed(3)}${entry.record.price ? ` · ${escapeHtml(formatPrice(entry.record.price))}` : ''}</li>`).join('')}</ol>`
+}
+
+function renderComponentDetails(record) {
+  const allRecords = Object.values(applicationState.componentsByCategory).flat()
+  const related = buildRelatedComponents(record, allRecords)
+  withViewTransition(() => renderComponentCard(interfaceElements.componentCard, record, related))
 }
 
 function getSelectedRecords() {
@@ -444,12 +561,105 @@ function populateBuildSlots() {
   interfaceElements.buildSlotSelect.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
 }
 
+
+function populateBuildCompareSlots() {
+  const slotNames = getSlotNames()
+  interfaceElements.buildCompareSlotA.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
+  interfaceElements.buildCompareSlotB.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
+  if (applicationState.buildCompare.slotA && slotNames.includes(applicationState.buildCompare.slotA)) interfaceElements.buildCompareSlotA.value = applicationState.buildCompare.slotA
+  if (applicationState.buildCompare.slotB && slotNames.includes(applicationState.buildCompare.slotB)) interfaceElements.buildCompareSlotB.value = applicationState.buildCompare.slotB
+  if (!applicationState.buildCompare.slotA) applicationState.buildCompare.slotA = slotNames[0] || ''
+  if (!applicationState.buildCompare.slotB) applicationState.buildCompare.slotB = slotNames[1] || slotNames[0] || ''
+  interfaceElements.buildCompareSlotA.value = applicationState.buildCompare.slotA
+  interfaceElements.buildCompareSlotB.value = applicationState.buildCompare.slotB
+}
+
+function getBuildBySlot(slotName) {
+  const payload = loadBuild(slotName)
+  if (!payload?.selectedConfigurationByCategory) return {}
+  const result = {}
+  for (const categoryKey of configuratorCategoryOrder) {
+    const recordId = payload.selectedConfigurationByCategory[categoryKey]
+    if (!recordId) continue
+    const record = getRecordById(categoryKey, recordId)
+    if (record) result[categoryKey] = record
+  }
+  return result
+}
+
+function renderBuildCompareResult() {
+  const left = getBuildBySlot(applicationState.buildCompare.slotA)
+  const right = getBuildBySlot(applicationState.buildCompare.slotB)
+  const comparison = compareBuilds({
+    buildAByCategory: left,
+    buildBByCategory: right,
+    categoryOrder: configuratorCategoryOrder
+  })
+
+  const lines = [
+    `<li>Цена: ${comparison.totals.buildA.price > 0 ? formatPrice(comparison.totals.buildA.price) : '—'} → ${comparison.totals.buildB.price > 0 ? formatPrice(comparison.totals.buildB.price) : '—'} (Δ ${comparison.delta.price >= 0 ? '+' : ''}${Math.round(comparison.delta.price)} ₽)</li>`,
+    `<li>Мощность: ${comparison.totals.buildA.performance.toFixed(1)} → ${comparison.totals.buildB.performance.toFixed(1)} (Δ ${comparison.delta.performance >= 0 ? '+' : ''}${comparison.delta.performance.toFixed(1)})</li>`,
+    `<li>Потребление: ${comparison.totals.buildA.power.toFixed(0)}Вт → ${comparison.totals.buildB.power.toFixed(0)}Вт (Δ ${comparison.delta.power >= 0 ? '+' : ''}${comparison.delta.power.toFixed(0)}Вт)</li>`,
+    `<li>Апгрейд-потенциал: ${comparison.totals.buildA.upgrade.toFixed(1)} → ${comparison.totals.buildB.upgrade.toFixed(1)} (Δ ${comparison.delta.upgrade >= 0 ? '+' : ''}${comparison.delta.upgrade.toFixed(1)})</li>`
+  ]
+
+  const changes = comparison.changes.length > 0
+    ? comparison.changes.map((change) => `<li><strong>${escapeHtml(categorySettings[change.categoryKey]?.title || change.categoryKey)}:</strong> ${escapeHtml(change.left?.name || '—')} → ${escapeHtml(change.right?.name || '—')}</li>`).join('')
+    : '<li>Состав сборок совпадает.</li>'
+
+  interfaceElements.buildCompareResult.innerHTML = `<h4>${escapeHtml(applicationState.buildCompare.slotA)} vs ${escapeHtml(applicationState.buildCompare.slotB)}</h4><ul>${lines.join('')}</ul><h4>Что изменилось</h4><ul>${changes}</ul>`
+}
+
+function applyBuildTransformMode() {
+  const mode = applicationState.buildCompare.transformMode
+  const records = getSelectedRecords()
+  if (records.length === 0) {
+    interfaceElements.buildStatus.textContent = 'Сначала соберите текущий ПК, затем применяйте режим изменения.'
+    return
+  }
+
+  if (mode === 'cheaper') {
+    const mostExpensive = [...records].sort((a, b) => (b.price || 0) - (a.price || 0))[0]
+    if (!mostExpensive) return
+    const alternatives = getCategoryRecords(mostExpensive.categoryKey)
+      .filter((record) => record.id !== mostExpensive.id && (record.price || 0) < (mostExpensive.price || 0))
+      .sort((a, b) => (b.price || 0) - (a.price || 0))
+    if (alternatives[0]) applicationState.selectedConfigurationByCategory[mostExpensive.categoryKey] = alternatives[0].id
+  }
+
+  if (mode === 'quieter') {
+    const cpu = getRecordById('cpu', applicationState.selectedConfigurationByCategory.cpu)
+    const coolers = getCategoryRecords('cooler')
+    const cpuTdp = Number(String(cpu?.specs?.TDP || '').match(/\d+/)?.[0] || 0)
+    const alternative = coolers
+      .filter((record) => Number(String(record?.specs?.TDP || '').match(/\d+/)?.[0] || 0) >= cpuTdp)
+      .sort((a, b) => (Number(String(b?.specs?.TDP || '').match(/\d+/)?.[0] || 0) - Number(String(a?.specs?.TDP || '').match(/\d+/)?.[0] || 0)))[0]
+    if (alternative) applicationState.selectedConfigurationByCategory.cooler = alternative.id
+  }
+
+  if (mode === 'stronger') {
+    const gpu = getRecordById('gpu', applicationState.selectedConfigurationByCategory.gpu)
+    const currentPrice = gpu?.price || 0
+    const alternatives = getCategoryRecords('gpu')
+      .filter((record) => record.id !== gpu?.id && (record.price || 0) <= currentPrice + 10000)
+      .sort((a, b) => (b.price || 0) - (a.price || 0))
+    if (alternatives[0]) applicationState.selectedConfigurationByCategory.gpu = alternatives[0].id
+  }
+
+  renderConfigurator()
+  renderConfigurationSummary()
+  interfaceElements.buildStatus.textContent = 'Режим изменения применён к текущей сборке.'
+  syncUrlState()
+}
+
 function handleSaveBuild() {
   const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
   if (!slotName) return
   saveBuild(slotName, applicationState.selectedConfigurationByCategory, applicationState.budgetValue)
   populateBuildSlots()
+  populateBuildCompareSlots()
   interfaceElements.buildStatus.textContent = `Сборка сохранена в слот: ${slotName}`
+  syncUrlState()
 }
 
 function handleLoadBuild() {
@@ -465,13 +675,16 @@ function handleLoadBuild() {
   renderConfigurator()
   renderConfigurationSummary()
   interfaceElements.buildStatus.textContent = `Сборка загружена: ${slotName}`
+  syncUrlState()
 }
 
 function handleDeleteBuild() {
   const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
   const deleted = deleteBuild(slotName)
   populateBuildSlots()
+  populateBuildCompareSlots()
   interfaceElements.buildStatus.textContent = deleted ? `Сборка удалена: ${slotName}` : 'Удалять нечего: слот пуст.'
+  syncUrlState()
 }
 
 function handleExportBuild() {
@@ -500,6 +713,7 @@ function handleImportBuild() {
     renderConfigurator()
     renderConfigurationSummary()
     interfaceElements.buildStatus.textContent = 'Сборка импортирована из JSON.'
+    syncUrlState()
   } catch (error) {
     interfaceElements.buildStatus.textContent = `Ошибка импорта: ${error.message}`
   }
@@ -561,6 +775,7 @@ async function refreshCategoryFromFirebase(categoryKey) {
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  renderWizardPlan()
   renderConfigurationSummary()
 }
 
@@ -578,6 +793,7 @@ function refreshAfterComponentSave() {
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  renderWizardPlan()
   renderConfigurationSummary()
 }
 
@@ -758,6 +974,7 @@ function bindEvents() {
     if (!tabButton) return
     applicationState.activeMainTab = tabButton.dataset.mainTab
     renderMainTabs()
+    syncUrlState()
   })
 
   interfaceElements.comparisonCategoryTabs.addEventListener('click', (event) => {
@@ -772,6 +989,23 @@ function bindEvents() {
     interfaceElements.comparisonSecondInput.value = ''
     renderComparisonCategoryTabs()
     renderComparisonSelectors()
+  })
+
+  interfaceElements.comparisonMode.addEventListener('change', () => {
+    applicationState.comparisonMode = normalizeText(interfaceElements.comparisonMode.value) || 'all'
+    renderComparisonSelectors()
+  })
+
+  interfaceElements.bestChoiceProfile.addEventListener('change', () => {
+    applicationState.bestChoiceProfile = normalizeText(interfaceElements.bestChoiceProfile.value) || 'balanced'
+    renderBestChoice()
+    syncUrlState()
+  })
+
+  interfaceElements.shareStateButton.addEventListener('click', () => {
+    shareCurrentState().catch(() => {
+      interfaceElements.buildStatus.textContent = 'Не удалось поделиться ссылкой в этом браузере.'
+    })
   })
 
   interfaceElements.comparisonFirstInput.addEventListener('input', (event) => {
@@ -807,6 +1041,7 @@ function bindEvents() {
     renderConfiguratorOptionsByCategory(categoryKey)
     renderConfigurationSummary()
     applicationState.diagnosticsController?.rerender()
+    syncUrlState()
   })
 
   interfaceElements.configuratorResetButton.addEventListener('click', () => {
@@ -815,6 +1050,7 @@ function bindEvents() {
     renderConfigurator()
     renderConfigurationSummary()
     applicationState.diagnosticsController?.rerender()
+    syncUrlState()
   })
 
   interfaceElements.firebaseForm.elements.firebaseCategory.addEventListener('change', () => {
@@ -862,16 +1098,70 @@ function bindEvents() {
   interfaceElements.budgetInput.addEventListener('input', () => {
     applicationState.budgetValue = normalizeText(interfaceElements.budgetInput.value)
     renderConfigurationSummary()
+    renderBestChoice()
+    syncUrlState()
   })
+
+  interfaceElements.wizardBudgetInput.addEventListener('input', () => {
+    applicationState.wizard.budgetValue = normalizeText(interfaceElements.wizardBudgetInput.value)
+    renderWizardPlan()
+  })
+
+  interfaceElements.wizardScenarioSelect.addEventListener('change', () => {
+    applicationState.wizard.scenario = normalizeText(interfaceElements.wizardScenarioSelect.value) || 'balanced'
+    renderWizardPlan()
+  })
+
+  interfaceElements.wizardPrioritySelect.addEventListener('change', () => {
+    applicationState.wizard.priority = normalizeText(interfaceElements.wizardPrioritySelect.value) || 'minimal_price'
+    renderWizardPlan()
+  })
+
+  interfaceElements.wizardApplyButton.addEventListener('click', () => applyWizardPlan())
 
   interfaceElements.saveBuildButton.addEventListener('click', handleSaveBuild)
   interfaceElements.loadBuildButton.addEventListener('click', handleLoadBuild)
   interfaceElements.deleteBuildButton.addEventListener('click', handleDeleteBuild)
   interfaceElements.exportBuildButton.addEventListener('click', handleExportBuild)
   interfaceElements.importBuildButton.addEventListener('click', handleImportBuild)
+
+  interfaceElements.buildCompareSlotA.addEventListener('change', () => {
+    applicationState.buildCompare.slotA = normalizeText(interfaceElements.buildCompareSlotA.value)
+    renderBuildCompareResult()
+    syncUrlState()
+  })
+
+  interfaceElements.buildCompareSlotB.addEventListener('change', () => {
+    applicationState.buildCompare.slotB = normalizeText(interfaceElements.buildCompareSlotB.value)
+    renderBuildCompareResult()
+    syncUrlState()
+  })
+
+  interfaceElements.buildTransformMode.addEventListener('change', () => {
+    applicationState.buildCompare.transformMode = normalizeText(interfaceElements.buildTransformMode.value) || 'cheaper'
+    syncUrlState()
+  })
+
+  interfaceElements.buildCompareRunButton.addEventListener('click', () => renderBuildCompareResult())
+  interfaceElements.buildTransformRunButton.addEventListener('click', () => applyBuildTransformMode())
 }
 
 async function initializeApplication() {
+  const urlState = parseUrlState()
+  if (urlState.tab) applicationState.activeMainTab = urlState.tab
+  if (urlState.compareCategory) applicationState.activeComparisonCategory = urlState.compareCategory
+  if (urlState.compareA) applicationState.comparisonInput.first = urlState.compareA
+  if (urlState.compareB) applicationState.comparisonInput.second = urlState.compareB
+  if (urlState.budget) applicationState.budgetValue = urlState.budget
+  if (urlState.compareMode) applicationState.comparisonMode = urlState.compareMode
+  if (urlState.bestProfile) applicationState.bestChoiceProfile = urlState.bestProfile
+  if (urlState.wizardBudget) applicationState.wizard.budgetValue = urlState.wizardBudget
+  if (urlState.wizardScenario) applicationState.wizard.scenario = urlState.wizardScenario
+  if (urlState.wizardPriority) applicationState.wizard.priority = urlState.wizardPriority
+  if (urlState.compareSlotA) applicationState.buildCompare.slotA = urlState.compareSlotA
+  if (urlState.compareSlotB) applicationState.buildCompare.slotB = urlState.compareSlotB
+  if (urlState.transformMode) applicationState.buildCompare.transformMode = urlState.transformMode
+
   interfaceElements.firebaseForm.elements.firebaseCategory.innerHTML = firebaseCategoryOptions
     .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
     .join('')
@@ -885,25 +1175,44 @@ async function initializeApplication() {
   interfaceElements.technicalImportSearch.value = ''
   interfaceElements.technicalImportStatus.textContent = ''
   renderTechnicalImportPreview(null)
+  interfaceElements.bestChoiceProfile.innerHTML = getRankingProfiles()
+    .map((profileKey) => `<option value="${escapeHtml(profileKey)}">${escapeHtml(profileKey)}</option>`)
+    .join('')
+  interfaceElements.bestChoiceProfile.value = applicationState.bestChoiceProfile
+  interfaceElements.comparisonMode.value = applicationState.comparisonMode
+  interfaceElements.comparisonFirstInput.value = applicationState.comparisonInput.first
+  interfaceElements.comparisonSecondInput.value = applicationState.comparisonInput.second
+  interfaceElements.wizardBudgetInput.value = applicationState.wizard.budgetValue
+  interfaceElements.wizardScenarioSelect.value = applicationState.wizard.scenario
+  interfaceElements.wizardPrioritySelect.value = applicationState.wizard.priority
+  interfaceElements.buildTransformMode.value = applicationState.buildCompare.transformMode
   await reloadTechnicalImportRecords()
 
   for (const categoryKey of Object.keys(categorySettings)) {
     applicationState.componentsByCategory[categoryKey] = await loadCategory(categoryKey)
   }
 
+  applicationState.selectedConfigurationByCategory = {
+    ...urlState.selectedConfigurationByCategory,
+    ...applicationState.selectedConfigurationByCategory
+  }
+
   const firstProcessor = applicationState.componentsByCategory.cpu[0]
   const firstMotherboard = applicationState.componentsByCategory.motherboard[0]
-  if (firstProcessor) applicationState.selectedConfigurationByCategory.cpu = firstProcessor.id
-  if (firstMotherboard) applicationState.selectedConfigurationByCategory.motherboard = firstMotherboard.id
+  if (firstProcessor && !applicationState.selectedConfigurationByCategory.cpu) applicationState.selectedConfigurationByCategory.cpu = firstProcessor.id
+  if (firstMotherboard && !applicationState.selectedConfigurationByCategory.motherboard) applicationState.selectedConfigurationByCategory.motherboard = firstMotherboard.id
 
   renderMainTabs()
   initializeDiagnosticsModule()
   renderComparisonCategoryTabs()
   renderComparisonSelectors()
   renderConfigurator()
+  renderWizardPlan()
   populateBuildSlots()
+  populateBuildCompareSlots()
   interfaceElements.budgetInput.value = applicationState.budgetValue
   renderConfigurationSummary()
+  renderBuildCompareResult()
   renderFirebaseConnectionState()
   const firebaseEditor = setupFirebaseEditor({
     formElement: interfaceElements.firebaseForm,

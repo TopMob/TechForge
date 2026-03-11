@@ -12,6 +12,9 @@ export function buildRecommendations({ selectedRecords, totalPrice, budgetValue,
     recommendations.push(...compatibility.issues)
   }
 
+  if (compatibility.warnings?.length) recommendations.push(...compatibility.warnings)
+  recommendations.push(`Статус совместимости: ${compatibility.quality}.`)
+
   if (budgetValue > 0) {
     const delta = totalPrice - budgetValue
     if (delta > 0) recommendations.push(`Сборка превышает бюджет на ${Math.round(delta)} руб.`) 
