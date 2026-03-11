@@ -14,6 +14,18 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;')
 }
 
+function getComponentDisplayName(component) {
+  const vendor = normalizeText(component?.vendor || component?.raw?.vendor || component?.specs?.Производитель)
+  const model = normalizeText(component?.model || component?.raw?.model || component?.specs?.Модель)
+  const cardName = normalizeText(component?.name)
+  const modelName = [vendor, model].filter(Boolean).join(' ')
+  if (!modelName && !cardName) return 'Без названия'
+  if (!modelName) return cardName
+  if (!cardName) return modelName
+  if (modelName.toLowerCase() === cardName.toLowerCase()) return modelName
+  return `${modelName} · ${cardName}`
+}
+
 export function setupFirebaseEditor({
   formElement,
   specsContainer,
@@ -56,11 +68,11 @@ export function setupFirebaseEditor({
     editorComponentSelect.innerHTML = '<option value="">Загрузка...</option>'
 
     const components = await loadComponentsFromFirebase(categoryKey)
-    components.sort((a, b) => normalizeText(a.name).localeCompare(normalizeText(b.name), 'ru'))
+    components.sort((a, b) => getComponentDisplayName(a).localeCompare(getComponentDisplayName(b), 'ru'))
 
     editorComponentSelect.innerHTML = [
       '<option value="">Выберите компонент</option>',
-      ...components.map((item) => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`)
+      ...components.map((item) => `<option value="${escapeHtml(item.name)}">${escapeHtml(getComponentDisplayName(item))}</option>`)
     ].join('')
   }
 

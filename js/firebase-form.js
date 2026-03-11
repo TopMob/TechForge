@@ -79,7 +79,9 @@ export function collectFirebasePayload(formElement, categoryKey) {
 
   const vendor = normalizeText(values.vendor)
   const model = normalizeText(values.model)
-  const name = [vendor, model].filter(Boolean).join(' ')
+  const composedName = [vendor, model].filter(Boolean).join(' ')
+  const componentName = normalizeText(formElement.elements.firebaseComponentName?.value)
+  const name = componentName || composedName
 
   const payload = {
     name,
@@ -206,7 +208,6 @@ function buildSpecsByCategory(categoryKey, values) {
 
   return {}
 }
-
 
 export function fillFirebaseFormByComponent(formElement, categoryKey, componentRecord) {
   const config = categoryFormConfig[categoryKey]

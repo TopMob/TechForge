@@ -327,6 +327,21 @@ function renderConfigurator() {
   }
 }
 
+function renderConfiguratorOptionsByCategory(categoryKey) {
+  const searchValue = applicationState.configuratorSearchByCategory[categoryKey] || ''
+  const categoryRecords = getFilteredRecords(categoryKey, searchValue)
+  const datalistId = `configurator-options-${categoryKey}`
+  const datalistElement = interfaceElements.configuratorGrid.querySelector(`#${datalistId}`)
+  if (!datalistElement) return
+
+  datalistElement.innerHTML = categoryRecords
+    .map((categoryRecord) => {
+      const priceLabel = categoryRecord.price ? ` · ${formatPrice(categoryRecord.price)}` : ''
+      return `<option value="${escapeHtml(categoryRecord.name)}" label="${escapeHtml(categoryRecord.name + priceLabel)}"></option>`
+    })
+    .join('')
+}
+
 function validateSocketCompatibility() {
   const processorRecord = getRecordById('cpu', applicationState.selectedConfigurationByCategory.cpu)
   const motherboardRecord = getRecordById('motherboard', applicationState.selectedConfigurationByCategory.motherboard)
@@ -664,7 +679,7 @@ function bindEvents() {
     const matchedRecord = categoryRecords.find((record) => record.name.toLowerCase() === inputValue.toLowerCase())
     applicationState.selectedConfigurationByCategory[categoryKey] = matchedRecord ? matchedRecord.id : ''
 
-    renderConfigurator()
+    renderConfiguratorOptionsByCategory(categoryKey)
     renderConfigurationSummary()
     applicationState.diagnosticsController?.rerender()
   })
