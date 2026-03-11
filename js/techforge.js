@@ -6,6 +6,7 @@ import { firebaseCategoryOptions } from './component-schema.js'
 import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase-form.js'
 import { setupFirebaseEditor } from './firebase-editor.js'
 import { setupDiagnosticsModule } from './diagnostics.js'
+import { createTechnicalImportController, technicalImportOptions } from './technical-city-import.js'
 
 
 const categorySettings = {
@@ -60,7 +61,14 @@ const interfaceElements = {
   importBuildButton: document.getElementById('import-build'),
   buildStatus: document.getElementById('build-status'),
   recommendationsList: document.getElementById('recommendations-list'),
-  diagnosticsRoot: document.getElementById('diagnostics-root')
+  diagnosticsRoot: document.getElementById('diagnostics-root'),
+  technicalImportSource: document.getElementById('technical-import-source'),
+  technicalImportSearch: document.getElementById('technical-import-search'),
+  technicalImportComponent: document.getElementById('technical-import-component'),
+  technicalImportApplyButton: document.getElementById('technical-import-apply'),
+  technicalImportApproveButton: document.getElementById('technical-import-approve'),
+  technicalImportStatus: document.getElementById('technical-import-status'),
+  technicalImportPreview: document.getElementById('technical-import-preview')
 }
 
 const applicationState = {
@@ -79,7 +87,11 @@ const applicationState = {
   configuratorSearchByCategory: {},
   budgetValue: '',
   firebaseEditorController: null,
-  diagnosticsController: null
+  diagnosticsController: null,
+  technicalImportController: createTechnicalImportController(),
+  technicalImportRecords: [],
+  technicalImportFilteredRecords: [],
+  technicalImportSelectedRecordName: ''
 }
 
 function normalizeText(value) {
@@ -569,6 +581,119 @@ function refreshAfterComponentSave() {
   renderConfigurationSummary()
 }
 
+
+function renderTechnicalImportPreview(record) {
+  if (!interfaceElements.technicalImportPreview) return
+  if (!record) {
+    interfaceElements.technicalImportPreview.textContent = 'Выберите компонент из источника для предпросмотра.'
+    return
+  }
+  interfaceElements.technicalImportPreview.textContent = JSON.stringify({
+    category: record.categoryKey,
+    name: record.name,
+    vendor: record.vendor,
+    model: record.model,
+    price: record.price,
+    specs: record.specs
+  }, null, 2)
+}
+
+function renderTechnicalImportComponents() {
+  const selectElement = interfaceElements.technicalImportComponent
+  if (!selectElement) return
+
+  const options = applicationState.technicalImportFilteredRecords
+  selectElement.innerHTML = [
+    '<option value="">Выберите компонент</option>',
+    ...options.slice(0, 500).map((record) => `<option value="${escapeHtml(record.name)}">${escapeHtml(record.name)}</option>`)
+  ].join('')
+
+  if (applicationState.technicalImportSelectedRecordName && options.some((record) => record.name === applicationState.technicalImportSelectedRecordName)) {
+    selectElement.value = applicationState.technicalImportSelectedRecordName
+  } else {
+    applicationState.technicalImportSelectedRecordName = ''
+  }
+
+  const selected = options.find((record) => record.name === applicationState.technicalImportSelectedRecordName) || null
+  renderTechnicalImportPreview(selected)
+}
+
+function applyTechnicalImportFilter() {
+  const searchValue = normalizeText(interfaceElements.technicalImportSearch?.value).toLowerCase()
+  const sourceRecords = applicationState.technicalImportRecords
+  applicationState.technicalImportFilteredRecords = !searchValue
+    ? sourceRecords
+    : sourceRecords.filter((record) => record.name.toLowerCase().includes(searchValue))
+  renderTechnicalImportComponents()
+}
+
+async function reloadTechnicalImportRecords() {
+  const sourceKey = normalizeText(interfaceElements.technicalImportSource?.value)
+  if (!sourceKey) {
+    applicationState.technicalImportRecords = []
+    applicationState.technicalImportFilteredRecords = []
+    applicationState.technicalImportSelectedRecordName = ''
+    renderTechnicalImportComponents()
+    return
+  }
+
+  interfaceElements.technicalImportStatus.textContent = 'Загрузка источника...'
+  try {
+    applicationState.technicalImportRecords = await applicationState.technicalImportController.loadRecords(sourceKey)
+    applicationState.technicalImportSelectedRecordName = ''
+    applyTechnicalImportFilter()
+    interfaceElements.technicalImportStatus.textContent = `Источник загружен: ${applicationState.technicalImportRecords.length} записей.`
+  } catch (error) {
+    applicationState.technicalImportRecords = []
+    applicationState.technicalImportFilteredRecords = []
+    applicationState.technicalImportSelectedRecordName = ''
+    renderTechnicalImportComponents()
+    interfaceElements.technicalImportStatus.textContent = `Ошибка загрузки источника: ${error.message}`
+  }
+}
+
+function getSelectedTechnicalImportRecord() {
+  return applicationState.technicalImportFilteredRecords.find((record) => record.name === applicationState.technicalImportSelectedRecordName) || null
+}
+
+function fillFirebaseFormFromImportRecord(record) {
+  if (!record) return false
+  interfaceElements.firebaseForm.elements.firebaseCategory.value = record.categoryKey
+  renderFirebaseFormByCategory()
+  interfaceElements.firebaseForm.elements.firebaseComponentName.value = record.name
+  for (const [key, value] of Object.entries(record.raw || {})) {
+    const input = interfaceElements.firebaseForm.querySelector(`[data-field-key="${key}"]`)
+    if (!input) continue
+    input.value = normalizeText(value)
+  }
+  return true
+}
+
+async function approveTechnicalImportRecord() {
+  const record = getSelectedTechnicalImportRecord()
+  if (!record) {
+    interfaceElements.technicalImportStatus.textContent = 'Сначала выберите компонент для переноса.'
+    return
+  }
+
+  try {
+    await saveComponent(record.categoryKey, {
+      name: record.name,
+      vendor: record.vendor,
+      model: record.model,
+      price: record.price,
+      specs: record.specs,
+      raw: record.raw
+    })
+    mergeComponentIntoState(record.categoryKey, record)
+    refreshAfterComponentSave()
+    await applicationState.firebaseEditorController?.refresh()
+    interfaceElements.technicalImportStatus.textContent = `Перенесено в Firebase: ${record.name}`
+  } catch (error) {
+    interfaceElements.technicalImportStatus.textContent = `Ошибка переноса: ${error.message}`
+  }
+}
+
 function resetFirebaseDynamicFields() {
   interfaceElements.firebaseForm.elements.firebaseComponentName.value = ''
   renderFirebaseFormByCategory()
@@ -711,6 +836,29 @@ function bindEvents() {
   interfaceElements.firebaseEditorUpdateButton.addEventListener('click', () => applicationState.firebaseEditorController?.updateFromForm())
   interfaceElements.firebaseEditorDeleteButton.addEventListener('click', () => applicationState.firebaseEditorController?.deleteFromFirebase())
   interfaceElements.firebaseForm.addEventListener('submit', saveComponentToFirebase)
+  interfaceElements.technicalImportSource.addEventListener('change', async () => {
+    applicationState.technicalImportSelectedRecordName = ''
+    await reloadTechnicalImportRecords()
+  })
+  interfaceElements.technicalImportSearch.addEventListener('input', () => {
+    applicationState.technicalImportSelectedRecordName = ''
+    applyTechnicalImportFilter()
+  })
+  interfaceElements.technicalImportComponent.addEventListener('change', () => {
+    applicationState.technicalImportSelectedRecordName = normalizeText(interfaceElements.technicalImportComponent.value)
+    renderTechnicalImportPreview(getSelectedTechnicalImportRecord())
+    interfaceElements.technicalImportStatus.textContent = ''
+  })
+  interfaceElements.technicalImportApplyButton.addEventListener('click', () => {
+    const record = getSelectedTechnicalImportRecord()
+    if (!record) {
+      interfaceElements.technicalImportStatus.textContent = 'Сначала выберите компонент для заполнения формы.'
+      return
+    }
+    fillFirebaseFormFromImportRecord(record)
+    interfaceElements.technicalImportStatus.textContent = `Форма подготовлена: ${record.name}`
+  })
+  interfaceElements.technicalImportApproveButton.addEventListener('click', approveTechnicalImportRecord)
   interfaceElements.budgetInput.addEventListener('input', () => {
     applicationState.budgetValue = normalizeText(interfaceElements.budgetInput.value)
     renderConfigurationSummary()
@@ -731,6 +879,13 @@ async function initializeApplication() {
     .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
     .join('')
   renderFirebaseFormByCategory()
+  interfaceElements.technicalImportSource.innerHTML = technicalImportOptions
+    .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
+    .join('')
+  interfaceElements.technicalImportSearch.value = ''
+  interfaceElements.technicalImportStatus.textContent = ''
+  renderTechnicalImportPreview(null)
+  await reloadTechnicalImportRecords()
 
   for (const categoryKey of Object.keys(categorySettings)) {
     applicationState.componentsByCategory[categoryKey] = await loadCategory(categoryKey)

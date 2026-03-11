@@ -227,3 +227,16 @@ select {
 .bad-state {
   color: var(--warning);
 }
+
+
+.technical-import-preview {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(8, 12, 24, 0.88);
+  color: var(--muted);
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+}

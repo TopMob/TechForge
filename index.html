@@ -138,6 +138,29 @@
           <p id="firebase-connection-info" class="firebase-connection-info">Firebase подключен: проверка...</p>
         </div>
 
+
+        <div class="firebase-box firebase-panel-box">
+          <h3>Импорт из Technical City</h3>
+          <label>
+            Источник
+            <select id="technical-import-source"></select>
+          </label>
+          <label>
+            Поиск по названию
+            <input id="technical-import-search" type="search" placeholder="Введите часть названия" autocomplete="off">
+          </label>
+          <label>
+            Найденный компонент
+            <select id="technical-import-component"></select>
+          </label>
+          <pre id="technical-import-preview" class="technical-import-preview"></pre>
+          <div class="firebase-actions">
+            <button id="technical-import-apply" class="secondary-action" type="button">Подготовить в форму</button>
+            <button id="technical-import-approve" class="secondary-action" type="button">Одобрено, перенести в Firebase</button>
+          </div>
+          <p id="technical-import-status" class="comparison-count"></p>
+        </div>
+
         <div class="firebase-box firebase-panel-box">
           <h3>Редактор компонентов Firebase</h3>
           <label>
