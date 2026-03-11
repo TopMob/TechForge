@@ -7,9 +7,21 @@ export function setupDiagnosticsModule({ rootElement }) {
     activeSection: 'keyboard',
     pressedKeys: new Set(),
     pulseKeys: new Set(),
-    mouseStats: { left: 0, right: 0, middle: 0, wheel: 0 },
+    keyDownAt: {},
+    keyHoldMs: {},
+    keyPressCount: {},
+    keyComboLabel: '—',
+    maxSimultaneousKeys: 0,
+    mouseStats: { left: 0, right: 0, middle: 0, wheel: 0, wheelUp: 0, wheelDown: 0 },
     mouseStatus: 'Ожидание действий',
     mousePulse: '',
+    mouseDownAt: 0,
+    mouseLatencyMs: 0,
+    mouseDoubleClickMs: 0,
+    mouseLastClickAt: 0,
+    mouseMoveSamples: [],
+    mouseTrace: [],
+    mouseDragDistance: 0,
     microphoneStatus: 'Микрофон не запущен',
     microphoneLevel: 0,
     monitoringEnabled: false,
@@ -73,6 +85,12 @@ export function setupDiagnosticsModule({ rootElement }) {
     }, 220)
   }
 
+  function refreshKeyboardMetrics() {
+    const activeKeys = Array.from(state.pressedKeys).slice(0, 6)
+    state.keyComboLabel = activeKeys.length > 0 ? activeKeys.join(' + ') : '—'
+    state.maxSimultaneousKeys = Math.max(state.maxSimultaneousKeys, state.pressedKeys.size)
+  }
+
   function onRootClick(event) {
     const sectionButton = event.target.closest('[data-diag-section]')
     if (sectionButton) {
@@ -83,6 +101,11 @@ export function setupDiagnosticsModule({ rootElement }) {
     if (event.target.closest('[data-diag-reset-keys]')) {
       state.pressedKeys.clear()
       state.pulseKeys.clear()
+      state.keyDownAt = {}
+      state.keyHoldMs = {}
+      state.keyPressCount = {}
+      state.keyComboLabel = '—'
+      state.maxSimultaneousKeys = 0
       render()
     }
 
@@ -108,17 +131,27 @@ export function setupDiagnosticsModule({ rootElement }) {
     if (toneButton) media.playTone(toneButton.dataset.diagTone)
 
     if (event.target.closest('[data-diag-reset-mouse]')) {
-      state.mouseStats = { left: 0, right: 0, middle: 0, wheel: 0 }
+      state.mouseStats = { left: 0, right: 0, middle: 0, wheel: 0, wheelUp: 0, wheelDown: 0 }
       state.mouseStatus = 'Ожидание действий'
       state.mousePulse = ''
+      state.mouseLatencyMs = 0
+      state.mouseDoubleClickMs = 0
+      state.mouseLastClickAt = 0
+      state.mouseMoveSamples = []
+      state.mouseTrace = []
+      state.mouseDragDistance = 0
       render()
     }
   }
 
   function onRootMouseDown(event) {
     if (!event.target.closest('#diag-mouse-zone')) return
+    state.mouseDownAt = performance.now()
     if (event.button === 0) {
       state.mouseStats.left += 1
+      const now = performance.now()
+      if (state.mouseLastClickAt > 0) state.mouseDoubleClickMs = Math.round(now - state.mouseLastClickAt)
+      state.mouseLastClickAt = now
       state.mouseStatus = 'Нажата левая кнопка'
       pulseMouse('left')
     } else if (event.button === 1) {
@@ -132,10 +165,45 @@ export function setupDiagnosticsModule({ rootElement }) {
     }
   }
 
+  function onRootMouseUp(event) {
+    if (!event.target.closest('#diag-mouse-zone')) return
+    if (state.mouseDownAt > 0) {
+      state.mouseLatencyMs = Math.round(performance.now() - state.mouseDownAt)
+      state.mouseDownAt = 0
+      render()
+    }
+  }
+
+  function onRootMouseMove(event) {
+    const zone = event.target.closest('#diag-mouse-zone')
+    if (!zone) return
+    const now = performance.now()
+    state.mouseMoveSamples.push(now)
+    if (state.mouseMoveSamples.length > 60) state.mouseMoveSamples.shift()
+
+    const rect = zone.getBoundingClientRect()
+    const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width)))
+    const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / Math.max(1, rect.height)))
+
+    const prev = state.mouseTrace[state.mouseTrace.length - 1]
+    if (prev) {
+      const dx = x - prev.x
+      const dy = y - prev.y
+      state.mouseDragDistance += Math.sqrt((dx * dx) + (dy * dy))
+    }
+
+    state.mouseTrace.push({ x, y })
+    if (state.mouseTrace.length > 24) state.mouseTrace.shift()
+    state.mouseStatus = 'Перемещение по зоне'
+    render()
+  }
+
   function onRootWheel(event) {
     if (!event.target.closest('#diag-mouse-zone')) return
     event.preventDefault()
     state.mouseStats.wheel += 1
+    if (event.deltaY > 0) state.mouseStats.wheelDown += 1
+    else state.mouseStats.wheelUp += 1
     state.mouseStatus = event.deltaY > 0 ? 'Прокрутка вниз' : 'Прокрутка вверх'
     pulseMouse('wheel')
   }
@@ -147,15 +215,37 @@ export function setupDiagnosticsModule({ rootElement }) {
   function onWindowKeyDown(event) {
     const code = event.code || event.key
     if (!trackedKeyboardCodes.has(code)) return
+    if (!state.pressedKeys.has(code)) {
+      state.keyDownAt[code] = performance.now()
+      state.keyPressCount[code] = (state.keyPressCount[code] || 0) + 1
+    }
     state.pressedKeys.add(code)
+    refreshKeyboardMetrics()
     pulseKey(code)
+  }
+
+  function onWindowKeyUp(event) {
+    const code = event.code || event.key
+    if (!trackedKeyboardCodes.has(code)) return
+    const startedAt = state.keyDownAt[code]
+    if (startedAt) {
+      const held = Math.round(performance.now() - startedAt)
+      state.keyHoldMs[code] = held
+      delete state.keyDownAt[code]
+    }
+    state.pressedKeys.delete(code)
+    refreshKeyboardMetrics()
+    render()
   }
 
   rootElement.addEventListener('click', onRootClick)
   rootElement.addEventListener('mousedown', onRootMouseDown)
+  rootElement.addEventListener('mouseup', onRootMouseUp)
+  rootElement.addEventListener('mousemove', onRootMouseMove)
   rootElement.addEventListener('wheel', onRootWheel, { passive: false })
   rootElement.addEventListener('contextmenu', onRootContextMenu)
   window.addEventListener('keydown', onWindowKeyDown)
+  window.addEventListener('keyup', onWindowKeyUp)
   document.addEventListener('visibilitychange', onDocumentVisibilityChange)
   window.addEventListener('pagehide', onWindowPageHide)
 
@@ -169,9 +259,12 @@ export function setupDiagnosticsModule({ rootElement }) {
     destroy() {
       rootElement.removeEventListener('click', onRootClick)
       rootElement.removeEventListener('mousedown', onRootMouseDown)
+      rootElement.removeEventListener('mouseup', onRootMouseUp)
+      rootElement.removeEventListener('mousemove', onRootMouseMove)
       rootElement.removeEventListener('wheel', onRootWheel)
       rootElement.removeEventListener('contextmenu', onRootContextMenu)
       window.removeEventListener('keydown', onWindowKeyDown)
+      window.removeEventListener('keyup', onWindowKeyUp)
       document.removeEventListener('visibilitychange', onDocumentVisibilityChange)
       window.removeEventListener('pagehide', onWindowPageHide)
       media.destroy()

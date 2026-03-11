@@ -1,3 +1,40 @@
+function cleanupAnalyser(state) {
+  if (state.micTimer) {
+    clearInterval(state.micTimer)
+    state.micTimer = null
+  }
+  if (state.micSourceNode) {
+    state.micSourceNode.disconnect()
+    state.micSourceNode = null
+  }
+  state.analyser = null
+  state.microphoneLevel = 0
+}
+
+function disconnectMonitor(state) {
+  if (state.monitorSource) {
+    state.monitorSource.disconnect()
+    state.monitorSource = null
+  }
+  if (state.monitorGain) {
+    state.monitorGain.disconnect()
+    state.monitorGain = null
+  }
+  state.monitoringEnabled = false
+}
+
+function stopRecordingInternal(state) {
+  if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') state.mediaRecorder.stop()
+  state.mediaRecorder = null
+  state.recordingActive = false
+}
+
+async function ensureAudioContext(state) {
+  state.audioContext = state.audioContext || new AudioContext()
+  if (state.audioContext.state === 'suspended') await state.audioContext.resume()
+  return state.audioContext
+}
+
 export function createMediaController(state, rerender) {
   async function ensureMicrophoneStream() {
     if (state.microphoneStream) return state.microphoneStream
@@ -6,54 +43,18 @@ export function createMediaController(state, rerender) {
     return stream
   }
 
-  function clearMeterTimer() {
-    if (state.micTimer) {
-      clearInterval(state.micTimer)
-      state.micTimer = null
-    }
-  }
-
-  function disconnectMonitor() {
-    if (state.monitorSource) {
-      state.monitorSource.disconnect()
-      state.monitorSource = null
-    }
-    if (state.monitorGain) {
-      state.monitorGain.disconnect()
-      state.monitorGain = null
-    }
-    state.monitoringEnabled = false
-  }
-
-  function stopRecordingInternal() {
-    if (!state.mediaRecorder) return
-    if (state.mediaRecorder.state !== 'inactive') state.mediaRecorder.stop()
-    state.mediaRecorder = null
-    state.recordingActive = false
-  }
-
-  function cleanupAnalyser() {
-    clearMeterTimer()
-    if (state.micSourceNode) {
-      state.micSourceNode.disconnect()
-      state.micSourceNode = null
-    }
-    state.analyser = null
-    state.microphoneLevel = 0
-  }
-
   async function startMicrophone() {
     try {
       const stream = await ensureMicrophoneStream()
-      state.audioContext = state.audioContext || new AudioContext()
-      if (state.audioContext.state === 'suspended') await state.audioContext.resume()
-      cleanupAnalyser()
-      state.micSourceNode = state.audioContext.createMediaStreamSource(stream)
-      state.analyser = state.audioContext.createAnalyser()
-      state.analyser.fftSize = 1024
+      const ctx = await ensureAudioContext(state)
+      cleanupAnalyser(state)
+      state.micSourceNode = ctx.createMediaStreamSource(stream)
+      state.analyser = ctx.createAnalyser()
+      state.analyser.fftSize = 2048
       state.micSourceNode.connect(state.analyser)
-      state.micTimer = window.setInterval(() => {
-        const data = new Uint8Array(state.analyser.fftSize)
+      const data = new Uint8Array(state.analyser.fftSize)
+      state.micTimer = setInterval(() => {
+        if (!state.analyser) return
         state.analyser.getByteTimeDomainData(data)
         let sum = 0
         for (const value of data) {
@@ -75,18 +76,15 @@ export function createMediaController(state, rerender) {
   async function startMonitoring() {
     try {
       const stream = await ensureMicrophoneStream()
-      state.audioContext = state.audioContext || new AudioContext()
-      if (state.audioContext.state === 'suspended') await state.audioContext.resume()
-      disconnectMonitor()
-      state.monitorSource = state.audioContext.createMediaStreamSource(stream)
-      state.monitorGain = state.audioContext.createGain()
+      const ctx = await ensureAudioContext(state)
+      disconnectMonitor(state)
+      state.monitorSource = ctx.createMediaStreamSource(stream)
+      state.monitorGain = ctx.createGain()
       state.monitorGain.gain.value = 0.8
       state.monitorSource.connect(state.monitorGain)
-      state.monitorGain.connect(state.audioContext.destination)
+      state.monitorGain.connect(ctx.destination)
       state.monitoringEnabled = true
-      if (state.microphoneStatus === 'Микрофон не запущен' || state.microphoneStatus === 'Микрофон остановлен') {
-        state.microphoneStatus = 'Микрофон активен'
-      }
+      if (state.microphoneStatus === 'Микрофон не запущен' || state.microphoneStatus === 'Микрофон остановлен') state.microphoneStatus = 'Микрофон активен'
     } catch (error) {
       state.microphoneStatus = `Ошибка мониторинга: ${error.message}`
       state.monitoringEnabled = false
@@ -95,7 +93,7 @@ export function createMediaController(state, rerender) {
   }
 
   function stopMonitoring() {
-    disconnectMonitor()
+    disconnectMonitor(state)
     rerender()
   }
 
@@ -103,7 +101,7 @@ export function createMediaController(state, rerender) {
     try {
       const stream = await ensureMicrophoneStream()
       state.recordingChunks = []
-      stopRecordingInternal()
+      stopRecordingInternal(state)
       state.mediaRecorder = new MediaRecorder(stream)
       state.mediaRecorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) state.recordingChunks.push(event.data)
@@ -131,15 +129,15 @@ export function createMediaController(state, rerender) {
   }
 
   function stopRecording() {
-    stopRecordingInternal()
+    stopRecordingInternal(state)
     if (state.microphoneStream) state.microphoneStatus = 'Микрофон активен'
     rerender()
   }
 
   function stopMicrophone() {
-    stopRecordingInternal()
-    disconnectMonitor()
-    cleanupAnalyser()
+    stopRecordingInternal(state)
+    disconnectMonitor(state)
+    cleanupAnalyser(state)
     if (state.microphoneStream) {
       state.microphoneStream.getTracks().forEach((track) => track.stop())
       state.microphoneStream = null
@@ -181,23 +179,88 @@ export function createMediaController(state, rerender) {
     stopMicrophone()
   }
 
+  async function playSimpleTone(channel) {
+    const ctx = await ensureAudioContext(state)
+    const oscillator = ctx.createOscillator()
+    const gain = ctx.createGain()
+    const panner = ctx.createStereoPanner()
+    oscillator.type = 'sine'
+    oscillator.frequency.value = 540
+    gain.gain.value = 0.05
+    panner.pan.value = channel === 'left' ? -1 : channel === 'right' ? 1 : 0
+    oscillator.connect(gain)
+    gain.connect(panner)
+    panner.connect(ctx.destination)
+    oscillator.start()
+    setTimeout(() => oscillator.stop(), 700)
+  }
+
+  async function playAlternating() {
+    await playSimpleTone('left')
+    setTimeout(() => {
+      playSimpleTone('right').catch(() => {})
+    }, 800)
+  }
+
+  async function playPhase() {
+    const ctx = await ensureAudioContext(state)
+    const oscLeft = ctx.createOscillator()
+    const oscRight = ctx.createOscillator()
+    const gainLeft = ctx.createGain()
+    const gainRight = ctx.createGain()
+    const merge = ctx.createChannelMerger(2)
+
+    oscLeft.type = 'sine'
+    oscRight.type = 'sine'
+    oscLeft.frequency.value = 440
+    oscRight.frequency.value = 440
+    gainLeft.gain.value = 0.05
+    gainRight.gain.value = -0.05
+
+    oscLeft.connect(gainLeft)
+    oscRight.connect(gainRight)
+    gainLeft.connect(merge, 0, 0)
+    gainRight.connect(merge, 0, 1)
+    merge.connect(ctx.destination)
+
+    oscLeft.start()
+    oscRight.start()
+    setTimeout(() => {
+      oscLeft.stop()
+      oscRight.stop()
+    }, 900)
+  }
+
+  async function playSweep() {
+    const ctx = await ensureAudioContext(state)
+    const oscillator = ctx.createOscillator()
+    const gain = ctx.createGain()
+    oscillator.type = 'sine'
+    oscillator.frequency.value = 550
+    gain.gain.setValueAtTime(0.01, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.8)
+    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.8)
+    oscillator.connect(gain)
+    gain.connect(ctx.destination)
+    oscillator.start()
+    oscillator.stop(ctx.currentTime + 1.9)
+  }
+
   async function playTone(channel) {
     try {
-      state.audioContext = state.audioContext || new AudioContext()
-      if (state.audioContext.state === 'suspended') await state.audioContext.resume()
-      const oscillator = state.audioContext.createOscillator()
-      const gain = state.audioContext.createGain()
-      const panner = state.audioContext.createStereoPanner()
-      oscillator.type = 'sine'
-      oscillator.frequency.value = 540
-      gain.gain.value = 0.05
-      panner.pan.value = channel === 'left' ? -1 : channel === 'right' ? 1 : 0
-      oscillator.connect(gain)
-      gain.connect(panner)
-      panner.connect(state.audioContext.destination)
-      oscillator.start()
-      setTimeout(() => oscillator.stop(), 700)
-      state.headphonesStatus = channel === 'stereo' ? 'Воспроизводится стерео-сигнал' : `Воспроизводится ${channel === 'left' ? 'левый' : 'правый'} канал`
+      if (channel === 'alternating') {
+        await playAlternating()
+        state.headphonesStatus = 'Воспроизводится alternating L/R тест'
+      } else if (channel === 'phase') {
+        await playPhase()
+        state.headphonesStatus = 'Воспроизводится phase test (противофаза)'
+      } else if (channel === 'sweep') {
+        await playSweep()
+        state.headphonesStatus = 'Воспроизводится volume sweep'
+      } else {
+        await playSimpleTone(channel)
+        state.headphonesStatus = channel === 'stereo' ? 'Воспроизводится стерео-сигнал' : `Воспроизводится ${channel === 'left' ? 'левый' : 'правый'} канал`
+      }
     } catch (error) {
       state.headphonesStatus = `Ошибка аудио: ${error.message}`
     }
