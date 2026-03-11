@@ -4,7 +4,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, базовая частота, ядра, потоки.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, control: 'select', options: ['Intel', 'AMD'] },
-      { key: 'model', label: 'Модель', required: true, placeholder: 'Core i5-14600K / Ryzen 7 7800X3D' },
+      { key: 'model', label: 'Модель (чип/серия)', required: true, placeholder: 'Core i5-14600K / Ryzen 7 7800X3D' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '320' },
       { key: 'baseClock', label: 'Базовая частота (ГГц)', type: 'number', step: '0.1', min: '0', required: true, placeholder: '3.5' },
       { key: 'boostClock', label: 'Boost частота (ГГц)', type: 'number', step: '0.1', min: '0', placeholder: '5.2' },
@@ -22,7 +22,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, память, boost-частота, энергопотребление.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, control: 'select', options: ['NVIDIA', 'AMD', 'Intel'] },
-      { key: 'model', label: 'Модель', required: true, placeholder: 'RTX 4070 SUPER' },
+      { key: 'model', label: 'Модель (чип/серия)', required: true, placeholder: 'RTX 4070 SUPER' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '599' },
       { key: 'chipset', label: 'Графический чип', placeholder: 'AD104 / Navi 32' },
       { key: 'memory', label: 'Память (ГБ)', type: 'number', step: '1', min: '1', required: true, placeholder: '12' },
@@ -40,7 +40,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, объём, тип, частота.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, placeholder: 'Kingston / G.Skill / Corsair' },
-      { key: 'model', label: 'Модель', required: true, placeholder: 'Fury Beast / Trident Z5' },
+      { key: 'model', label: 'Модель (серия)', required: true, placeholder: 'Fury Beast / Trident Z5' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '110' },
       { key: 'capacity', label: 'Объём (ГБ)', type: 'number', step: '1', min: '1', required: true, placeholder: '32' },
       { key: 'modules', label: 'Конфигурация модулей', placeholder: '2x16GB' },
@@ -56,7 +56,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, сокет, чипсет, формфактор.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, placeholder: 'ASUS / MSI / Gigabyte / ASRock' },
-      { key: 'model', label: 'Модель', required: true, placeholder: 'B650 AORUS ELITE AX' },
+      { key: 'model', label: 'Модель платы', required: true, placeholder: 'B650 AORUS ELITE AX' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '229' },
       { key: 'socket', label: 'Сокет', required: true, control: 'select', options: ['AM4', 'AM5', 'LGA1200', 'LGA1700'] },
       { key: 'chipset', label: 'Чипсет', required: true, placeholder: 'B650 / X670 / B760 / Z790' },
@@ -73,7 +73,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, мощность, сертификат.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, placeholder: 'Corsair / be quiet! / Seasonic' },
-      { key: 'model', label: 'Модель', required: true, placeholder: 'RM850x' },
+      { key: 'model', label: 'Модель БП', required: true, placeholder: 'RM850x' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '149' },
       { key: 'wattage', label: 'Мощность (Вт)', type: 'number', step: '1', min: '1', required: true, placeholder: '850' },
       { key: 'efficiency', label: 'Сертификат', required: true, control: 'select', options: ['80+ Bronze', '80+ Silver', '80+ Gold', '80+ Platinum', '80+ Titanium'] },
@@ -87,7 +87,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, объём, интерфейс, скорость чтения.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, placeholder: 'Samsung / WD / Kingston / Crucial' },
-      { key: 'model', label: 'Модель', required: true, placeholder: '990 PRO' },
+      { key: 'model', label: 'Модель накопителя', required: true, placeholder: '990 PRO' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '139' },
       { key: 'capacity', label: 'Объём (ГБ)', type: 'number', step: '1', min: '1', required: true, placeholder: '1000' },
       { key: 'interface', label: 'Интерфейс', required: true, control: 'select', options: ['NVMe PCIe 3.0', 'NVMe PCIe 4.0', 'NVMe PCIe 5.0', 'SATA'] },
@@ -102,7 +102,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, формфактор.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, placeholder: 'NZXT / Lian Li / Fractal' },
-      { key: 'model', label: 'Модель', required: true, placeholder: 'H7 Flow' },
+      { key: 'model', label: 'Модель корпуса', required: true, placeholder: 'H7 Flow' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '129' },
       { key: 'formFactor', label: 'Поддержка MB', required: true, control: 'select', options: ['E-ATX', 'ATX', 'Micro-ATX', 'Mini-ITX'] },
       { key: 'type', label: 'Тип корпуса', control: 'select', options: ['Full Tower', 'Mid Tower', 'Mini Tower'] },
@@ -116,7 +116,7 @@ export const categoryFormConfig = {
     requiredHint: 'Обязательно: бренд, модель, цена, тип, поддержка сокетов.',
     fields: [
       { key: 'vendor', label: 'Бренд', required: true, placeholder: 'DeepCool / Noctua / Arctic' },
-      { key: 'model', label: 'Модель', required: true, placeholder: 'AK620 / NH-D15 / Liquid Freezer III 360' },
+      { key: 'model', label: 'Модель охлаждения', required: true, placeholder: 'AK620 / NH-D15 / Liquid Freezer III 360' },
       { key: 'price', label: 'Цена ($)', type: 'number', step: '1', min: '0', required: true, placeholder: '79' },
       { key: 'type', label: 'Тип', required: true, control: 'select', options: ['Air', 'AIO'] },
       { key: 'size', label: 'Размер радиатора/вентилятора', control: 'select', options: ['92 мм', '120 мм', '140 мм', '240 мм', '280 мм', '360 мм'] },
