@@ -78,7 +78,8 @@ const applicationState = {
   },
   configuratorSearchByCategory: {},
   budgetValue: '',
-  firebaseEditorController: null
+  firebaseEditorController: null,
+  diagnosticsController: null
 }
 
 function normalizeText(value) {
@@ -178,6 +179,8 @@ function getRecordById(categoryKey, recordId) {
 }
 
 function renderMainTabs() {
+  const diagnosticsIsActive = applicationState.activeMainTab === 'diagnostics'
+  if (!diagnosticsIsActive) applicationState.diagnosticsController?.stopActiveMedia()
   const allMainTabs = interfaceElements.mainTabsContainer.querySelectorAll('[data-main-tab]')
   for (const mainTabButton of allMainTabs) {
     const isActive = mainTabButton.dataset.mainTab === applicationState.activeMainTab

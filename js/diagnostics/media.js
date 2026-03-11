@@ -176,6 +176,11 @@ export function createMediaController(state, rerender) {
     if (state.webcamStatus === 'Камера подключена и показывает изображение') state.webcamStatus = 'Камера выключена'
   }
 
+  function stopAllMedia(videoElement) {
+    stopWebcam(videoElement)
+    stopMicrophone()
+  }
+
   async function playTone(channel) {
     try {
       state.audioContext = state.audioContext || new AudioContext()
@@ -218,6 +223,7 @@ export function createMediaController(state, rerender) {
     stopRecording,
     startWebcam,
     stopWebcam,
+    stopAllMedia,
     playTone,
     destroy
   }
