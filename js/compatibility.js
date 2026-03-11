@@ -20,7 +20,7 @@ export function evaluateCompatibility({ getRecordById, selectedConfigurationByCa
     const cpuSocket = normalize(cpu.specs.Сокет)
     const mbSocket = normalize(motherboard.specs.Сокет)
     if (cpuSocket && mbSocket && cpuSocket !== mbSocket) {
-      issues.push(`Сокет CPU (${cpu.specs.Сокет}) не совпадает с сокетом MB (${motherboard.specs.Сокет}).`)
+      issues.push(`Сокет процессора (${cpu.specs.Сокет}) не совпадает с сокетом материнской платы (${motherboard.specs.Сокет}).`)
     }
   }
 
@@ -38,7 +38,7 @@ export function evaluateCompatibility({ getRecordById, selectedConfigurationByCa
     if (ramType && motherboard) {
       const chipset = normalize(motherboard.specs.Чипсет)
       if (ramType === 'ddr5' && chipset.includes('b4')) {
-        issues.push('Проверьте RAM: DDR5 редко совместима с более старыми чипсетами B4xx.')
+        issues.push('Проверьте ОЗУ: DDR5 редко совместима со старыми чипсетами B4xx.')
       }
     }
   }

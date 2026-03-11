@@ -932,7 +932,7 @@ async function initializeApplication() {
     if (!interfaceElements.firebaseConnectionInfo) return
     interfaceElements.firebaseConnectionInfo.textContent = connected
       ? 'Firebase подключен: соединение с Firestore активно.'
-      : 'Firebase недоступен: проверьте Firestore Rules и включение Anonymous Authentication.'
+      : 'Firebase недоступен: проверьте правила Firestore и включение анонимной аутентификации.'
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-connected', connected)
     interfaceElements.firebaseConnectionInfo.classList.toggle('firebase-disconnected', !connected)
   })

@@ -22,6 +22,12 @@ function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function usdToRub(value) {
+  const amount = toNumber(value)
+  if (!amount) return null
+  return Math.round(amount * 90)
+}
+
 function splitVendorModel(name, fallbackVendor = '') {
   const normalizedName = normalizeText(name)
   const parts = normalizedName.split(' ').filter(Boolean)
@@ -52,11 +58,11 @@ function normalizeCpu(item) {
     name,
     vendor: split.vendor,
     model: split.model,
-    price: toNumber(item.price_last_usd || item.price_usd),
+    price: usdToRub(item.price_last_usd || item.price_usd),
     raw: {
       vendor: split.vendor,
       model: split.model,
-      price: toNumber(item.price_last_usd || item.price_usd) || '',
+      price: usdToRub(item.price_last_usd || item.price_usd) || '',
       cores: cores || '',
       threads: threads || '',
       baseClock: baseClock || '',
@@ -73,7 +79,7 @@ function normalizeCpu(item) {
       Ядра: cores ? String(cores) : '',
       Потоки: threads ? String(threads) : '',
       'Базовая частота': baseClock ? `${baseClock} ГГц` : '',
-      'Boost частота': boostClock ? `${boostClock} ГГц` : '',
+      'Турбо-частота': boostClock ? `${boostClock} ГГц` : '',
       Сокет: normalizeText(item.socket),
       TDP: tdp ? `${tdp} Вт` : '',
       Кэш: normalizeText(item.cache),
@@ -98,11 +104,11 @@ function normalizeGpu(item) {
     name,
     vendor: split.vendor,
     model: split.model,
-    price: toNumber(payload.price_last_usd || payload.price),
+    price: usdToRub(payload.price_last_usd || payload.price),
     raw: {
       vendor: split.vendor,
       model: split.model,
-      price: toNumber(payload.price_last_usd || payload.price) || '',
+      price: usdToRub(payload.price_last_usd || payload.price) || '',
       chipset: normalizeText(payload.chipset || payload.architecture),
       memory: memory || '',
       memoryType: normalizeText(payload.memory_type || payload.vram_type),
@@ -121,7 +127,7 @@ function normalizeGpu(item) {
       'Тип памяти': normalizeText(payload.memory_type || payload.vram_type),
       'Шина памяти': normalizeText(payload.memory_bus || payload.bus_width),
       'Базовая частота GPU': coreClock ? `${coreClock} МГц` : '',
-      'Boost частота GPU': boostClock ? `${boostClock} МГц` : '',
+      'Турбо-частота GPU': boostClock ? `${boostClock} МГц` : '',
       Энергопотребление: tdp ? `${tdp} Вт` : '',
       'Длина карты': length ? `${length} мм` : '',
       'Разъёмы питания': normalizeText(payload.power_connectors)
@@ -197,9 +203,9 @@ function normalizeMotherboard(item) {
       Сокет: normalizeText(item.socket),
       Чипсет: normalizeText(item.chipset),
       Формфактор: normalizeText(item.form_factor),
-      'Тип RAM': normalizeText(item.memory_type),
-      'Слоты RAM': normalizeText(item.memory_slots),
-      'Макс. RAM': toNumber(item.max_memory) ? `${item.max_memory} ГБ` : '',
+      'Тип ОЗУ': normalizeText(item.memory_type),
+      'Слоты ОЗУ': normalizeText(item.memory_slots),
+      'Макс. ОЗУ': toNumber(item.max_memory) ? `${item.max_memory} ГБ` : '',
       PCIe: normalizeText(item.pcie),
       'M.2 слоты': normalizeText(item.m2slots)
     }
@@ -216,11 +222,11 @@ function normalizePowerSupply(item) {
     name,
     vendor: split.vendor,
     model: split.model,
-    price: toNumber(item.price_usd || item.price_last_usd),
+    price: usdToRub(item.price_usd || item.price_last_usd),
     raw: {
       vendor: split.vendor,
       model: split.model,
-      price: toNumber(item.price_usd || item.price_last_usd) || '',
+      price: usdToRub(item.price_usd || item.price_last_usd) || '',
       wattage: wattage || '',
       efficiency: normalizeText(item.efficiency_rating),
       modular: normalizeText(item.is_modular),
@@ -276,24 +282,24 @@ function toImportRecord(sourceKey, item) {
   if (sourceKey === 'motherboard') return normalizeMotherboard(item)
   if (sourceKey === 'power_supply') return normalizePowerSupply(item)
   if (sourceKey === 'ssd') return normalizeSimpleComponent(item, 'ssd', 'SSD')
-  if (sourceKey === 'case') return normalizeSimpleComponent(item, 'case', 'Case')
-  if (sourceKey === 'cooler') return normalizeSimpleComponent(item, 'cooler', 'Cooler')
+  if (sourceKey === 'case') return normalizeSimpleComponent(item, 'case', 'Корпус')
+  if (sourceKey === 'cooler') return normalizeSimpleComponent(item, 'cooler', 'Кулер')
   return null
 }
 
 export const technicalImportOptions = [
-  { key: 'cpu', label: 'Technical City CPU AMD' },
-  { key: 'cpu_intel', label: 'Technical City CPU Intel' },
-  { key: 'gpu_nvidia', label: 'Technical City GPU NVIDIA' },
-  { key: 'gpu_amd', label: 'Technical City GPU AMD' },
-  { key: 'gpu_intel', label: 'Technical City GPU Intel' },
-  { key: 'ram_ddr4', label: 'Technical City RAM DDR4' },
-  { key: 'ram_ddr5', label: 'Technical City RAM DDR5' },
-  { key: 'motherboard', label: 'Technical City Motherboards' },
-  { key: 'power_supply', label: 'Technical City Power Supplies' },
-  { key: 'ssd', label: 'Technical City SSD' },
-  { key: 'case', label: 'Technical City Cases' },
-  { key: 'cooler', label: 'Technical City Coolers' }
+  { key: 'cpu', label: 'Technical City · Процессоры AMD' },
+  { key: 'cpu_intel', label: 'Technical City · Процессоры Intel' },
+  { key: 'gpu_nvidia', label: 'Technical City · Видеокарты NVIDIA' },
+  { key: 'gpu_amd', label: 'Technical City · Видеокарты AMD' },
+  { key: 'gpu_intel', label: 'Technical City · Видеокарты Intel' },
+  { key: 'ram_ddr4', label: 'Technical City · ОЗУ DDR4' },
+  { key: 'ram_ddr5', label: 'Technical City · ОЗУ DDR5' },
+  { key: 'motherboard', label: 'Technical City · Материнские платы' },
+  { key: 'power_supply', label: 'Technical City · Блоки питания' },
+  { key: 'ssd', label: 'Technical City · SSD' },
+  { key: 'case', label: 'Technical City · Корпуса' },
+  { key: 'cooler', label: 'Technical City · Кулеры' }
 ]
 
 export function createTechnicalImportController() {

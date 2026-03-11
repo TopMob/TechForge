@@ -103,7 +103,7 @@ function buildSpecsByCategory(categoryKey, values) {
       Ядра: values.cores,
       Потоки: values.threads,
       'Базовая частота': values.baseClock ? `${values.baseClock} ГГц` : '',
-      'Boost частота': values.boostClock ? `${values.boostClock} ГГц` : '',
+      'Турбо-частота': values.boostClock ? `${values.boostClock} ГГц` : '',
       Сокет: values.socket,
       TDP: values.tdp ? `${values.tdp} Вт` : '',
       Кэш: values.cache,
@@ -121,7 +121,7 @@ function buildSpecsByCategory(categoryKey, values) {
       'Тип памяти': values.memoryType,
       'Шина памяти': values.memoryBus,
       'Базовая частота GPU': values.coreClock ? `${values.coreClock} МГц` : '',
-      'Boost частота GPU': values.boostClock ? `${values.boostClock} МГц` : '',
+      'Турбо-частота GPU': values.boostClock ? `${values.boostClock} МГц` : '',
       Энергопотребление: values.tdp ? `${values.tdp} Вт` : '',
       'Длина карты': values.length ? `${values.length} мм` : '',
       'Разъёмы питания': values.connectors
@@ -149,9 +149,9 @@ function buildSpecsByCategory(categoryKey, values) {
       Сокет: values.socket,
       Чипсет: values.chipset,
       Формфактор: values.formFactor,
-      'Тип RAM': values.memoryType,
-      'Слоты RAM': values.memorySlots,
-      'Макс. RAM': values.maxMemory ? `${values.maxMemory} ГБ` : '',
+      'Тип ОЗУ': values.memoryType,
+      'Слоты ОЗУ': values.memorySlots,
+      'Макс. ОЗУ': values.maxMemory ? `${values.maxMemory} ГБ` : '',
       PCIe: values.pcie,
       'M.2 слоты': values.m2slots
     }
@@ -189,7 +189,7 @@ function buildSpecsByCategory(categoryKey, values) {
       Формфактор: values.formFactor,
       Тип: values.type,
       Цвет: values.color,
-      'Макс. длина GPU': values.maxGpuLength ? `${values.maxGpuLength} мм` : '',
+      'Макс. длина видеокарты': values.maxGpuLength ? `${values.maxGpuLength} мм` : '',
       'Вентиляторы в комплекте': values.fansIncluded
     }
   }

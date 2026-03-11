@@ -14,8 +14,8 @@ export function buildRecommendations({ selectedRecords, totalPrice, budgetValue,
 
   if (budgetValue > 0) {
     const delta = totalPrice - budgetValue
-    if (delta > 0) recommendations.push(`Сборка превышает бюджет на ${Math.round(delta)} $.`) 
-    if (delta < 0) recommendations.push(`До лимита бюджета остаётся ${Math.round(Math.abs(delta))} $.`) 
+    if (delta > 0) recommendations.push(`Сборка превышает бюджет на ${Math.round(delta)} руб.`) 
+    if (delta < 0) recommendations.push(`До лимита бюджета остаётся ${Math.round(Math.abs(delta))} руб.`) 
     if (delta === 0) recommendations.push('Сборка идеально попадает в бюджет.')
   }
 
@@ -23,7 +23,7 @@ export function buildRecommendations({ selectedRecords, totalPrice, budgetValue,
   if (withoutPrice.length > 0) recommendations.push(`Нет цен у ${withoutPrice.length} выбранных компонентов, итог может быть занижен.`)
 
   if (compatibility.recommendedPower > 0) {
-    recommendations.push(`Оценка энергопотребления CPU+GPU: ${compatibility.estimatedPower} Вт, рекомендованный БП: от ${compatibility.recommendedPower} Вт.`)
+    recommendations.push(`Оценка энергопотребления процессора и видеокарты: ${compatibility.estimatedPower} Вт, рекомендованный БП: от ${compatibility.recommendedPower} Вт.`)
   }
 
   return recommendations
@@ -36,8 +36,8 @@ export function buildComparisonInsights(firstRecord, secondRecord) {
   if (asNumber(firstRecord.price) > 0 && asNumber(secondRecord.price) > 0) {
     const first = asNumber(firstRecord.price)
     const second = asNumber(secondRecord.price)
-    if (first < second) insights.push(`${firstRecord.name} дешевле на ${Math.round(second - first)} $.`)
-    if (second < first) insights.push(`${secondRecord.name} дешевле на ${Math.round(first - second)} $.`)
+    if (first < second) insights.push(`${firstRecord.name} дешевле на ${Math.round(second - first)} руб.`)
+    if (second < first) insights.push(`${secondRecord.name} дешевле на ${Math.round(first - second)} руб.`)
     if (first === second) insights.push('Цены моделей совпадают.')
   }
 
