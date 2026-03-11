@@ -20,6 +20,9 @@ export function parseUrlState() {
     wizardBudget: normalizeText(params.get('wBudget')),
     wizardScenario: normalizeText(params.get('wScenario')),
     wizardPriority: normalizeText(params.get('wPriority')),
+    compareSlotA: normalizeText(params.get('slotA')),
+    compareSlotB: normalizeText(params.get('slotB')),
+    transformMode: normalizeText(params.get('transform')),
     selectedConfigurationByCategory: selected
   }
 }
@@ -36,6 +39,9 @@ export function pushUrlState(state) {
   if (state.wizard?.budgetValue) params.set('wBudget', state.wizard.budgetValue)
   if (state.wizard?.scenario) params.set('wScenario', state.wizard.scenario)
   if (state.wizard?.priority) params.set('wPriority', state.wizard.priority)
+  if (state.buildCompare?.slotA) params.set('slotA', state.buildCompare.slotA)
+  if (state.buildCompare?.slotB) params.set('slotB', state.buildCompare.slotB)
+  if (state.buildCompare?.transformMode) params.set('transform', state.buildCompare.transformMode)
 
   for (const [category, id] of Object.entries(state.selectedConfigurationByCategory || {})) {
     if (id) params.set(`cfg_${category}`, id)

@@ -18,6 +18,11 @@ function writeSlots(slots) {
   localStorage.setItem(storageKey, JSON.stringify(slots))
 }
 
+
+export function getAllBuilds() {
+  return readSlots()
+}
+
 export function getSlotNames() {
   const slots = readSlots()
   const base = ['Мой ПК #1', 'Мой ПК #2', 'Мой ПК #3', 'Игровой', 'Рабочий']

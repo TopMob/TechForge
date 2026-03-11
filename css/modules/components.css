@@ -271,3 +271,19 @@ select {
 .build-audit-grid h4 {
   margin: 0 0 8px;
 }
+
+.build-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+@supports (view-transition-name: panel) {
+  .main-panel.active {
+    view-transition-name: panel;
+  }
+
+  .component-card {
+    view-transition-name: component-card;
+  }
+}

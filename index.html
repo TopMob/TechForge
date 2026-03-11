@@ -154,6 +154,34 @@
           <p id="configuration-total" class="configuration-total"></p>
           <p id="configuration-warning" class="configuration-warning"></p>
         </div>
+
+        <div class="configuration-summary">
+          <h3>Сравнение сборок A/B</h3>
+          <div class="build-compare-grid">
+            <label>
+              Слот A
+              <select id="build-compare-slot-a"></select>
+            </label>
+            <label>
+              Слот B
+              <select id="build-compare-slot-b"></select>
+            </label>
+            <label>
+              Режим изменения
+              <select id="build-transform-mode">
+                <option value="cheaper">Сделать дешевле</option>
+                <option value="quieter">Сделать тише</option>
+                <option value="stronger">Сделать мощнее на +10к</option>
+              </select>
+            </label>
+          </div>
+          <div class="firebase-actions">
+            <button id="build-compare-run" class="secondary-action" type="button">Сравнить A/B</button>
+            <button id="build-transform-run" class="secondary-action" type="button">Применить режим</button>
+          </div>
+          <div id="build-compare-result" class="insights-box"></div>
+        </div>
+
         <div class="configuration-summary">
           <h3>Почему сборка может быть плохой</h3>
           <ul id="build-audit-issues"></ul>

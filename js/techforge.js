@@ -1,5 +1,5 @@
 import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase } from './firebase.js'
-import { saveBuild, loadBuild, deleteBuild, getSlotNames, exportBuildPayload, importBuildPayload } from './build-storage.js'
+import { saveBuild, loadBuild, deleteBuild, getSlotNames, getAllBuilds, exportBuildPayload, importBuildPayload } from './build-storage.js'
 import { evaluateCompatibility } from './compatibility.js'
 import { buildRecommendations } from './recommendations.js'
 import { firebaseCategoryOptions } from './component-schema.js'
@@ -12,6 +12,8 @@ import { parseUrlState, pushUrlState } from './url-state.js'
 import { buildRelatedComponents, renderComponentCard } from './component-card.js'
 import { getWizardDefaults, buildWizardPlan, buildWizardSummary } from './build-wizard.js'
 import { auditBuild } from './build-audit.js'
+import { compareBuilds } from './build-compare.js'
+import { withViewTransition } from './view-transitions.js'
 
 
 const categorySettings = {
@@ -51,6 +53,12 @@ const interfaceElements = {
   buildFixMinimal: document.getElementById('build-fix-minimal'),
   buildFixOptimal: document.getElementById('build-fix-optimal'),
   buildFixBudget: document.getElementById('build-fix-budget'),
+  buildCompareSlotA: document.getElementById('build-compare-slot-a'),
+  buildCompareSlotB: document.getElementById('build-compare-slot-b'),
+  buildCompareRunButton: document.getElementById('build-compare-run'),
+  buildCompareResult: document.getElementById('build-compare-result'),
+  buildTransformMode: document.getElementById('build-transform-mode'),
+  buildTransformRunButton: document.getElementById('build-transform-run'),
   bestChoiceResult: document.getElementById('best-choice-result'),
   componentCard: document.getElementById('component-card'),
   configuratorGrid: document.getElementById('configurator-grid'),
@@ -106,6 +114,7 @@ const applicationState = {
   comparisonMode: 'all',
   bestChoiceProfile: 'balanced',
   wizard: getWizardDefaults(),
+  buildCompare: { slotA: '', slotB: '', transformMode: 'cheaper' },
   configuratorSearchByCategory: {},
   budgetValue: '',
   firebaseEditorController: null,
@@ -286,15 +295,17 @@ function renderBuildAudit(recordsByCategory, totalPrice) {
 function renderMainTabs() {
   const diagnosticsIsActive = applicationState.activeMainTab === 'diagnostics'
   if (!diagnosticsIsActive) applicationState.diagnosticsController?.stopActiveMedia()
-  const allMainTabs = interfaceElements.mainTabsContainer.querySelectorAll('[data-main-tab]')
-  for (const mainTabButton of allMainTabs) {
-    const isActive = mainTabButton.dataset.mainTab === applicationState.activeMainTab
-    mainTabButton.classList.toggle('active', isActive)
-  }
-  for (const mainPanel of interfaceElements.mainPanels) {
-    const isActive = mainPanel.dataset.mainPanel === applicationState.activeMainTab
-    mainPanel.classList.toggle('active', isActive)
-  }
+  withViewTransition(() => {
+    const allMainTabs = interfaceElements.mainTabsContainer.querySelectorAll('[data-main-tab]')
+    for (const mainTabButton of allMainTabs) {
+      const isActive = mainTabButton.dataset.mainTab === applicationState.activeMainTab
+      mainTabButton.classList.toggle('active', isActive)
+    }
+    for (const mainPanel of interfaceElements.mainPanels) {
+      const isActive = mainPanel.dataset.mainPanel === applicationState.activeMainTab
+      mainPanel.classList.toggle('active', isActive)
+    }
+  })
 }
 
 function renderComparisonCategoryTabs() {
@@ -504,7 +515,7 @@ function renderBestChoice() {
 function renderComponentDetails(record) {
   const allRecords = Object.values(applicationState.componentsByCategory).flat()
   const related = buildRelatedComponents(record, allRecords)
-  renderComponentCard(interfaceElements.componentCard, record, related)
+  withViewTransition(() => renderComponentCard(interfaceElements.componentCard, record, related))
 }
 
 function getSelectedRecords() {
@@ -550,11 +561,103 @@ function populateBuildSlots() {
   interfaceElements.buildSlotSelect.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
 }
 
+
+function populateBuildCompareSlots() {
+  const slotNames = getSlotNames()
+  interfaceElements.buildCompareSlotA.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
+  interfaceElements.buildCompareSlotB.innerHTML = slotNames.map((slotName) => `<option value="${escapeHtml(slotName)}">${escapeHtml(slotName)}</option>`).join('')
+  if (applicationState.buildCompare.slotA && slotNames.includes(applicationState.buildCompare.slotA)) interfaceElements.buildCompareSlotA.value = applicationState.buildCompare.slotA
+  if (applicationState.buildCompare.slotB && slotNames.includes(applicationState.buildCompare.slotB)) interfaceElements.buildCompareSlotB.value = applicationState.buildCompare.slotB
+  if (!applicationState.buildCompare.slotA) applicationState.buildCompare.slotA = slotNames[0] || ''
+  if (!applicationState.buildCompare.slotB) applicationState.buildCompare.slotB = slotNames[1] || slotNames[0] || ''
+  interfaceElements.buildCompareSlotA.value = applicationState.buildCompare.slotA
+  interfaceElements.buildCompareSlotB.value = applicationState.buildCompare.slotB
+}
+
+function getBuildBySlot(slotName) {
+  const payload = loadBuild(slotName)
+  if (!payload?.selectedConfigurationByCategory) return {}
+  const result = {}
+  for (const categoryKey of configuratorCategoryOrder) {
+    const recordId = payload.selectedConfigurationByCategory[categoryKey]
+    if (!recordId) continue
+    const record = getRecordById(categoryKey, recordId)
+    if (record) result[categoryKey] = record
+  }
+  return result
+}
+
+function renderBuildCompareResult() {
+  const left = getBuildBySlot(applicationState.buildCompare.slotA)
+  const right = getBuildBySlot(applicationState.buildCompare.slotB)
+  const comparison = compareBuilds({
+    buildAByCategory: left,
+    buildBByCategory: right,
+    categoryOrder: configuratorCategoryOrder
+  })
+
+  const lines = [
+    `<li>Цена: ${comparison.totals.buildA.price > 0 ? formatPrice(comparison.totals.buildA.price) : '—'} → ${comparison.totals.buildB.price > 0 ? formatPrice(comparison.totals.buildB.price) : '—'} (Δ ${comparison.delta.price >= 0 ? '+' : ''}${Math.round(comparison.delta.price)} ₽)</li>`,
+    `<li>Мощность: ${comparison.totals.buildA.performance.toFixed(1)} → ${comparison.totals.buildB.performance.toFixed(1)} (Δ ${comparison.delta.performance >= 0 ? '+' : ''}${comparison.delta.performance.toFixed(1)})</li>`,
+    `<li>Потребление: ${comparison.totals.buildA.power.toFixed(0)}Вт → ${comparison.totals.buildB.power.toFixed(0)}Вт (Δ ${comparison.delta.power >= 0 ? '+' : ''}${comparison.delta.power.toFixed(0)}Вт)</li>`,
+    `<li>Апгрейд-потенциал: ${comparison.totals.buildA.upgrade.toFixed(1)} → ${comparison.totals.buildB.upgrade.toFixed(1)} (Δ ${comparison.delta.upgrade >= 0 ? '+' : ''}${comparison.delta.upgrade.toFixed(1)})</li>`
+  ]
+
+  const changes = comparison.changes.length > 0
+    ? comparison.changes.map((change) => `<li><strong>${escapeHtml(categorySettings[change.categoryKey]?.title || change.categoryKey)}:</strong> ${escapeHtml(change.left?.name || '—')} → ${escapeHtml(change.right?.name || '—')}</li>`).join('')
+    : '<li>Состав сборок совпадает.</li>'
+
+  interfaceElements.buildCompareResult.innerHTML = `<h4>${escapeHtml(applicationState.buildCompare.slotA)} vs ${escapeHtml(applicationState.buildCompare.slotB)}</h4><ul>${lines.join('')}</ul><h4>Что изменилось</h4><ul>${changes}</ul>`
+}
+
+function applyBuildTransformMode() {
+  const mode = applicationState.buildCompare.transformMode
+  const records = getSelectedRecords()
+  if (records.length === 0) {
+    interfaceElements.buildStatus.textContent = 'Сначала соберите текущий ПК, затем применяйте режим изменения.'
+    return
+  }
+
+  if (mode === 'cheaper') {
+    const mostExpensive = [...records].sort((a, b) => (b.price || 0) - (a.price || 0))[0]
+    if (!mostExpensive) return
+    const alternatives = getCategoryRecords(mostExpensive.categoryKey)
+      .filter((record) => record.id !== mostExpensive.id && (record.price || 0) < (mostExpensive.price || 0))
+      .sort((a, b) => (b.price || 0) - (a.price || 0))
+    if (alternatives[0]) applicationState.selectedConfigurationByCategory[mostExpensive.categoryKey] = alternatives[0].id
+  }
+
+  if (mode === 'quieter') {
+    const cpu = getRecordById('cpu', applicationState.selectedConfigurationByCategory.cpu)
+    const coolers = getCategoryRecords('cooler')
+    const cpuTdp = Number(String(cpu?.specs?.TDP || '').match(/\d+/)?.[0] || 0)
+    const alternative = coolers
+      .filter((record) => Number(String(record?.specs?.TDP || '').match(/\d+/)?.[0] || 0) >= cpuTdp)
+      .sort((a, b) => (Number(String(b?.specs?.TDP || '').match(/\d+/)?.[0] || 0) - Number(String(a?.specs?.TDP || '').match(/\d+/)?.[0] || 0)))[0]
+    if (alternative) applicationState.selectedConfigurationByCategory.cooler = alternative.id
+  }
+
+  if (mode === 'stronger') {
+    const gpu = getRecordById('gpu', applicationState.selectedConfigurationByCategory.gpu)
+    const currentPrice = gpu?.price || 0
+    const alternatives = getCategoryRecords('gpu')
+      .filter((record) => record.id !== gpu?.id && (record.price || 0) <= currentPrice + 10000)
+      .sort((a, b) => (b.price || 0) - (a.price || 0))
+    if (alternatives[0]) applicationState.selectedConfigurationByCategory.gpu = alternatives[0].id
+  }
+
+  renderConfigurator()
+  renderConfigurationSummary()
+  interfaceElements.buildStatus.textContent = 'Режим изменения применён к текущей сборке.'
+  syncUrlState()
+}
+
 function handleSaveBuild() {
   const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
   if (!slotName) return
   saveBuild(slotName, applicationState.selectedConfigurationByCategory, applicationState.budgetValue)
   populateBuildSlots()
+  populateBuildCompareSlots()
   interfaceElements.buildStatus.textContent = `Сборка сохранена в слот: ${slotName}`
   syncUrlState()
 }
@@ -579,6 +682,7 @@ function handleDeleteBuild() {
   const slotName = normalizeText(interfaceElements.buildSlotSelect.value)
   const deleted = deleteBuild(slotName)
   populateBuildSlots()
+  populateBuildCompareSlots()
   interfaceElements.buildStatus.textContent = deleted ? `Сборка удалена: ${slotName}` : 'Удалять нечего: слот пуст.'
   syncUrlState()
 }
@@ -1020,6 +1124,26 @@ function bindEvents() {
   interfaceElements.deleteBuildButton.addEventListener('click', handleDeleteBuild)
   interfaceElements.exportBuildButton.addEventListener('click', handleExportBuild)
   interfaceElements.importBuildButton.addEventListener('click', handleImportBuild)
+
+  interfaceElements.buildCompareSlotA.addEventListener('change', () => {
+    applicationState.buildCompare.slotA = normalizeText(interfaceElements.buildCompareSlotA.value)
+    renderBuildCompareResult()
+    syncUrlState()
+  })
+
+  interfaceElements.buildCompareSlotB.addEventListener('change', () => {
+    applicationState.buildCompare.slotB = normalizeText(interfaceElements.buildCompareSlotB.value)
+    renderBuildCompareResult()
+    syncUrlState()
+  })
+
+  interfaceElements.buildTransformMode.addEventListener('change', () => {
+    applicationState.buildCompare.transformMode = normalizeText(interfaceElements.buildTransformMode.value) || 'cheaper'
+    syncUrlState()
+  })
+
+  interfaceElements.buildCompareRunButton.addEventListener('click', () => renderBuildCompareResult())
+  interfaceElements.buildTransformRunButton.addEventListener('click', () => applyBuildTransformMode())
 }
 
 async function initializeApplication() {
@@ -1034,6 +1158,9 @@ async function initializeApplication() {
   if (urlState.wizardBudget) applicationState.wizard.budgetValue = urlState.wizardBudget
   if (urlState.wizardScenario) applicationState.wizard.scenario = urlState.wizardScenario
   if (urlState.wizardPriority) applicationState.wizard.priority = urlState.wizardPriority
+  if (urlState.compareSlotA) applicationState.buildCompare.slotA = urlState.compareSlotA
+  if (urlState.compareSlotB) applicationState.buildCompare.slotB = urlState.compareSlotB
+  if (urlState.transformMode) applicationState.buildCompare.transformMode = urlState.transformMode
 
   interfaceElements.firebaseForm.elements.firebaseCategory.innerHTML = firebaseCategoryOptions
     .map((option) => `<option value="${escapeHtml(option.key)}">${escapeHtml(option.label)}</option>`)
@@ -1058,6 +1185,7 @@ async function initializeApplication() {
   interfaceElements.wizardBudgetInput.value = applicationState.wizard.budgetValue
   interfaceElements.wizardScenarioSelect.value = applicationState.wizard.scenario
   interfaceElements.wizardPrioritySelect.value = applicationState.wizard.priority
+  interfaceElements.buildTransformMode.value = applicationState.buildCompare.transformMode
   await reloadTechnicalImportRecords()
 
   for (const categoryKey of Object.keys(categorySettings)) {
@@ -1081,8 +1209,10 @@ async function initializeApplication() {
   renderConfigurator()
   renderWizardPlan()
   populateBuildSlots()
+  populateBuildCompareSlots()
   interfaceElements.budgetInput.value = applicationState.budgetValue
   renderConfigurationSummary()
+  renderBuildCompareResult()
   renderFirebaseConnectionState()
   const firebaseEditor = setupFirebaseEditor({
     formElement: interfaceElements.firebaseForm,
