@@ -97,10 +97,10 @@ function renderMicrophone(state) {
 function renderWebcam(state) {
   return `
     <section class="diag-panel diag-webcam-theme">
-      ${renderPanelHeader('Тест веб-камеры', 'Макет повторяет страницу webcam test: крупный preview и индикация LIVE.', 'webcammictest')}
+      ${renderPanelHeader('Тест веб-камеры', 'Макет повторяет страницу теста веб-камеры: крупный предпросмотр и индикация эфира.', 'webcammictest')}
       <div class="diag-camera-shell ${state.webcamActive ? 'live' : ''}">
         <video id="diag-webcam-video" autoplay playsinline muted></video>
-        <span class="diag-camera-overlay">${state.webcamActive ? 'LIVE CAMERA' : 'CAMERA OFF'}</span>
+        <span class="diag-camera-overlay">${state.webcamActive ? 'КАМЕРА В ЭФИРЕ' : 'КАМЕРА ВЫКЛ.'}</span>
       </div>
       <div class="diag-stat-strip one-col">
         <div><span>Состояние камеры</span><strong>${state.webcamStatus}</strong></div>
@@ -118,9 +118,9 @@ function renderHeadphones(state) {
     <section class="diag-panel diag-headphones-theme">
       ${renderPanelHeader('Тест наушников', 'Можно оставить как есть: каналы и стерео-сигнал для быстрой проверки.', 'webcammictest')}
       <div class="diag-grid-2">
-        <button type="button" class="diag-audio-btn" data-diag-tone="left">LEFT</button>
-        <button type="button" class="diag-audio-btn" data-diag-tone="right">RIGHT</button>
-        <button type="button" class="diag-audio-btn wide" data-diag-tone="stereo">STEREO</button>
+        <button type="button" class="diag-audio-btn" data-diag-tone="left">ЛЕВЫЙ</button>
+        <button type="button" class="diag-audio-btn" data-diag-tone="right">ПРАВЫЙ</button>
+        <button type="button" class="diag-audio-btn wide" data-diag-tone="stereo">СТЕРЕО</button>
       </div>
       <div class="diag-stat-strip one-col">
         <div><span>Статус</span><strong>${state.headphonesStatus}</strong></div>
@@ -142,10 +142,10 @@ function renderMouse(state) {
         <div id="diag-mouse-zone" class="diag-mouse-zone" tabindex="0">Кликайте и крутите колесо здесь</div>
       </div>
       <div class="diag-stats-grid">
-        <div><span>Left</span><strong>${state.mouseStats.left}</strong></div>
-        <div><span>Right</span><strong>${state.mouseStats.right}</strong></div>
-        <div><span>Middle</span><strong>${state.mouseStats.middle}</strong></div>
-        <div><span>Wheel</span><strong>${state.mouseStats.wheel}</strong></div>
+        <div><span>Левая</span><strong>${state.mouseStats.left}</strong></div>
+        <div><span>Правая</span><strong>${state.mouseStats.right}</strong></div>
+        <div><span>Средняя</span><strong>${state.mouseStats.middle}</strong></div>
+        <div><span>Колесо</span><strong>${state.mouseStats.wheel}</strong></div>
       </div>
       <div class="diag-stat-strip one-col">
         <div><span>Последнее действие</span><strong>${state.mouseStatus}</strong></div>
