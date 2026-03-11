@@ -50,10 +50,26 @@
 
         <div class="comparison-actions">
           <p id="comparison-count" class="comparison-count"></p>
+          <label>
+            Режим сравнения
+            <select id="comparison-mode">
+              <option value="all">Все параметры</option>
+              <option value="differences">Только различия</option>
+              <option value="first_advantages">Преимущества первой</option>
+              <option value="second_advantages">Преимущества второй</option>
+            </select>
+          </label>
+          <label>
+            Профиль лучшего выбора
+            <select id="best-choice-profile"></select>
+          </label>
+          <button id="share-state" class="secondary-action" type="button">Поделиться ссылкой</button>
         </div>
 
         <div id="comparison-result" class="comparison-result"></div>
         <div id="comparison-insights" class="insights-box"></div>
+        <div id="best-choice-result" class="insights-box"></div>
+        <div id="component-card" class="insights-box"></div>
       </section>
 
       <section class="main-panel" data-main-panel="configurator">
