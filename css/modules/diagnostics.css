@@ -297,7 +297,8 @@
   border: 2px dashed #7f9be0;
   border-radius: 12px;
   background: rgba(9, 13, 24, 0.82);
-  min-height: 130px;
+  min-height: 79px;
+  min-width: 150%;
   display: grid;
   place-items: center;
   color: #c3d2f9;
