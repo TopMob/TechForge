@@ -83,6 +83,27 @@
   line-height: 1.07;
 }
 
+
+.header-language {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-language label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.header-language select {
+  border-radius: 10px;
+  border: 1px solid rgba(164, 186, 255, 0.4);
+  background: rgba(20, 32, 71, 0.85);
+  color: #e6ecff;
+  padding: 6px 10px;
+}
+
 .application-description {
   margin: 0;
   max-width: 840px;

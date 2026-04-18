@@ -14,17 +14,18 @@ import { getWizardDefaults, buildWizardPlan, buildWizardSummary } from './build-
 import { auditBuild } from './build-audit.js'
 import { compareBuilds } from './build-compare.js'
 import { withViewTransition } from './view-transitions.js'
+import { t, setLanguage, getLanguage, applyStaticTranslations, formatPrice as formatLocalizedPrice, getCategoryTitle } from './i18n.js'
 
 
 const categorySettings = {
-  gpu: { title: 'Видеокарты' },
-  cpu: { title: 'Процессоры' },
-  ram: { title: 'Оперативная память' },
-  ssd: { title: 'SSD' },
-  motherboard: { title: 'Материнские платы' },
-  power_supply: { title: 'Блоки питания' },
-  case: { title: 'Корпуса' },
-  cooler: { title: 'Охлаждение' }
+  gpu: { title: getCategoryTitle('gpu') },
+  cpu: { title: getCategoryTitle('cpu') },
+  ram: { title: getCategoryTitle('ram') },
+  ssd: { title: getCategoryTitle('ssd') },
+  motherboard: { title: getCategoryTitle('motherboard') },
+  power_supply: { title: getCategoryTitle('power_supply') },
+  case: { title: getCategoryTitle('case') },
+  cooler: { title: getCategoryTitle('cooler') }
 }
 
 const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
@@ -95,7 +96,8 @@ const interfaceElements = {
   technicalImportApplyButton: document.getElementById('technical-import-apply'),
   technicalImportApproveButton: document.getElementById('technical-import-approve'),
   technicalImportStatus: document.getElementById('technical-import-status'),
-  technicalImportPreview: document.getElementById('technical-import-preview')
+  technicalImportPreview: document.getElementById('technical-import-preview'),
+  languageSelect: document.getElementById('language-select')
 }
 
 const applicationState = {
@@ -158,7 +160,7 @@ function createIdentifier(categoryKey, componentName) {
 }
 
 function formatPrice(priceValue) {
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(Math.round(priceValue))
+  return formatLocalizedPrice(priceValue)
 }
 
 function syncUrlState() {
@@ -169,13 +171,13 @@ async function shareCurrentState() {
   const url = pushUrlState(applicationState)
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'TechForge', text: 'Состояние сравнения и сборки', url })
+      await navigator.share({ title: 'TechForge', text: t('sharedStateText'), url })
       return
     } catch {
     }
   }
   await navigator.clipboard.writeText(url)
-  interfaceElements.buildStatus.textContent = 'Ссылка на текущее состояние скопирована в буфер обмена.'
+  interfaceElements.buildStatus.textContent = t('sharedCopied')
 }
 
 function getRecordCompleteness(record) {
@@ -1146,7 +1148,17 @@ function bindEvents() {
   interfaceElements.buildTransformRunButton.addEventListener('click', () => applyBuildTransformMode())
 }
 
+function setupLanguage() {
+  if (!interfaceElements.languageSelect) return
+  interfaceElements.languageSelect.value = getLanguage()
+  applyStaticTranslations()
+  interfaceElements.languageSelect.addEventListener('change', () => {
+    setLanguage(interfaceElements.languageSelect.value)
+    window.location.reload()
+  })
+}
 async function initializeApplication() {
+  setupLanguage()
   const urlState = parseUrlState()
   if (urlState.tab) applicationState.activeMainTab = urlState.tab
   if (urlState.compareCategory) applicationState.activeComparisonCategory = urlState.compareCategory
