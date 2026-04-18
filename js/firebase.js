@@ -91,21 +91,21 @@ export async function saveComponent(category, componentPayload) {
 }
 
 const CATALOG_JSON_PATHS = [
-  'BD/CPU/AMD.json',
-  'BD/CPU/INTEL.json',
-  'BD/GPU/AMD.json',
-  'BD/GPU/NVIDIA.json',
-  'BD/GPU/INTEL.json',
-  'BD/GPU/OTHER.json',
-  'BD/RAM/ddr4.json',
-  'BD/RAM/ddr5.json',
-  'BD/POWER_SUPPLIES/power_supplies.json',
-  'BD/MOTHERBOARDS/motherboards.json',
   'BD/COMPONENTS/case.json',
   'BD/COMPONENTS/cooler.json',
   'BD/COMPONENTS/hdd.json',
   'BD/COMPONENTS/m2.json',
-  'BD/COMPONENTS/ssd.json'
+  'BD/COMPONENTS/ssd.json',
+  'BD/CPU/AMD.json',
+  'BD/CPU/INTEL.json',
+  'BD/GPU/AMD.json',
+  'BD/GPU/INTEL.json',
+  'BD/GPU/NVIDIA.json',
+  'BD/GPU/OTHER.json',
+  'BD/MOTHERBOARDS/motherboards.json',
+  'BD/POWER_SUPPLIES/power_supplies.json',
+  'BD/RAM/ddr4.json',
+  'BD/RAM/ddr5.json'
 ]
 
 function resolveCategoryFromPath(filePath) {
@@ -118,11 +118,28 @@ async function fetchCatalogBatch(filePath) {
   if (!response.ok) {
     throw new Error(`Failed to fetch ${filePath}: ${response.status}`)
   }
-  const payload = await response.json()
-  if (!Array.isArray(payload)) {
+  const data = await response.json()
+  if (!Array.isArray(data)) {
     throw new Error(`Invalid catalog format for ${filePath}`)
   }
-  return payload
+  return data
+}
+
+async function syncCatalogFile(filePath) {
+  const category = resolveCategoryFromPath(filePath)
+  if (!category) {
+    throw new Error(`Invalid category path: ${filePath}`)
+  }
+  const components = await fetchCatalogBatch(filePath)
+  let saved = 0
+  for (const item of components) {
+    await saveComponent(category, item)
+    saved += 1
+  }
+  return {
+    files: 1,
+    saved
+  }
 }
 
 export async function autoPopulateCatalog() {
@@ -132,13 +149,12 @@ export async function autoPopulateCatalog() {
   }
 
   for (const filePath of CATALOG_JSON_PATHS) {
-    const category = resolveCategoryFromPath(filePath)
-    if (!category) continue
-    const components = await fetchCatalogBatch(filePath)
-    stats.files += 1
-    for (const component of components) {
-      await saveComponent(category, component)
-      stats.saved += 1
+    try {
+      const result = await syncCatalogFile(filePath)
+      stats.files += result.files
+      stats.saved += result.saved
+    } catch {
+      stats.files += 1
     }
   }
 
