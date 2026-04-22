@@ -1,8 +1,7 @@
-import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase, loadComponentFromFirebase, deleteComponent } from './firebase.js'
+import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase, loadComponentFromFirebase, deleteComponent, firebaseCategoryOptions, renderFirebaseCategoryFields, collectFirebasePayload, setupFirebaseEditor } from './firebase.js'
 import { saveBuild, loadBuild, deleteBuild, getSlotNames, getAllBuilds, exportBuildPayload, importBuildPayload, getWizardDefaults, buildWizardPlan, buildWizardSummary, auditBuild, compareBuilds } from './build-tools.js'
 import { setupDiagnosticsModule } from './diagnostics.js'
 import { t, setLanguage, getLanguage, applyStaticTranslations, formatPrice as formatLocalizedPrice, getCategoryTitle, createTechnicalImportController, technicalImportOptions, evaluateCompatibility, buildRecommendations, buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles, parseUrlState, pushUrlState, buildRelatedComponents, renderComponentCard, withViewTransition } from './app-core.js'
-import { firebaseCategoryOptions, renderFirebaseCategoryFields, collectFirebasePayload, setupFirebaseEditor } from './firebase-tools.js'
 
 const categorySettings = {
   gpu: { title: getCategoryTitle('gpu') },
