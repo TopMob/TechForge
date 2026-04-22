@@ -11,13 +11,13 @@ import {
   getDoc,
   deleteDoc,
   getFirestore
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'
+} from '../vendor/firebase/firebase-firestore.js'
+import { initializeApp } from '../vendor/firebase/firebase-app.js'
 import {
   getAuth,
   onAuthStateChanged,
   signInAnonymously
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'
+} from '../vendor/firebase/firebase-auth.js'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCXpjYd9BKqAhD3ssCMVoIultLG-Dhqnb8',
