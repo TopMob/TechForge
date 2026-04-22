@@ -1,5 +1,5 @@
 import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase } from './firebase.js'
-import { saveBuild, loadBuild, deleteBuild, getSlotNames, getAllBuilds, exportBuildPayload, importBuildPayload } from './build-storage.js'
+import { saveBuild, loadBuild, deleteBuild, getSlotNames, getAllBuilds, exportBuildPayload, importBuildPayload, getWizardDefaults, buildWizardPlan, buildWizardSummary, auditBuild, compareBuilds } from './build-tools.js'
 import { evaluateCompatibility } from './compatibility.js'
 import { buildRecommendations } from './recommendations.js'
 import { firebaseCategoryOptions } from './component-schema.js'
@@ -10,9 +10,6 @@ import { createTechnicalImportController, technicalImportOptions } from './techn
 import { buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles } from './comparison-engine.js'
 import { parseUrlState, pushUrlState } from './url-state.js'
 import { buildRelatedComponents, renderComponentCard } from './component-card.js'
-import { getWizardDefaults, buildWizardPlan, buildWizardSummary } from './build-wizard.js'
-import { auditBuild } from './build-audit.js'
-import { compareBuilds } from './build-compare.js'
 import { withViewTransition } from './view-transitions.js'
 import { t, setLanguage, getLanguage, applyStaticTranslations, formatPrice as formatLocalizedPrice, getCategoryTitle } from './i18n.js'
 
