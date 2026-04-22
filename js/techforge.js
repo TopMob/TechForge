@@ -1,17 +1,10 @@
-import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase } from './firebase.js'
+import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase, loadComponentFromFirebase, deleteComponent } from './firebase.js'
 import { saveBuild, loadBuild, deleteBuild, getSlotNames, getAllBuilds, exportBuildPayload, importBuildPayload, getWizardDefaults, buildWizardPlan, buildWizardSummary, auditBuild, compareBuilds } from './build-tools.js'
-import { evaluateCompatibility } from './compatibility.js'
-import { buildRecommendations } from './recommendations.js'
-import { firebaseCategoryOptions } from './component-schema.js'
-import { renderFirebaseCategoryFields, collectFirebasePayload } from './firebase-form.js'
-import { setupFirebaseEditor } from './firebase-editor.js'
 import { setupDiagnosticsModule } from './diagnostics.js'
 import { createTechnicalImportController, technicalImportOptions } from './technical-city-import.js'
-import { buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles } from './comparison-engine.js'
-import { parseUrlState, pushUrlState } from './url-state.js'
-import { buildRelatedComponents, renderComponentCard } from './component-card.js'
-import { withViewTransition } from './view-transitions.js'
-import { t, setLanguage, getLanguage, applyStaticTranslations, formatPrice as formatLocalizedPrice, getCategoryTitle } from './i18n.js'
+import { t, setLanguage, getLanguage, applyStaticTranslations, formatPrice as formatLocalizedPrice, getCategoryTitle } from './app-merged.js'
+import { evaluateCompatibility, buildRecommendations, buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles, parseUrlState, pushUrlState, buildRelatedComponents, renderComponentCard, withViewTransition } from './app-merged.js'
+import { firebaseCategoryOptions, renderFirebaseCategoryFields, collectFirebasePayload, setupFirebaseEditor } from './firebase-ui.js'
 
 
 const categorySettings = {
@@ -1242,7 +1235,11 @@ async function initializeApplication() {
       } else {
         await refreshCategoryFromFirebase(categoryKey)
       }
-    }
+    },
+    loadComponentsFromFirebase,
+    loadComponentFromFirebase,
+    saveComponent,
+    deleteComponent
   })
   applicationState.firebaseEditorController = await firebaseEditor.initialize(normalizeText(interfaceElements.firebaseForm.elements.firebaseCategory.value))
 

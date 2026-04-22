@@ -9,10 +9,60 @@ import {
   query,
   getDocs,
   getDoc,
-  deleteDoc
+  deleteDoc,
+  getFirestore
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'
-import { firestoreDatabase } from './firebase-app.js'
-import { ensureFirebaseAuth } from './firebase-auth.js'
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInAnonymously
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyCXpjYd9BKqAhD3ssCMVoIultLG-Dhqnb8',
+  authDomain: 'techforge-c4.firebaseapp.com',
+  projectId: 'techforge-c4',
+  storageBucket: 'techforge-c4.firebasestorage.app',
+  messagingSenderId: '13366452809',
+  appId: '1:13366452809:web:ef2f7af86cfcdaf3f5d598',
+  databaseURL: 'https://techforge-c4-default-rtdb.firebaseio.com'
+}
+
+const firebaseApp = initializeApp(firebaseConfig)
+const firestoreDatabase = getFirestore(firebaseApp)
+const firebaseAuth = getAuth(firebaseApp)
+
+let authReadyPromise
+
+function ensureFirebaseAuth() {
+  if (!authReadyPromise) {
+    authReadyPromise = new Promise((resolve, reject) => {
+      const unsubscribe = onAuthStateChanged(
+        firebaseAuth,
+        async (user) => {
+          if (user) {
+            unsubscribe()
+            resolve(user)
+            return
+          }
+          try {
+            await signInAnonymously(firebaseAuth)
+          } catch (error) {
+            unsubscribe()
+            reject(error)
+          }
+        },
+        (error) => {
+          unsubscribe()
+          reject(error)
+        }
+      )
+    })
+  }
+
+  return authReadyPromise
+}
 
 function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim()
