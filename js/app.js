@@ -1,10 +1,8 @@
 import { saveComponent, watchFirebaseConnection, loadComponentsFromFirebase, loadComponentFromFirebase, deleteComponent } from './firebase.js'
 import { saveBuild, loadBuild, deleteBuild, getSlotNames, getAllBuilds, exportBuildPayload, importBuildPayload, getWizardDefaults, buildWizardPlan, buildWizardSummary, auditBuild, compareBuilds } from './build-tools.js'
 import { setupDiagnosticsModule } from './diagnostics.js'
-import { t, setLanguage, getLanguage, applyStaticTranslations, formatPrice as formatLocalizedPrice, getCategoryTitle, createTechnicalImportController, technicalImportOptions } from './app-merged.js'
-import { evaluateCompatibility, buildRecommendations, buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles, parseUrlState, pushUrlState, buildRelatedComponents, renderComponentCard, withViewTransition } from './app-merged.js'
-import { firebaseCategoryOptions, renderFirebaseCategoryFields, collectFirebasePayload, setupFirebaseEditor } from './firebase-ui.js'
-
+import { t, setLanguage, getLanguage, applyStaticTranslations, formatPrice as formatLocalizedPrice, getCategoryTitle, createTechnicalImportController, technicalImportOptions, evaluateCompatibility, buildRecommendations, buildSemanticComparison, buildComparisonNarrative, rankBestChoices, getRankingProfiles, parseUrlState, pushUrlState, buildRelatedComponents, renderComponentCard, withViewTransition } from './app-core.js'
+import { firebaseCategoryOptions, renderFirebaseCategoryFields, collectFirebasePayload, setupFirebaseEditor } from './firebase-tools.js'
 
 const categorySettings = {
   gpu: { title: getCategoryTitle('gpu') },
@@ -18,8 +16,6 @@ const categorySettings = {
 }
 
 const configuratorCategoryOrder = ['cpu', 'motherboard', 'gpu', 'ram', 'ssd', 'power_supply', 'case', 'cooler']
-
-
 
 const interfaceElements = {
   mainTabsContainer: document.getElementById('main-tabs'),
