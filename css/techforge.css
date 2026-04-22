@@ -1,6 +1,2 @@
-@import url('./modules/base.css');
-@import url('./modules/shell.css');
-@import url('./modules/components.css');
-@import url('./modules/diagnostics.css');
-@import url('./modules/animations.css');
-@import url('./modules/responsive.css');
+@import url('./app.css');
+@import url('./diagnostics.css');
