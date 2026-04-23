@@ -1,0 +1,25 @@
+# Git and dependency directories
+.git/
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+coverage/
+.cache/
+
+# Environment and secrets
+.env
+.env.*
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Editor / OS noise
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
