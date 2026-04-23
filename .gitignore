@@ -2,6 +2,7 @@ node_modules/
 dist/
 build/
 coverage/
+.vercel/
 
 # Logs
 *.log
@@ -14,6 +15,8 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+.env.local
+.env.*.local
 
 # OS / editor files
 .DS_Store
