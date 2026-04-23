@@ -7,6 +7,13 @@
 - Firebase Web SDK
 - Vercel
 
+## Structure
+
+- `src/main.js` - Vite entrypoint
+- `src/lib/` - application modules
+- `src/styles/` - styles
+- `assets/` - static project assets used by the app
+
 ## Development
 
 1. Install dependencies:
