@@ -1,0 +1,37 @@
+Code Audit Report
+=================
+
+src/lib/build-tools.js
+----------------------
+- Issue (Duplication): The function `perfScore` (lines 193-199) and `performanceScore` (lines 309-315) are identical and duplicate the exact same logic `(cores * 3) + freq + (cache * 0.08)`.
+- Suggested Solution: Extract this logic into a single exported function and reuse it where necessary to avoid duplicate implementations.
+
+src/lib/app-core.js
+-------------------
+- Issue (Duplication): The `normalize...` functions (such as `normalizeCpu`, `normalizeGpu`, `normalizeRam`, `normalizeMotherboard`, etc., starting at line 598) are highly redundant. They repeat the logic of splitting names (`splitVendorModel`), extracting prices, and building identical data structures with `categoryKey`, `name`, `vendor`, `model`, `price`, `raw`, and `specs`.
+- Suggested Solution: Extract a helper function like `function createComponentData(categoryKey, name, vendor, model, price, rawExtras, specsExtras)` and have each normalizer invoke it.
+
+src/lib/app.js
+--------------
+- Issue (Unhandled Exception): Empty catch blocks exist around line 157 (`try { await navigator.share(...) } catch {}`) and line 208 (`try { ... loadComponentsFromFirebase(...) } catch {}`). These swallow exceptions without any trace, making debugging extremely difficult if issues arise (e.g. share API missing, network failures, missing permissions).
+- Suggested Solution: Catch the error and log it using `catch (error) { console.error('Error sharing or loading from firebase', error); }`.
+
+src/lib/firebase.js
+-------------------
+- Issue (Unhandled Exception): Similar to `app.js`, empty catch blocks exist around lines 49, 76, and 202 (`catch {}`). They silently catch fetching or parsing errors.
+- Suggested Solution: Add proper error logging in the catch block: `catch (error) { console.error('Failed to query firebase or parse image', error); }`.
+
+src/lib/build-tools.js
+----------------------
+- Issue (Unhandled Exception): In the `safeParse` function (line 4), there is an empty `catch {}` block which hides issues when `JSON.parse` fails. While returning `{}` might be the intended fallback behavior, it is better to at least log a warning.
+- Suggested Solution: `catch (error) { console.warn('Failed to parse slots', error); return {}; }`
+
+src/lib/build-tools.js
+----------------------
+- Issue (Logical/Exception Risk): In `importBuildPayload` (line 59), `JSON.parse(raw)` is not wrapped in a `try...catch` block. If `raw` is malformed JSON, this will throw a synchronous error, crashing the thread. While it happens to be caught in `app.js` at line 694 during import, relying on caller-side catching for JSON parsing isn't robust.
+- Suggested Solution: Wrap the `JSON.parse(raw)` in a `try...catch` block and throw a unified validation error if parsing fails, or handle it gracefully within the function.
+
+src/lib/app-core.js
+-------------------
+- Issue (Performance Bottleneck): Iterating over components and calling `safe()` or parsing logic repeatedly in arrays during metric generation or when normalizing large datasets can cause minor jank. Functions like `parseNumeric` (which uses Regex parsing and string replacement via `.replace(',', '.')`) are invoked very often (e.g., inside `perfScore`, `upgradeScore`, `powerScore`, and multiple other places when scoring builds or configurations).
+- Suggested Solution: The parsed numeric values for `freq`, `cores`, `cache`, and `TDP` should be cached directly inside the `raw` payload during the initial `normalize` phase so that `.replace` and Regex matching aren't executed repeatedly in a loop for the same data.
